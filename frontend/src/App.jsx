@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { SpeedInsights } from "@vercel/speed-insights/react";
 import { AnimatePresence } from "framer-motion";
 import ChatPage    from './pages/ChatPage';
 import LoginPage   from './pages/LoginPage';
@@ -42,7 +41,6 @@ function App() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] text-white">
-      <SpeedInsights />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/"       element={authUser ? <ChatPage />  : <Navigate to="/login" />} />
