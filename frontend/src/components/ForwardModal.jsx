@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useChatStore } from "../store/useChatStore";
+import { axiosInstance } from "../lib/axios";
 import { XIcon, SendIcon, SearchIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -27,7 +28,6 @@ export default function ForwardModal({ message, onClose }) {
       if (!contact) continue;
       
       try {
-        const { axiosInstance } = await import("../lib/axios");
         const res = await axiosInstance.post(`/messages/send/${contactId}`, {
           text: message.text || undefined,
           image: message.image || undefined,

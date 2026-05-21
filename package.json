@@ -21,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/abhinashp25/chatify/issues"
   },
-  "homepage": "https://github.com/abhinashp25/chatify#readme"
+  "homepage": "https://github.com/abhinashp25/chatify#readme",
+  "dependencies": {
+    "firebase": "^12.13.0"
+  }
 }

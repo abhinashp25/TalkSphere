@@ -134,6 +134,58 @@ export const logout = (_, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
+export const firebaseSync = async (req, res) => {
+  try {
+    const { firebaseUid, email, fullName, profilePic, phoneNumber } = req.body;
+    
+    if (!firebaseUid) {
+      return res.status(400).json({ message: "Firebase UID is required" });
+    }
+
+    // Attempt to find by UID first
+    let user = await User.findOne({ firebaseUid });
+
+    if (!user) {
+      // If no user by UID, try by email or phone depending on what's provided
+      if (email) {
+        user = await User.findOne({ email });
+      } else if (phoneNumber) {
+        user = await User.findOne({ phoneNumber });
+      }
+
+      if (user) {
+        // Link the existing user
+        user.firebaseUid = firebaseUid;
+        if (phoneNumber && !user.phoneNumber) user.phoneNumber = phoneNumber;
+        await user.save();
+      } else {
+        // Create new user
+        user = new User({
+          firebaseUid,
+          email: email || undefined,
+          phoneNumber: phoneNumber || undefined,
+          fullName: fullName || "New User",
+          profilePic: profilePic || "",
+        });
+        await user.save();
+      }
+    }
+
+    // Issue traditional JWT for exactly identical WebSocket routing
+    generateToken(user._id, res);
+    
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic,
+    });
+  } catch (error) {
+    console.error("firebaseSync error:", error);
+    res.status(500).json({ message: "Internal server error syncing user" });
+  }
+};
+
 export const updateProfile = async (req, res) => {
   try {
     const { profilePic, fullName, bio, status } = req.body;

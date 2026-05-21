@@ -1,10 +1,20 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
+  firebaseUid: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  phoneNumber: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
   email: {
     type: String,
-    required: true,
     unique: true,
+    sparse: true,
   },
   fullName: {
     type: String,
@@ -12,7 +22,6 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
     minlength: 6,
   },
   profilePic: {

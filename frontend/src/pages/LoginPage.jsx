@@ -1,24 +1,19 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Mail, Lock, ArrowRight, Loader2, Apple } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const { login, isLoggingIn } = useAuthStore();
+  const { login, isLoggingIn, googleLogin } = useAuthStore();
 
-  const handleSubmit = (e) => {
+  const handleEmailSubmit = (e) => {
     e.preventDefault();
     login(formData);
   };
 
   const set = (key) => (e) => setFormData((prev) => ({ ...prev, [key]: e.target.value }));
-
-  const mockSocialLogin = (provider) => {
-    toast.success(`Redirecting to ${provider}...`);
-  };
 
   return (
     <motion.div 
@@ -45,7 +40,7 @@ export default function LoginPage() {
           <h2 className="text-3xl font-semibold mb-2 tracking-tight brand-font">Welcome back</h2>
           <p className="text-[#a1a1aa] text-sm mb-8 font-light">Enter your details to access your premium account.</p>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleEmailSubmit}>
             <div className="floating-input-group">
               <input
                 type="email"
@@ -99,22 +94,13 @@ export default function LoginPage() {
             <div className="flex-grow border-t border-[rgba(255,255,255,0.1)]"></div>
           </div>
 
-          <div className="flex gap-4">
-            <button 
-              onClick={() => mockSocialLogin('Google')}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm font-medium"
-            >
-              <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google" className="w-5 h-5" />
-              Google
-            </button>
-            <button 
-              onClick={() => mockSocialLogin('Apple')}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm font-medium"
-            >
-              <Apple className="w-5 h-5" />
-              Apple
-            </button>
-          </div>
+          <button 
+            onClick={() => googleLogin(false)}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm font-medium"
+          >
+            <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google" className="w-5 h-5" />
+            Sign in with Google
+          </button>
 
           <p className="mt-8 text-center text-sm text-[#a1a1aa]">
             Don't have an account?{" "}

@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 export default function SignupPage() {
   const [formData, setFormData] = useState({ fullName: "", email: "", password: "" });
   const [tooltip, setTooltip] = useState(null);
-  const { signup, isSigningUp } = useAuthStore();
+  const { signup, googleLogin, isSigningUp, isLoggingIn } = useAuthStore();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,10 +16,6 @@ export default function SignupPage() {
   };
 
   const set = (key) => (e) => setFormData((prev) => ({ ...prev, [key]: e.target.value }));
-
-  const mockSocialLogin = (provider) => {
-    toast.success(`Redirecting to ${provider}...`);
-  };
 
   // Dynamic Password Validation
   const pwdLength = formData.password.length >= 6;
@@ -148,6 +144,23 @@ export default function SignupPage() {
               )}
             </button>
           </form>
+
+          <div className="relative flex items-center py-4">
+            <div className="flex-grow border-t border-[rgba(255,255,255,0.1)]"></div>
+            <span className="flex-shrink-0 mx-4 text-[#a1a1aa] text-xs font-medium uppercase tracking-wider">Or continue with</span>
+            <div className="flex-grow border-t border-[rgba(255,255,255,0.1)]"></div>
+          </div>
+
+          <div className="flex gap-4">
+            <button 
+              onClick={() => googleLogin(true)}
+              disabled={isLoggingIn}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm font-medium"
+            >
+              <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google" className="w-5 h-5" />
+              Google
+            </button>
+          </div>
 
           <p className="mt-6 text-center text-sm text-[#a1a1aa]">
             Already have an account?{" "}
