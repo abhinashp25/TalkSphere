@@ -46,7 +46,8 @@ mongoose.connection.once("open", () => {
   startScheduler();
 });
 
-server.listen(PORT, () => {
+// Explicitly bind to 0.0.0.0 for Render
+server.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port: " + PORT);
   connectDB();
 });
