@@ -21,6 +21,7 @@ import { startScheduler } from "./controllers/schedule.controller.js";
 const __dirname = path.resolve();
 const PORT = ENV.PORT || 3000;
 
+app.set('trust proxy', 1); // Tell Express to trust Render's load balancer
 app.use(express.json({ limit: "10mb" }));
 app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
 app.use(cookieParser());
