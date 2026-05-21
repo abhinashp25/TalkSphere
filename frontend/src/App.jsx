@@ -12,6 +12,8 @@ import CommandPalette from './components/CommandPalette';
 import CallOverlay from './components/CallOverlay';
 import { useCallStore } from './store/useCallStore';
 
+import { useChatStore } from './store/useChatStore';
+
 function App() {
   const location = useLocation();
   const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
@@ -26,7 +28,7 @@ function App() {
     const handleOffline = () => toast.error("You are offline. Messages will be queued.", { duration: 4000 });
     const handleOnline = () => {
       toast.success("Back online!", { duration: 3000 });
-      import('./store/useChatStore').then(mod => mod.useChatStore.getState().processOfflineQueue());
+      useChatStore.getState().processOfflineQueue();
     };
     
     window.addEventListener("offline", handleOffline);

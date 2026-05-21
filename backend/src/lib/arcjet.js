@@ -5,6 +5,7 @@ const aj = arcjet({
   key: ENV.ARCJET_KEY,
   // Let Arcjet know it's running behind proxies (Render)
   proxies: ["true"],
+  env: "production", // Force production mode so it stops throwing the development warning
   rules: [
     // Shield protects your app from common attacks e.g. SQL injection
     shield({ mode: "LIVE" }),
