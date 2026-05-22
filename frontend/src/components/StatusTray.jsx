@@ -404,6 +404,10 @@ function StatusViewer({
   renderStatusBody 
 }) {
   const currentItem = activeStatus.items[activeStatus.currentIndex];
+  
+  // Real-time pausing states
+  const [isPaused, setIsPaused] = useState(false);
+  const [isHolding, setIsHolding] = useState(false);
 
   useEffect(() => {
     if (currentItem) {
@@ -411,8 +415,10 @@ function StatusViewer({
     }
   }, [activeStatus.currentIndex, currentItem]);
 
-  // Handle 5-second automatic progression
+  // Handle automatic progression (pauses when isPaused is true)
   useEffect(() => {
+    if (isPaused || isHolding) return;
+
     const timer = setTimeout(() => {
       if (activeStatus.currentIndex < activeStatus.items.length - 1) {
         setActiveStatus(prev => ({ ...prev, currentIndex: prev.currentIndex + 1 }));
@@ -422,7 +428,7 @@ function StatusViewer({
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [activeStatus.currentIndex, activeStatus.items.length]);
+  }, [activeStatus.currentIndex, activeStatus.items.length, isPaused, isHolding]);
 
   const handlePrev = (e) => {
     e.stopPropagation();
@@ -440,29 +446,50 @@ function StatusViewer({
     }
   };
 
+  // Safe pause triggers for input
+  const handleInputChange = (e) => {
+    const text = e.target.value;
+    setReplyText(text);
+    if (text.trim()) {
+      setIsPaused(true);
+    } else {
+      setIsPaused(false);
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-[#07080a] flex flex-col items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-[#07080a] flex flex-col items-center justify-center sm:p-4"
     >
-      {/* Container holding layout */}
-      <div className="relative max-w-lg w-full aspect-[9/16] bg-black rounded-3xl overflow-hidden flex items-center justify-center text-center shadow-2xl border border-white/5">
+      <style>{`
+        @keyframes status-progression {
+          0% { width: 0%; }
+          100% { width: 100%; }
+        }
+        .status-progression-active {
+          height: 100%;
+          background-color: white;
+          animation: status-progression 5s linear forwards;
+        }
+      `}</style>
+
+      {/* Container holding layout: responsive full-screen on mobile, elegant mobile card mockup on desktop */}
+      <div className="relative w-full h-full sm:max-w-lg sm:h-auto sm:aspect-[9/16] bg-black sm:rounded-3xl overflow-hidden flex items-center justify-center text-center shadow-2xl sm:border sm:border-white/5">
         
         {/* Dynamic progress bars */}
-        <div className="absolute top-4 left-4 right-4 flex gap-1 z-40">
+        <div className={`absolute top-4 left-4 right-4 flex gap-1 z-40 transition-opacity duration-250 ${isHolding ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
           {activeStatus.items.map((_, i) => (
             <div key={i} className="flex-1 h-[3px] bg-white/20 rounded-full overflow-hidden">
               {i < activeStatus.currentIndex ? (
                 <div className="h-full bg-white w-full" />
               ) : i === activeStatus.currentIndex ? (
-                <motion.div 
+                <div 
                   key={activeStatus.currentIndex}
-                  initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: 5, ease: "linear" }}
-                  className="h-full bg-white"
+                  className="status-progression-active"
+                  style={{ animationPlayState: (isPaused || isHolding) ? "paused" : "running" }}
                 />
               ) : (
                 <div className="h-full bg-white w-0" />
@@ -471,8 +498,8 @@ function StatusViewer({
           ))}
         </div>
 
-        {/* User Card Header */}
-        <div className="absolute top-8 left-4 flex items-center gap-3 z-40">
+        {/* User Card Header - elegant slide & fade animation when holding */}
+        <div className={`absolute top-8 left-4 flex items-center gap-3 z-40 transition-all duration-300 ${isHolding ? "opacity-0 -translate-y-2 pointer-events-none" : "opacity-100 translate-y-0"}`}>
           <img 
             src={activeStatus.user.profilePic || "/avatar.png"} 
             className="w-10 h-10 rounded-full object-cover border border-white/10" 
@@ -488,30 +515,44 @@ function StatusViewer({
 
         {/* Exit Button */}
         <button 
-          className="absolute top-8 right-4 text-white bg-white/10 hover:bg-white/20 p-2 rounded-full z-50 transition-colors"
+          className={`absolute top-8 right-4 text-white bg-white/10 hover:bg-white/20 p-2 rounded-full z-50 transition-all duration-300 ${isHolding ? "opacity-0 -translate-y-2 pointer-events-none" : "opacity-100 translate-y-0"}`}
           onClick={() => setActiveStatus(null)}
         >
           <X size={16} />
         </button>
 
-        {/* Content Body Viewer */}
-        <div className="w-full h-full">
+        {/* Content Body Viewer with mouse press and finger touch hold mechanics */}
+        <div 
+          className="w-full h-full cursor-pointer select-none"
+          onMouseDown={() => { setIsHolding(true); }}
+          onMouseUp={() => { setIsHolding(false); }}
+          onMouseLeave={() => { setIsHolding(false); }}
+          onTouchStart={() => { setIsHolding(true); }}
+          onTouchEnd={() => { setIsHolding(false); }}
+        >
           {renderStatusBody(currentItem)}
         </div>
 
         {/* Left/Right manual tap controls */}
         <div className="absolute inset-x-0 inset-y-16 flex z-30">
-          <div className="w-1/2 h-full cursor-pointer" onClick={handlePrev} />
-          <div className="w-1/2 h-full cursor-pointer" onClick={handleNext} />
+          <div className="w-1/4 h-full cursor-pointer" onClick={handlePrev} />
+          <div className="w-2/4 h-full cursor-pointer" />
+          <div className="w-1/4 h-full cursor-pointer" onClick={handleNext} />
         </div>
 
-        {/* Status reply input section */}
-        <form onSubmit={handleSendReply} className="absolute bottom-6 left-4 right-4 z-50 flex gap-2" onClick={e => e.stopPropagation()}>
+        {/* Status reply input section - fades away cleanly on hold for premium, zero-distraction view */}
+        <form 
+          onSubmit={handleSendReply} 
+          className={`absolute bottom-6 left-4 right-4 z-50 flex gap-2 transition-all duration-300 ${isHolding ? "opacity-0 translate-y-2 pointer-events-none" : "opacity-100 translate-y-0"}`} 
+          onClick={e => e.stopPropagation()}
+        >
           <input
             type="text"
             placeholder="Type a reply..."
             value={replyText}
-            onChange={e => setReplyText(e.target.value)}
+            onChange={handleInputChange}
+            onFocus={() => setIsPaused(true)}
+            onBlur={() => { if (!replyText.trim()) setIsPaused(false); }}
             className="flex-1 bg-white/10 text-white rounded-full px-5 py-2.5 text-[14px] focus:outline-none focus:ring-1 focus:ring-[#00a884] placeholder:text-white/40 border border-white/10"
           />
           <button

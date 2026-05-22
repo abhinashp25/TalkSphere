@@ -3,7 +3,7 @@ import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 import UsersLoadingSkeleton from "./UsersLoadingSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
-import { MessageSquarePlus, Search, ArrowLeft, Heart, Menu } from "lucide-react";
+import { MessageSquarePlus, Search, ArrowLeft, Heart, Menu, Camera, Sparkles, Pin } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -30,7 +30,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
     favourites = [], toggleFavourite, setActiveTab, typingUsers
   } = useChatStore();
   const { groups, selectedGroup } = useGroupStore();
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, authUser } = useAuthStore();
   
   const [searchFocused, setSearchFocused] = useState(false);
   const [localSearch, setLocalSearch] = useState(sidebarSearch);
@@ -90,46 +90,103 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
 
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ background: "var(--bg-primary)" }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-        <h1 className="text-[20px] font-bold brand-font tracking-wide text-white">Chats</h1>
-        <div className="flex items-center gap-1">
-          <button onClick={() => setActiveTab("contacts")} className="p-2 rounded-full text-[#a3a3a3] hover:text-white hover:bg-white/5 transition-colors" title="New Chat">
-            <MessageSquarePlus size={20} />
-          </button>
-          <button onClick={onOpenDrawer} className="p-2 rounded-full text-[#a3a3a3] hover:text-white hover:bg-white/5 transition-colors" title="Menu">
-            <Menu size={20} />
-          </button>
-        </div>
-      </div>
-
-      {/* Search Bar */}
-      <div className="px-3 py-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-        <div className="relative flex items-center rounded-full h-[38px] border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
-          <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
-            {searchFocused ? (
-              <button onClick={() => { setLocalSearch(""); setSearchFocused(false); }}>
-                <ArrowLeft size={16} className="text-[#a3a3a3]" />
-              </button>
-            ) : (
-              <Search size={16} className="text-[#a3a3a3]" />
-            )}
+      
+      {/* ── DESKTOP HEADER, SEARCH BAR & FILTER PILLS (Hidden on Mobile) ── */}
+      <div className="hidden sm:flex flex-col flex-shrink-0">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+          <h1 className="text-[20px] font-bold brand-font tracking-wide text-white">Chats</h1>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setActiveTab("contacts")} className="p-2 rounded-full text-[#a3a3a3] hover:text-white hover:bg-white/5 transition-colors" title="New Chat">
+              <MessageSquarePlus size={20} />
+            </button>
+            <button onClick={onOpenDrawer} className="p-2 rounded-full text-[#a3a3a3] hover:text-white hover:bg-white/5 transition-colors" title="Menu">
+              <Menu size={20} />
+            </button>
           </div>
-          <input 
-            type="text" 
-            placeholder="Search or start a new chat" 
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => { if (!localSearch) setSearchFocused(false); }}
-            className="flex-1 bg-transparent text-[14px] focus:outline-none text-[#e5e5e5] placeholder:text-[#737373] h-full"
-          />
+        </div>
+
+        {/* Search Bar */}
+        <div className="px-3 py-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+          <div className="relative flex items-center rounded-full h-[38px] border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
+            <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
+              {searchFocused ? (
+                <button onClick={() => { setLocalSearch(""); setSearchFocused(false); }}>
+                  <ArrowLeft size={16} className="text-[#a3a3a3]" />
+                </button>
+              ) : (
+                <Search size={16} className="text-[#a3a3a3]" />
+              )}
+            </div>
+            <input 
+              type="text" 
+              placeholder="Search or start a new chat" 
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => { if (!localSearch) setSearchFocused(false); }}
+              className="flex-1 bg-transparent text-[14px] focus:outline-none text-[#e5e5e5] placeholder:text-[#737373] h-full"
+            />
+          </div>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="px-3 pt-2 pb-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar items-center">
+            <FilterPill label="All" active={activeFilter === "all" || !activeFilter} onClick={() => setActiveFilter("all")} />
+            <FilterPill label="Unread" badge={allConversations.filter(c => c.unreadBadge > 0).length} active={activeFilter === "unread"} onClick={() => setActiveFilter("unread")} />
+            <FilterPill label="Favourites" active={activeFilter === "favourites"} onClick={() => setActiveFilter("favourites")} />
+            <FilterPill label="Groups" badge={groups.length} active={activeFilter === "groups"} onClick={() => setActiveFilter("groups")} />
+          </div>
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="px-3 pt-2 pb-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar items-center">
+      {/* ── MOBILE DOUBLE-TIER HEADER, SEARCH PILL & FILTERS (Hidden on Desktop) ── */}
+      <div className="sm:hidden flex flex-col flex-shrink-0">
+        {/* Tier 1: Brand Title & Mobile Actions */}
+        <div className="flex items-center justify-between px-4 h-[56px] flex-shrink-0" style={{ background: "var(--bg-secondary)" }}>
+          <h1 className="text-[22px] font-bold brand-font tracking-wide text-white flex items-center gap-0.5">
+            Chatify<span style={{ color: "var(--accent)" }}>.</span>
+          </h1>
+          <div className="flex items-center gap-1.5">
+            <button onClick={() => toast.success("Camera activated (demo)")} className="p-2 rounded-full text-white/70 active:bg-white/10 transition-colors" title="Camera/QR">
+              <Camera size={20} />
+            </button>
+            <button onClick={() => setSearchFocused(true)} className="p-2 rounded-full text-white/70 active:bg-white/10 transition-colors" title="Search">
+              <Search size={20} />
+            </button>
+            <button onClick={onOpenDrawer} className="w-8 h-8 rounded-full overflow-hidden ml-1 border border-white/10 active:scale-95 transition-transform" title="Profile/Settings">
+              <img src={authUser?.profilePic || "/avatar.png"} alt="profile" className="w-full h-full object-cover" />
+            </button>
+          </div>
+        </div>
+
+        {/* Tier 2: Dedicated Wide Pill Search Input */}
+        <div className="px-3 pb-3" style={{ background: "var(--bg-secondary)" }}>
+          <div className="relative flex items-center h-[40px] w-full">
+            <div className="absolute left-3.5 z-10 flex items-center justify-center">
+              {localSearch || searchFocused ? (
+                <button onClick={() => { setLocalSearch(""); setSearchFocused(false); }}>
+                  <ArrowLeft size={16} className="text-[#a3a3a3] hover:text-white" />
+                </button>
+              ) : (
+                <Search size={16} className="text-[#a3a3a3]" />
+              )}
+            </div>
+            <input 
+              type="text" 
+              placeholder="Ask AI or search chats..." 
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => { if (!localSearch) setSearchFocused(false); }}
+              className="mobile-search-bar"
+            />
+          </div>
+        </div>
+
+        {/* Horizontal sliding filters with custom padding */}
+        <div className="px-3 pt-2 pb-2 overflow-x-auto no-scrollbar flex gap-2 items-center" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
           <FilterPill label="All" active={activeFilter === "all" || !activeFilter} onClick={() => setActiveFilter("all")} />
           <FilterPill label="Unread" badge={allConversations.filter(c => c.unreadBadge > 0).length} active={activeFilter === "unread"} onClick={() => setActiveFilter("unread")} />
           <FilterPill label="Favourites" active={activeFilter === "favourites"} onClick={() => setActiveFilter("favourites")} />
@@ -138,8 +195,57 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
       </div>
 
       {/* Chat Rows */}
-      <div className="flex-1 overflow-y-auto w-full no-scrollbar pt-1 pb-4" style={{ background: "var(--bg-primary)" }}>
+      <div className="flex-1 overflow-y-auto w-full no-scrollbar pt-1 pb-4 relative" style={{ background: "var(--bg-primary)" }}>
         <AnimatePresence>
+          {/* Pinned Chatify AI Row */}
+          {(!localSearch || "chatify ai".includes(localSearch.toLowerCase())) && (activeFilter === "all" || !activeFilter) && (
+            <motion.div 
+              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              key="chatify-ai-pinned-row"
+              className="chat-row group ai-pinned-row cursor-pointer"
+              onClick={() => setActiveTab("chatify-ai")}
+            >
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <div 
+                  className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-xl font-bold border border-violet-500/20 shadow-lg relative overflow-hidden"
+                  style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%)', color: 'white' }}
+                >
+                  <Sparkles size={22} className="animate-pulse" />
+                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-[3px] bg-violet-400 z-10 animate-bounce" style={{ borderColor: 'var(--bg-primary)' }} />
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[15.5px] text-white truncate brand-font tracking-wide font-semibold flex items-center gap-1.5">
+                    Chatify AI
+                    <span className="w-[18px] h-[18px] rounded-full bg-violet-500/20 text-[#8b5cf6] flex items-center justify-center border border-[#8b5cf6]/30 flex-shrink-0">
+                      <Sparkles size={9} className="text-violet-400 fill-violet-400/30" />
+                    </span>
+                  </p>
+                  <span className="text-[11px] font-semibold text-violet-400 flex-shrink-0">
+                    AI Assistant
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between gap-2 mt-0.5">
+                  <div className="text-[14px] truncate flex-1 font-normal text-[#a3a3a3] flex items-center gap-1">
+                    <span className="text-violet-400">✨</span> Ask me anything...
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Pin size={12} className="text-violet-400 transform rotate-[45deg] flex-shrink-0" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {!allConversations.length && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 gap-3 px-6 text-center">
               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-indigo-400/50 mb-2">
@@ -170,7 +276,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={conv._id} 
-                className={`chat-row group ${isActive ? "active" : ""}`}
+                className={`chat-row group ${isActive ? "active" : ""} ${isFav ? "favorite-pinned" : ""}`}
                 onClick={() => handleConversationClick(conv)}
               >
                 {/* Avatar with online dot */}
@@ -194,11 +300,14 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                     <p className="text-[15.5px] text-white truncate brand-font tracking-wide" style={{ fontWeight: unread > 0 ? "600" : "500" }}>
                       {sidebarSearch ? highlight(conv.displayName, sidebarSearch) : conv.displayName}
                     </p>
-                    {conv.sortTime > 0 && (
-                      <span className="text-[11px] font-medium flex-shrink-0" style={{ color: unread > 0 ? '#6366f1' : '#71717a' }}>
-                        {timeAgo(conv.sortTime)}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {isFav && <Pin size={11} className="text-violet-400 transform rotate-[45deg] flex-shrink-0" />}
+                      {conv.sortTime > 0 && (
+                        <span className="text-[11px] font-medium" style={{ color: unread > 0 ? 'var(--accent)' : '#71717a' }}>
+                          {timeAgo(conv.sortTime)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex items-center justify-between gap-2 mt-0.5">
@@ -245,6 +354,29 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
             );
           })}
         </AnimatePresence>
+      </div>
+
+      {/* ── MOBILE FLOATING ACTION BUTTONS (FABs) ── */}
+      <div className="sm:hidden fab-container pointer-events-none">
+        {/* Secondary FAB (Ask Chatify AI) */}
+        <motion.button 
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setActiveTab("chatify-ai")}
+          className="fab-secondary pointer-events-auto"
+          title="Ask Chatify AI"
+        >
+          <Sparkles size={18} />
+        </motion.button>
+
+        {/* Primary FAB (Start New Chat) */}
+        <motion.button 
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setActiveTab("contacts")}
+          className="fab-main pointer-events-auto"
+          title="New Chat"
+        >
+          <MessageSquarePlus size={24} />
+        </motion.button>
       </div>
     </div>
   );

@@ -16,6 +16,29 @@ import { useAIStore } from "../store/useAIStore";
 
 const REACTION_EMOJIS = ["👍","❤️","😂","😮","😢","🔥"];
 
+/* Parser for Status Replies */
+const parseStatusReply = (text) => {
+  if (!text) return { isStatus: false };
+  const match = text.match(/^\*Replied to status:\*\s*"([\s\S]*?)"\n([\s\S]*)$/);
+  if (match) {
+    return {
+      isStatus: true,
+      statusQuote: match[1],
+      replyText: match[2]
+    };
+  }
+  const fallbackMatch = text.match(/^\*Replied to status:\*\s*"([\s\S]*?)"\s*([\s\S]*)$/);
+  if (fallbackMatch) {
+    return {
+      isStatus: true,
+      statusQuote: fallbackMatch[1],
+      replyText: fallbackMatch[2]
+    };
+  }
+  return { isStatus: false };
+};
+
+
 /* ── AI Summary Overlay ───────────────────────────────────────────────── */
 function AISummaryOverlay({ messages, user, onClose }) {
   const recentTexts = messages.filter(m => m.text && !m.isDeletedForAll).slice(-20);
@@ -352,6 +375,33 @@ export default function ChatContainer() {
                         </p>
                       )}
 
+                      {/* Status Reply Quote Preview Card */}
+                      {(() => {
+                        if (!msg.text || !msg.text.startsWith('*Replied to status:*') || msg.isDeletedForAll) return null;
+                        const parsed = parseStatusReply(msg.text);
+                        if (!parsed.isStatus) return null;
+                        const isPhoto = parsed.statusQuote.includes("Status Photo") || parsed.statusQuote.includes("📷");
+                        return (
+                          <div className="mb-2.5 px-3 py-2 rounded-xl relative overflow-hidden flex items-center justify-between gap-3 border-l-4 border-emerald-500 shadow-sm"
+                            style={{ background: isMine ? "rgba(0,0,0,0.25)" : "rgba(255,255,255,0.04)" }}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-bold text-emerald-400 tracking-wide uppercase mb-1">Status Update</p>
+                              <p className="text-[13px] text-white/90 truncate leading-relaxed">
+                                {isPhoto ? "📷 Photo" : parsed.statusQuote}
+                              </p>
+                            </div>
+                            <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden border border-white/10"
+                              style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.3) 0%, rgba(5,150,105,0.3) 100%)' }}>
+                              {isPhoto ? (
+                                <span className="text-sm">📷</span>
+                              ) : (
+                                <span className="text-[10px] text-emerald-300 font-bold font-mono">Aa</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
                       {/* Reply quote */}
                       {msg.replyTo?.senderName && !msg.isDeletedForAll && (
                         <div className="mb-2 px-2.5 py-1.5 rounded-lg relative overflow-hidden"
@@ -375,9 +425,14 @@ export default function ChatContainer() {
                           {msg.document && <DocumentBubble doc={msg.document} isMine={isMine} />}
                           {msg.text && (
                             <p className="text-[14.2px] leading-[1.5] break-words whitespace-pre-wrap">
-                              {searchQuery ? highlightMatch(translations[msg._id] || msg.text, searchQuery) : (translations[msg._id] || msg.text)}
+                              {msg.text.startsWith('*Replied to status:*') ? (
+                                searchQuery ? highlightMatch(parseStatusReply(translations[msg._id] || msg.text).replyText, searchQuery) : parseStatusReply(translations[msg._id] || msg.text).replyText
+                              ) : (
+                                searchQuery ? highlightMatch(translations[msg._id] || msg.text, searchQuery) : (translations[msg._id] || msg.text)
+                              )}
                             </p>
                           )}
+
                           {translatingId === msg._id && (
                             <div className="flex items-center gap-1.5 mt-1.5 opacity-60">
                               <Loader2 size={12} className="animate-spin" />

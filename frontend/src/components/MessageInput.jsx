@@ -8,8 +8,8 @@ import ReplyBar          from "./ReplyBar";
 import ScheduleModal     from "./ScheduleModal";
 import GifPicker         from "./GifPicker";
 import toast from "react-hot-toast";
-import { Mic, MicOff, Send, PenTool, EyeOff, Film } from "lucide-react";
-import { motion } from "framer-motion";
+import { Mic, Send, PenTool, Film } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import SketchCanvas from "./SketchCanvas";
 
 const STOP_DELAY = 1500;
@@ -17,7 +17,7 @@ const STOP_DELAY = 1500;
 // Tone dot colors
 const TONE_COLORS = {
   warm:       "#10b981",
-  neutral:    null,          // no dot for neutral
+  neutral:    null,
   cold:       "#f59e0b",
   aggressive: "#ef4444",
 };
@@ -30,7 +30,6 @@ export default function MessageInput({ onTextChange }) {
   const [emojiOpen, setEmojiOpen]   = useState(false);
   const [gifOpen,   setGifOpen]     = useState(false);
   const [sketchOpen, setSketchOpen] = useState(false);
-  const [isWhisper, setIsWhisper]   = useState(false);
   const [voiceMode, setVoiceMode]   = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [isRecording, setIsRecording]   = useState(false);
@@ -42,7 +41,7 @@ export default function MessageInput({ onTextChange }) {
   const toneTimer   = useRef(null);
 
   const fileRef     = useRef(null);
-  const inputRef    = useRef(null);
+  const textareaRef = useRef(null);
   const timerRef    = useRef(null);
   const holdTimer   = useRef(null);
   const typingRef   = useRef(false);
@@ -54,17 +53,29 @@ export default function MessageInput({ onTextChange }) {
     selectedUser, disappearSeconds,
   } = useChatStore();
 
+  // Auto-grow textarea
+  const adjustTextareaHeight = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+  }, []);
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [text, adjustTextareaHeight]);
+
   useEffect(() => {
     if (pendingInput !== null) {
       setText(pendingInput);
       onTextChange?.(pendingInput);
       clearPendingInput();
-      inputRef.current?.focus();
+      textareaRef.current?.focus();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingInput]);
 
-  // ── Tone analysis — debounced 1.2s after stop typing ──────────────────
+  // Tone analysis — debounced 1.2s after stop typing
   const analyzeTone = useCallback((val) => {
     clearTimeout(toneTimer.current);
     if (val.length < 12) { setToneScore(null); setToneTip(null); return; }
@@ -73,7 +84,7 @@ export default function MessageInput({ onTextChange }) {
         const res = await axiosInstance.post("/ai/tone", { text: val });
         setToneScore(res.data.score);
         setToneTip(res.data.suggestion);
-      } catch { /* silent — never block sending */ }
+      } catch { /* silent */ }
     }, 1200);
   }, []);
 
@@ -129,29 +140,30 @@ export default function MessageInput({ onTextChange }) {
     clearTimeout(timerRef.current);
     typingRef.current = false;
     emitStopTyping();
-    sendMessage({ text: text.trim(), image: imgPreview, document: docPreview, isWhisper });
+    sendMessage({ text: text.trim(), image: imgPreview, document: docPreview, isWhisper: false });
     setText(""); setImgPreview(null); setDocPreview(null);
-    setEmojiOpen(false); setGifOpen(false); setIsWhisper(false);
+    setEmojiOpen(false); setGifOpen(false);
     setToneScore(null); setToneTip(null);
     onTextChange?.("");
     if (fileRef.current) fileRef.current.value = "";
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
   };
 
   const handleVoiceSend = (audioBase64) => {
-    sendMessage({ audio: audioBase64, isWhisper });
+    sendMessage({ audio: audioBase64, isWhisper: false });
     setVoiceMode(false);
-    setIsWhisper(false);
   };
 
   const handleSketchSend = (dataUrl) => {
-    sendMessage({ image: dataUrl, isWhisper });
+    sendMessage({ image: dataUrl, isWhisper: false });
     setSketchOpen(false);
-    setIsWhisper(false);
   };
 
   const handleGifSelect = (gifUrl) => {
-    // Send GIF as image (Tenor CDN URL — no re-upload needed)
-    sendMessage({ image: gifUrl, isWhisper });
+    sendMessage({ image: gifUrl, isWhisper: false });
     setGifOpen(false);
   };
 
@@ -168,13 +180,13 @@ export default function MessageInput({ onTextChange }) {
   };
 
   const insertEmoji = (em) => {
-    const pos = inputRef.current?.selectionStart ?? text.length;
+    const pos = textareaRef.current?.selectionStart ?? text.length;
     const newText = text.slice(0, pos) + em + text.slice(pos);
     setText(newText);
     handleTyping(newText);
     setTimeout(() => {
-      inputRef.current?.focus();
-      inputRef.current?.setSelectionRange(pos + em.length, pos + em.length);
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(pos + em.length, pos + em.length);
     }, 0);
   };
 
@@ -197,10 +209,18 @@ export default function MessageInput({ onTextChange }) {
   const toneDotColor = toneScore ? TONE_COLORS[toneScore] : null;
 
   return (
-    <div className="flex-shrink-0 pb-[env(safe-area-inset-bottom,0px)]" style={{ background: "var(--bg-secondary)", borderTop: "1px solid var(--border)" }}>
-
+    <div
+      className="flex-shrink-0"
+      style={{
+        background: "var(--bg-secondary)",
+        borderTop: "1px solid var(--border)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+      }}
+    >
+      {/* Reply bar */}
       {replyingTo && <ReplyBar />}
 
+      {/* Image preview */}
       {imgPreview && (
         <div className="px-4 pt-3">
           <div className="relative inline-block">
@@ -214,6 +234,7 @@ export default function MessageInput({ onTextChange }) {
         </div>
       )}
 
+      {/* Document preview */}
       {docPreview && (
         <div className="px-4 pt-3">
           <div className="relative inline-flex items-center gap-3 p-3 rounded-xl bg-[#141414] border border-[#262626] pr-10">
@@ -235,11 +256,20 @@ export default function MessageInput({ onTextChange }) {
         </div>
       )}
 
-      {emojiOpen && (
-        <div className="px-3 pt-2 absolute bottom-20 left-0 bg-[#0d0d0d] rounded-t-2xl shadow-2xl z-40 border border-white/5 w-full">
-          <EmojiPicker onSelect={insertEmoji} onClose={() => setEmojiOpen(false)} />
-        </div>
-      )}
+      {/* Emoji Picker */}
+      <AnimatePresence>
+        {emojiOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="px-3 pt-2 absolute bottom-20 left-0 right-0 bg-[#0d0d0d] rounded-t-2xl shadow-2xl z-40 border border-white/5"
+          >
+            <EmojiPicker onSelect={insertEmoji} onClose={() => setEmojiOpen(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {sketchOpen && <SketchCanvas onSend={handleSketchSend} onCancel={() => setSketchOpen(false)} />}
 
@@ -247,6 +277,7 @@ export default function MessageInput({ onTextChange }) {
         <GifPicker onSelect={handleGifSelect} onClose={() => setGifOpen(false)} />
       )}
 
+      {/* Disappear timer badge */}
       {disappearLabel && (
         <div className="flex items-center gap-1.5 px-4 pt-2">
           <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -259,108 +290,185 @@ export default function MessageInput({ onTextChange }) {
         </div>
       )}
 
-      <div className="flex items-center gap-2 px-3 py-2.5">
-        <button type="button" onClick={() => setIsWhisper(v => !v)}
-          className={`icon-btn flex-shrink-0 ${isWhisper ? "text-indigo-400 bg-indigo-500/10" : ""}`}
-          title={isWhisper ? "Whisper mode on" : "Whisper mode off"}>
-          <EyeOff size={18} />
-        </button>
-
-        <button type="button" onClick={() => setSketchOpen(v => !v)}
-          className="icon-btn flex-shrink-0" title="Draw a sketch">
-          <PenTool size={18} />
-        </button>
-
-        <button type="button" onClick={() => fileRef.current?.click()}
-          className="icon-btn flex-shrink-0" title="Attach file">
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-          </svg>
-        </button>
+      {/* ── Main Input Row ─────────────────────────────────────────────── */}
+      <div className="flex items-end gap-2.5 px-3 py-2.5">
 
         {voiceMode ? (
           <VoiceRecorder onSend={handleVoiceSend} onCancel={() => setVoiceMode(false)} />
         ) : (
           <>
-            <div className="flex-1 flex items-center gap-2 rounded-full px-4 h-[44px] input-pill-glass">
-              {/* Emoji */}
-              <button type="button" onClick={() => { setEmojiOpen(v => !v); setGifOpen(false); }}
-                className="flex-shrink-0 transition-colors"
-                style={{ color: emojiOpen ? "#e5e5e5" : "#737373" }} title="Emoji">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            {/* ── Input Pill (WhatsApp-style) ─────────────── */}
+            <div
+              className="flex-1 flex items-end gap-1 px-2.5 py-2 rounded-[24px] transition-all duration-200"
+              style={{
+                background: "var(--bg-input)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+              }}
+            >
+              {/* Emoji trigger */}
+              <button
+                type="button"
+                onClick={() => { setEmojiOpen(v => !v); setGifOpen(false); }}
+                className="w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0 transition-all hover:bg-white/5 active:scale-90 mb-0.5"
+                style={{ color: emojiOpen ? "var(--accent)" : "#737373" }}
+                title="Emoji"
+              >
+                <svg className="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <circle cx="12" cy="12" r="10" />
                   <path d="M8 13s1.5 2 4 2 4-2 4-2" />
-                  <line x1="9" y1="9" x2="9.01" y2="9" />
-                  <line x1="15" y1="9" x2="15.01" y2="9" />
+                  <line x1="9" y1="9" x2="9.01" y2="9" strokeWidth="2.5" />
+                  <line x1="15" y1="9" x2="15.01" y2="9" strokeWidth="2.5" />
                 </svg>
               </button>
 
-              {/* GIF button */}
-              <button type="button" onClick={() => { setGifOpen(v => !v); setEmojiOpen(false); }}
-                className="flex-shrink-0 transition-colors"
-                style={{ color: gifOpen ? "#e5e5e5" : "#737373" }} title="Send a GIF">
-                <Film size={17} />
-              </button>
+              {/* Text input area */}
+              <div className="flex-1 min-w-0 px-1 py-0.5">
+                <textarea
+                  ref={textareaRef}
+                  value={text}
+                  rows={1}
+                  onChange={e => {
+                    setText(e.target.value);
+                    handleTyping(e.target.value);
+                    if (isSoundEnabled) playRandomKeyStrokeSound?.();
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+                  }}
+                  placeholder="Type a message"
+                  className="w-full bg-transparent border-none focus:outline-none resize-none text-[15px] leading-[1.4] no-scrollbar py-0.5"
+                  style={{
+                    color: "var(--text-primary)",
+                    fontFamily: "inherit",
+                    maxHeight: "120px",
+                    minHeight: "24px",
+                    overflowY: "auto",
+                    caretColor: "var(--accent)",
+                  }}
+                />
+              </div>
 
-              <input ref={inputRef} type="text" value={text}
-                onChange={e => { setText(e.target.value); handleTyping(e.target.value); if (isSoundEnabled) playRandomKeyStrokeSound?.(); }}
-                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                placeholder="Type a message"
-                className="flex-1 bg-transparent border-none focus:outline-none text-[14.5px] leading-none"
-                style={{ color: "var(--text-primary)", fontFamily: "inherit" }}
-              />
+              {/* Action buttons (right inside the pill) */}
+              <div className="flex items-center gap-0.5 mb-0.5 flex-shrink-0">
+                {/* Attach file */}
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0 transition-all hover:bg-white/5 active:scale-90"
+                  style={{ color: "#737373" }}
+                  title="Attach file"
+                >
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                  </svg>
+                </button>
 
-              {/* Voice typing */}
-              <button type="button" onClick={toggleVoiceTyping}
-                className="flex-shrink-0 transition-colors"
-                style={{ color: isRecording ? "#ef4444" : "#737373" }}
-                title={isRecording ? "Stop voice typing" : "Voice type"}>
-                {isRecording ? <Mic size={18} className="animate-pulse" /> : <MicOff size={18} />}
-              </button>
+                {/* Sketch canvas */}
+                <button
+                  type="button"
+                  onClick={() => setSketchOpen(v => !v)}
+                  className="w-8 h-8 hidden sm:flex items-center justify-center rounded-full flex-shrink-0 transition-all hover:bg-white/5 active:scale-90"
+                  style={{ color: sketchOpen ? "var(--accent)" : "#737373" }}
+                  title="Draw a sketch"
+                >
+                  <PenTool size={17} />
+                </button>
 
-              {/* Tone dot — only shows for non-neutral tones */}
-              {toneDotColor && text.length > 12 && (
-                <div className="relative flex-shrink-0 group">
-                  <button type="button"
-                    className="w-4 h-4 rounded-full transition-all"
-                    style={{ background: toneDotColor, opacity: 0.85 }}
-                    onClick={() => setShowToneTip(v => !v)}
-                    title="Message tone"
-                  />
-                  {(showToneTip || toneTip) && toneTip && (
-                    <div
-                      className="absolute bottom-7 right-0 w-52 p-3 rounded-xl text-xs text-white z-50 pointer-events-none
-                        opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: "var(--bg-panel)", border: "1px solid var(--border)" }}>
-                      <p className="font-semibold mb-1 capitalize" style={{ color: toneDotColor }}>
-                        {toneScore} tone
-                      </p>
-                      <p className="text-[#a3a3a3] leading-relaxed">{toneTip}</p>
-                    </div>
-                  )}
-                </div>
-              )}
+                {/* GIF picker */}
+                <button
+                  type="button"
+                  onClick={() => { setGifOpen(v => !v); setEmojiOpen(false); }}
+                  className="w-8 h-8 hidden sm:flex items-center justify-center rounded-full flex-shrink-0 transition-all hover:bg-white/5 active:scale-90"
+                  style={{ color: gifOpen ? "var(--accent)" : "#737373" }}
+                  title="Send a GIF"
+                >
+                  <Film size={17} />
+                </button>
 
-              <input type="file" ref={fileRef} onChange={handleFile} className="hidden" />
+                {/* Voice typing */}
+                <button
+                  type="button"
+                  onClick={toggleVoiceTyping}
+                  className="w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0 transition-all hover:bg-white/5 active:scale-90"
+                  style={{ color: isRecording ? "#ef4444" : "#737373" }}
+                  title={isRecording ? "Stop voice typing" : "Voice type"}
+                >
+                  <Mic size={17} className={isRecording ? "animate-pulse" : ""} />
+                </button>
+
+                {/* Tone dot — non-neutral only */}
+                {toneDotColor && text.length > 12 && (
+                  <div className="relative flex-shrink-0 group mx-1">
+                    <button
+                      type="button"
+                      className="w-3.5 h-3.5 rounded-full transition-all"
+                      style={{ background: toneDotColor, opacity: 0.85 }}
+                      onClick={() => setShowToneTip(v => !v)}
+                      title="Message tone"
+                    />
+                    {(showToneTip || toneTip) && toneTip && (
+                      <div
+                        className="absolute bottom-10 right-0 w-52 p-3 rounded-xl text-xs text-white z-50 pointer-events-none
+                          opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ background: "var(--bg-panel)", border: "1px solid var(--border)" }}>
+                        <p className="font-semibold mb-1 capitalize" style={{ color: toneDotColor }}>{toneScore} tone</p>
+                        <p className="text-[#a3a3a3] leading-relaxed">{toneTip}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="relative flex-shrink-0">
-              <motion.button type="button" whileTap={{ scale: 0.88 }}
-                onPointerDown={canSend ? onSendPointerDown : undefined}
-                onPointerUp={canSend ? onSendPointerUp : undefined}
-                onPointerLeave={canSend ? onSendPointerLeave : undefined}
-                onClick={canSend ? undefined : () => setVoiceMode(true)}
-                className="w-11 h-11 rounded-full flex items-center justify-center transition-all select-none"
-                style={{
-                  background: canSend ? "var(--accent)" : "var(--bg-input)",
-                  color:      canSend ? "var(--bg-primary)" : "var(--text-secondary)",
-                  border:     canSend ? "none" : "1px solid var(--border)",
-                  touchAction: "none",
-                }}
-                title={canSend ? "Send (hold to schedule)" : "Record voice"}>
-                {canSend ? <Send size={17} className="ml-0.5" /> : <Mic size={18} />}
-              </motion.button>
-            </div>
+            {/* Hidden file input */}
+            <input type="file" ref={fileRef} onChange={handleFile} className="hidden" />
+
+            {/* ── Send / Mic Floating Action Button ──────────────── */}
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.88 }}
+              onPointerDown={canSend ? onSendPointerDown : undefined}
+              onPointerUp={canSend ? onSendPointerUp : undefined}
+              onPointerLeave={canSend ? onSendPointerLeave : undefined}
+              onClick={canSend ? undefined : () => setVoiceMode(true)}
+              title={canSend ? "Send (hold to schedule)" : "Record voice"}
+              style={{ touchAction: "none" }}
+              className="w-[44px] h-[44px] rounded-full flex-shrink-0 flex items-center justify-center shadow-lg transition-colors duration-200 select-none mb-0.5"
+              animate={{
+                background: canSend ? "var(--accent)" : "var(--bg-input)",
+                scale: 1,
+              }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {canSend ? (
+                  <motion.span
+                    key="send"
+                    initial={{ rotate: -30, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 30, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center justify-center"
+                    style={{ color: "var(--bg-primary)" }}
+                  >
+                    <Send size={18} className="ml-0.5" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="mic"
+                    initial={{ rotate: 30, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -30, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center justify-center"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    <Mic size={20} />
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
           </>
         )}
       </div>

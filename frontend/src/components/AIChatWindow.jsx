@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useAIStore } from "../store/useAIStore";
 import { useChatStore } from "../store/useChatStore";
-import { SendIcon, XIcon, SparklesIcon, RefreshCwIcon } from "lucide-react";
+import { XIcon, SparklesIcon, RefreshCwIcon, ArrowLeftIcon, Send } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function AIChatWindow({ onClose }) {
   const { isSidebarCollapsed, toggleSidebar } = useChatStore();
@@ -39,6 +40,17 @@ export default function AIChatWindow({ onClose }) {
         <div className="absolute top-0 left-0 right-0 h-[2px]"
           style={{ background: 'linear-gradient(90deg, var(--accent) 0%, var(--bg-hover) 100%)' }} />
 
+        {/* Mobile Back Arrow — takes user back to chats list */}
+        <button
+          onClick={onClose}
+          className="sm:hidden flex items-center justify-center w-9 h-9 rounded-full -ml-1 mr-1 transition-all active:scale-90"
+          style={{ color: 'var(--text-primary)' }}
+          title="Back"
+        >
+          <ArrowLeftIcon className="w-5 h-5" />
+        </button>
+
+        {/* Desktop sidebar toggle */}
         <button 
           onClick={toggleSidebar} 
           className="hidden sm:flex icon-btn text-[#a3a3a3] hover:text-white transition-all duration-200"
@@ -83,7 +95,8 @@ export default function AIChatWindow({ onClose }) {
         <button onClick={clearAI} className="icon-btn" title="New chat">
           <RefreshCwIcon className="w-4 h-4" />
         </button>
-        <button onClick={onClose} className="icon-btn" title="Close">
+        {/* Close button — desktop only */}
+        <button onClick={onClose} className="hidden sm:flex icon-btn" title="Close">
           <XIcon className="w-4 h-4" />
         </button>
       </div>
@@ -171,29 +184,81 @@ export default function AIChatWindow({ onClose }) {
         </div>
       )}
 
-      {/* Input */}
-      <div className="px-4 py-3 flex-shrink-0 border-t" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
-        <div className="flex items-center gap-2 rounded-2xl px-3 py-2 border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) handleSend(); }}
-            placeholder={retryAfter > 0 ? `Cooling down… ${retryAfter}s` : "Ask me anything…"}
-            disabled={isBlocked}
-            className="flex-1 bg-transparent border-none focus:outline-none text-[15px]"
-            style={{ color: isBlocked ? 'var(--text-muted)' : 'var(--text-primary)' }}
-          />
-          <button
+      {/* ── Premium Input Bar ──────────────────────────────────── */}
+      <div
+        className="px-3 py-2.5 flex-shrink-0 border-t"
+        style={{
+          background: "var(--bg-secondary)",
+          borderColor: "var(--border)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
+        }}
+      >
+        <div className="flex items-end gap-2.5">
+          {/* Input Pill */}
+          <div
+            className="flex-1 rounded-[22px] overflow-hidden transition-all"
+            style={{
+              background: "var(--bg-input)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            }}
+          >
+            <div className="px-4 py-3">
+              <textarea
+                ref={inputRef}
+                rows={1}
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  // auto-grow
+                  e.target.style.height = "auto";
+                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+                }}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                placeholder={retryAfter > 0 ? `Cooling down… ${retryAfter}s` : "Ask me anything…"}
+                disabled={isBlocked}
+                className="w-full bg-transparent border-none focus:outline-none resize-none text-[15px] leading-[1.5] no-scrollbar"
+                style={{
+                  color: isBlocked ? 'var(--text-muted)' : 'var(--text-primary)',
+                  fontFamily: 'inherit',
+                  maxHeight: '120px',
+                  minHeight: '24px',
+                  overflowY: 'auto',
+                  caretColor: 'var(--accent)',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Send FAB */}
+          <motion.button
             onClick={handleSend}
             disabled={!input.trim() || isBlocked}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all disabled:opacity-30"
-            style={{
-              background: !input.trim() || isBlocked ? 'transparent' : 'var(--accent)',
-            }}>
-            <SendIcon className="w-3.5 h-3.5" style={{ color: !input.trim() || isBlocked ? 'var(--text-muted)' : 'var(--bg-primary)' }} />
-          </button>
+            className="w-[46px] h-[46px] rounded-full flex-shrink-0 flex items-center justify-center shadow-lg"
+            animate={{
+              background: !input.trim() || isBlocked ? 'var(--bg-input)' : 'var(--accent)',
+              opacity: isBlocked ? 0.5 : 1,
+            }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            whileTap={{ scale: 0.88 }}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={input.trim() ? "active" : "idle"}
+                initial={{ rotate: -20, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 20, opacity: 0 }}
+                transition={{ duration: 0.12 }}
+                className="flex items-center justify-center"
+              >
+                <Send
+                  size={18}
+                  className="ml-0.5"
+                  style={{ color: !input.trim() || isBlocked ? 'var(--text-muted)' : 'var(--bg-primary)' }}
+                />
+              </motion.span>
+            </AnimatePresence>
+          </motion.button>
         </div>
       </div>
     </div>

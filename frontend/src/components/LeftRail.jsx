@@ -9,95 +9,152 @@ export default function LeftRail({ activeTab, setActiveTab, isHiddenOnMobile }) 
   const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
 
   return (
-    <div
-      className={`sm:flex items-center justify-between sm:justify-start px-4 sm:px-0 pt-2 pb-[calc(8px+env(safe-area-inset-bottom,0px))] sm:py-4 gap-2 flex-shrink-0 w-full sm:w-[72px] h-[calc(60px+env(safe-area-inset-bottom,0px))] sm:h-auto border-t sm:border-t-0 sm:border-r sm:flex-col ${isHiddenOnMobile ? "hidden" : "flex"}`}
-      style={{
-        background: "var(--bg-secondary)",
-        borderColor: "var(--border)",
-      }}
-    >
-      {/* Profile Avatar (Top on Desktop, Hidden/Left on Mobile) */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setActiveTab("profile")}
-        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden sm:mb-6 flex-shrink-0 relative hidden sm:block"
+    <>
+      {/* Desktop Vertical Navigation Rail (Hidden on mobile) */}
+      <div
+        className="hidden sm:flex items-center justify-start py-4 gap-2 flex-shrink-0 w-[72px] h-auto border-r flex-col"
         style={{
-          border: activeTab === "profile" ? "2px solid var(--accent)" : "2px solid transparent",
-          transition: "border-color 0.2s",
+          background: "var(--bg-secondary)",
+          borderColor: "var(--border)",
         }}
       >
-        <img src={authUser?.profilePic || "/avatar.png"} alt="me" className="w-full h-full object-cover" />
-      </motion.button>
-
-      {/* Primary Nav */}
-      <div className="flex sm:flex-col w-full sm:w-auto justify-around sm:justify-start items-center gap-2 sm:gap-2 flex-1 sm:flex-none">
-        <NavBtn label="Chats" active={!activeTab || activeTab === "chats"} badge={totalUnread} onClick={() => setActiveTab("chats")}>
-          <MessageSquare size={20} strokeWidth={2} />
-        </NavBtn>
-
-        <NavBtn label="Calls" active={activeTab === "calls"} onClick={() => setActiveTab("calls")}>
-          <Phone size={20} strokeWidth={2} />
-        </NavBtn>
-
-        <NavBtn label="Status" active={activeTab === "status"} onClick={() => setActiveTab("status")}>
-          <CircleDot size={20} strokeWidth={2} />
-        </NavBtn>
-
-        <NavBtn label="Communities" active={activeTab === "communities"} onClick={() => setActiveTab("communities")}>
-          <Users size={20} strokeWidth={2} />
-        </NavBtn>
-      </div>
-
-      {/* Spacer for Desktop */}
-      <div className="hidden sm:block flex-1" />
-
-      {/* Chatify AI & Settings (Bottom on Desktop, Right on Mobile) */}
-      <div className="flex sm:flex-col items-center gap-2">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          title="Chatify AI"
-          onClick={() => setActiveTab("chatify-ai")}
-          className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl transition-all border hover:bg-[var(--bg-hover)]"
-          style={{
-            background: activeTab === "chatify-ai" ? "var(--bg-active)" : "var(--bg-input)",
-            color: activeTab === "chatify-ai" ? "var(--accent)" : "var(--text-secondary)",
-            borderColor: activeTab === "chatify-ai" ? "var(--accent)" : "var(--border)",
-          }}
-        >
-          <Zap size={20} strokeWidth={2} />
-          {activeTab === "chatify-ai" && (
-            <span className="absolute left-[-14px] top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full hidden sm:block" style={{ background: "var(--accent)" }} />
-          )}
-        </motion.button>
-
-        <div className="my-1 sm:my-2 hidden sm:block" />
-
-        <div className="hidden sm:flex flex-col gap-2">
-          <NavBtn label="Archive" active={activeTab === "archived"} onClick={() => setActiveTab("archived")}>
-            <Archive size={20} strokeWidth={2} />
-          </NavBtn>
-
-          <NavBtn label="Settings" active={activeTab === "settings"} onClick={() => setActiveTab("settings")}>
-            <Settings size={20} strokeWidth={2} />
-          </NavBtn>
-        </div>
-        
-        {/* Profile Avatar for Mobile */}
+        {/* Profile Avatar (Top on Desktop) */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setActiveTab("profile")}
-          className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 relative sm:hidden ml-2"
+          className="w-10 h-10 rounded-full overflow-hidden mb-6 flex-shrink-0 relative"
           style={{
             border: activeTab === "profile" ? "2px solid var(--accent)" : "2px solid transparent",
+            transition: "border-color 0.2s",
           }}
         >
           <img src={authUser?.profilePic || "/avatar.png"} alt="me" className="w-full h-full object-cover" />
         </motion.button>
+
+        {/* Primary Nav */}
+        <div className="flex flex-col w-auto justify-start items-center gap-2 flex-none">
+          <NavBtn label="Chats" active={!activeTab || activeTab === "chats"} badge={totalUnread} onClick={() => setActiveTab("chats")}>
+            <MessageSquare size={20} strokeWidth={2} />
+          </NavBtn>
+
+          <NavBtn label="Calls" active={activeTab === "calls"} onClick={() => setActiveTab("calls")}>
+            <Phone size={20} strokeWidth={2} />
+          </NavBtn>
+
+          <NavBtn label="Status" active={activeTab === "status"} onClick={() => setActiveTab("status")}>
+            <CircleDot size={20} strokeWidth={2} />
+          </NavBtn>
+
+          <NavBtn label="Communities" active={activeTab === "communities"} onClick={() => setActiveTab("communities")}>
+            <Users size={20} strokeWidth={2} />
+          </NavBtn>
+        </div>
+
+        {/* Spacer for Desktop */}
+        <div className="flex-1" />
+
+        {/* Chatify AI & Settings (Bottom on Desktop) */}
+        <div className="flex flex-col items-center gap-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            title="Chatify AI"
+            onClick={() => setActiveTab("chatify-ai")}
+            className="relative flex items-center justify-center w-11 h-11 rounded-xl transition-all border hover:bg-[var(--bg-hover)]"
+            style={{
+              background: activeTab === "chatify-ai" ? "var(--bg-active)" : "var(--bg-input)",
+              color: activeTab === "chatify-ai" ? "var(--accent)" : "var(--text-secondary)",
+              borderColor: activeTab === "chatify-ai" ? "var(--accent)" : "var(--border)",
+            }}
+          >
+            <Zap size={20} strokeWidth={2} />
+            {activeTab === "chatify-ai" && (
+              <span className="absolute left-[-14px] top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: "var(--accent)" }} />
+            )}
+          </motion.button>
+
+          <div className="my-2" />
+
+          <div className="flex flex-col gap-2">
+            <NavBtn label="Archive" active={activeTab === "archived"} onClick={() => setActiveTab("archived")}>
+              <Archive size={20} strokeWidth={2} />
+            </NavBtn>
+
+            <NavBtn label="Settings" active={activeTab === "settings"} onClick={() => setActiveTab("settings")}>
+              <Settings size={20} strokeWidth={2} />
+            </NavBtn>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Mobile Bottom Navigation (Hidden on desktop, matches approved WhatsApp design) */}
+      <div className={`sm:hidden mobile-bottom-nav ${isHiddenOnMobile ? "hidden" : "flex"}`}>
+        <MobileNavTab
+          label="Chats"
+          active={!activeTab || activeTab === "chats"}
+          badge={totalUnread}
+          onClick={() => setActiveTab("chats")}
+        >
+          <MessageSquare size={20} strokeWidth={!activeTab || activeTab === "chats" ? 2.5 : 2} />
+        </MobileNavTab>
+
+        <MobileNavTab
+          label="Updates"
+          active={activeTab === "status"}
+          onClick={() => setActiveTab("status")}
+        >
+          <CircleDot size={20} strokeWidth={activeTab === "status" ? 2.5 : 2} />
+        </MobileNavTab>
+
+        <MobileNavTab
+          label="Communities"
+          active={activeTab === "communities"}
+          onClick={() => setActiveTab("communities")}
+        >
+          <Users size={20} strokeWidth={activeTab === "communities" ? 2.5 : 2} />
+        </MobileNavTab>
+
+        <MobileNavTab
+          label="Calls"
+          active={activeTab === "calls"}
+          onClick={() => setActiveTab("calls")}
+        >
+          <Phone size={20} strokeWidth={activeTab === "calls" ? 2.5 : 2} />
+        </MobileNavTab>
+      </div>
+    </>
+  );
+}
+
+function MobileNavTab({ children, label, active, badge, onClick }) {
+  return (
+    <button onClick={onClick} className={`mobile-nav-btn ${active ? "active" : ""}`}>
+      <div className="mobile-nav-pill relative">
+        {active && (
+          <motion.div
+            layoutId="activeMobileTabPill"
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: "var(--bg-active)",
+              border: "1px solid var(--border)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+            }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          />
+        )}
+        <span className="relative z-10 flex items-center justify-center">
+          {children}
+        </span>
+      </div>
+      <span className="mobile-nav-label relative z-10">{label}</span>
+
+      {badge > 0 && (
+        <span className="mobile-nav-badge">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
+    </button>
   );
 }
 
