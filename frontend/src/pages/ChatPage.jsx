@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import { useChatStore }   from "../store/useChatStore";
 import { useGroupStore }  from "../store/useGroupStore";
 import { useAuthStore }   from "../store/useAuthStore";
@@ -19,9 +20,13 @@ import LeftRail           from "../components/LeftRail";
 import CallsList          from "../components/CallsList";
 import DrawerPanel        from "../components/DrawerPanel";
 import ProfileSection     from "../components/ProfileSection";
+import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
 
 function ChatPage() {
-  const { activeTab, setActiveTab, selectedUser, setSelectedUser, chats, unreadCounts } = useChatStore();
+  const { 
+    activeTab, setActiveTab, selectedUser, setSelectedUser, chats, unreadCounts,
+    isSidebarCollapsed, setSidebarCollapsed 
+  } = useChatStore();
   const {
     groups, selectedGroup, setSelectedGroup,
     fetchGroups, subscribeToGroupMessages, unsubscribeFromGroupMessages,
@@ -42,15 +47,33 @@ function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      // On desktop (>= 1024px), always expand sidebar
+      if (window.innerWidth >= 1024) setSidebarCollapsed(false);
+    };
+    handleResize(); // run once on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [setSidebarCollapsed]);
+
   const totalUnread   = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
   const archivedCount = chats.filter(c => c.isArchived).length;
   const groupCount    = groups.length;
+
+  // Auto-collapse on tablet viewport (640–1023px)
+  const autoCollapse = () => {
+    if (window.innerWidth >= 640 && window.innerWidth < 1024) setSidebarCollapsed(true);
+    else setSidebarCollapsed(false);
+  };
 
   // ── When user clicks a chat: clear group + AI so chat opens properly ──
   const openChat = (user) => {
     setSelectedUser(user);
     setSelectedGroup(null);
     setShowAI(false);
+    setActiveTab("chats"); // Switch back to chats tab immediately
+    autoCollapse();
   };
 
   // ── When user clicks a group: clear selectedUser + AI ─────────────────
@@ -58,16 +81,19 @@ function ChatPage() {
     setSelectedGroup(group);
     setSelectedUser(null);
     setShowAI(false);
+    setActiveTab("chats"); // Switch back to chats tab immediately
+    autoCollapse();
   };
 
   const rightPanel = () => {
     if (activeTab === "chatify-ai" || showAI) return <AIChatWindow onClose={() => { setShowAI(false); setActiveTab("chats"); }} />;
     if (selectedGroup) return <GroupChatWindow group={selectedGroup} onClose={() => setSelectedGroup(null)} />;
     if (selectedUser)  return <ChatContainer />;
-    return <NativeEmptyState onActivateMetaAI={() => setActiveTab("chatify-ai")} />;
+    return <NativeEmptyState onActivateMetaAI={() => { setActiveTab("chatify-ai"); autoCollapse(); }} />;
   };
 
-  const panelOpen = selectedUser || selectedGroup || showAI;
+  const isAITab  = activeTab === "chatify-ai" || showAI;
+  const panelOpen = selectedUser || selectedGroup || showAI || isAITab;
 
   if (showArchived) {
     return (
@@ -92,16 +118,22 @@ function ChatPage() {
   }
 
   return (
-    <div className="flex w-full h-screen overflow-hidden text-white bg-[#000000]">
+    <div className="flex flex-col-reverse sm:flex-row w-full h-screen overflow-hidden text-white" style={{ background: "var(--bg-primary)" }}>
 
-      {/* Column 1: Native 60px Nav Rail */}
-      <LeftRail activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Column 1: Native 60px Nav Rail (Bottom on Mobile, Left on Desktop) */}
+      <LeftRail activeTab={activeTab} setActiveTab={setActiveTab} isHiddenOnMobile={panelOpen} />
 
-      {/* Column 2: Middle Chat List Panel */}
+      {/* Column 2: Collapsible Middle Chat List Panel */}
       <aside
-        className={`flex-shrink-0 flex flex-col w-full sm:w-[340px] md:w-[380px] z-10 relative overflow-hidden
+        className={`sidebar-collapse flex-shrink-0 flex flex-col z-10 relative
+          ${isSidebarCollapsed
+            ? "w-0 opacity-0 pointer-events-none"
+            : "w-full sm:w-[320px] md:w-[360px] lg:w-[380px] opacity-100"}
           ${panelOpen ? "hidden sm:flex" : "flex"}`}
-        style={{ background: "#000000", borderRight: "1px solid #141414" }}
+        style={{
+          background: "var(--bg-primary)",
+          borderRight: isSidebarCollapsed ? "none" : "1px solid var(--border)",
+        }}
       >
         {(!activeTab || ["chats", "chatify-ai", "settings"].includes(activeTab)) && (
           <ChatsList 
@@ -124,13 +156,26 @@ function ChatPage() {
         {activeTab === "status"   && <div className="flex-1 overflow-y-auto"><StatusTray /></div>}
       </aside>
 
-      {/* Column 3: Main panel / Conversation area */}
-      <main className={`flex-1 flex flex-col min-w-0 bg-[#000000] relative ${panelOpen ? "flex" : "hidden sm:flex"}`}>
+      {/* Column 3: Main conversation area — always visible on sm+ when panel is open */}
+      <main className={`flex-1 flex flex-col min-w-0 relative
+        ${panelOpen ? "flex" : "hidden sm:flex"}`} style={{ background: "var(--bg-primary)" }}>
         {rightPanel()}
       </main>
 
       {showNewGroup  && <CreateGroupModal onClose={() => setShowNewGroup(false)} />}
-      <DrawerPanel isOpen={isDrawerOpen || activeTab === "settings"} onClose={() => { setIsDrawerOpen(false); if(activeTab === "settings") setActiveTab("chats"); }} />
+      
+      {/* Conditional settings drawer mount under AnimatePresence for instant snappy animation */}
+      <AnimatePresence>
+        {(isDrawerOpen || activeTab === "settings") && (
+          <DrawerPanel 
+            isOpen={true} 
+            onClose={() => { 
+              setIsDrawerOpen(false); 
+              if (activeTab === "settings") setActiveTab("chats"); 
+            }} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

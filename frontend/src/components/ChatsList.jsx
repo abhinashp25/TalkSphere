@@ -89,9 +89,9 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-[#000000]">
+    <div className="flex flex-col h-full overflow-hidden" style={{ background: "var(--bg-primary)" }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "#0a0a0a", borderBottom: "1px solid #141414" }}>
+      <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
         <h1 className="text-[20px] font-bold brand-font tracking-wide text-white">Chats</h1>
         <div className="flex items-center gap-1">
           <button onClick={() => setActiveTab("contacts")} className="p-2 rounded-full text-[#a3a3a3] hover:text-white hover:bg-white/5 transition-colors" title="New Chat">
@@ -104,8 +104,8 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
       </div>
 
       {/* Search Bar */}
-      <div className="px-3 py-2" style={{ background: "#0a0a0a", borderBottom: "1px solid #141414" }}>
-        <div className="relative flex items-center bg-[#141414] rounded-lg h-[38px] border border-[#262626]">
+      <div className="px-3 py-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+        <div className="relative flex items-center rounded-full h-[38px] border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
           <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
             {searchFocused ? (
               <button onClick={() => { setLocalSearch(""); setSearchFocused(false); }}>
@@ -128,7 +128,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
       </div>
 
       {/* Filter Tabs */}
-      <div className="px-3 pt-2 pb-2" style={{ background: "#0a0a0a", borderBottom: "1px solid #141414" }}>
+      <div className="px-3 pt-2 pb-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
         <div className="flex gap-2 overflow-x-auto no-scrollbar items-center">
           <FilterPill label="All" active={activeFilter === "all" || !activeFilter} onClick={() => setActiveFilter("all")} />
           <FilterPill label="Unread" badge={allConversations.filter(c => c.unreadBadge > 0).length} active={activeFilter === "unread"} onClick={() => setActiveFilter("unread")} />
@@ -138,7 +138,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
       </div>
 
       {/* Chat Rows */}
-      <div className="flex-1 overflow-y-auto w-full no-scrollbar pt-1 pb-4" style={{ background: "#000000" }}>
+      <div className="flex-1 overflow-y-auto w-full no-scrollbar pt-1 pb-4" style={{ background: "var(--bg-primary)" }}>
         <AnimatePresence>
           {!allConversations.length && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-20 gap-3 px-6 text-center">
@@ -176,15 +176,15 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                 {/* Avatar with online dot */}
                 <div className="relative flex-shrink-0">
                   {conv.isGroup ? (
-                    <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-xl font-bold brand-font border border-[#262626]"
-                      style={{ background: '#111111', color: 'white' }}>
+                    <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-xl font-bold brand-font border"
+                      style={{ background: 'var(--bg-panel)', borderColor: 'var(--border)', color: 'white' }}>
                       {conv.displayName[0].toUpperCase()}
                     </div>
                   ) : (
-                    <img src={conv.displayPic} alt={conv.displayName} className="w-[52px] h-[52px] rounded-2xl object-cover bg-[#141414] border border-[#262626]" />
+                    <img src={conv.displayPic} alt={conv.displayName} className="w-[52px] h-[52px] rounded-2xl object-cover border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border)' }} />
                   )}
                   {isOnline && (
-                    <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-[3px] border-[#0a0a0b] bg-[#10b981] z-10" />
+                    <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-[3px] bg-[#10b981] z-10" style={{ borderColor: 'var(--bg-primary)' }} />
                   )}
                 </div>
 
@@ -225,7 +225,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <button 
                         onClick={(e) => { e.stopPropagation(); toggleFavourite && toggleFavourite(conv._id); }}
-                        className={`opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-[#1a1a1a] ${isFav ? "!opacity-100" : ""}`}
+                        className={`opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-[var(--bg-hover)] ${isFav ? "!opacity-100" : ""}`}
                       >
                         <Heart size={14} className={isFav ? "fill-white text-white" : "text-[#737373]"} />
                       </button>

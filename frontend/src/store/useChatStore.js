@@ -28,6 +28,7 @@ export const useChatStore = create((set, get) => ({
   favourites:        JSON.parse(localStorage.getItem("chatify-favourites")) || [],
   offlineQueue:      JSON.parse(localStorage.getItem("chatify-offline-queue")) || [],
   blockedUsers:      [],
+  isSidebarCollapsed: false,
 
   toggleSound: () => {
     localStorage.setItem("isSoundEnabled", !get().isSoundEnabled);
@@ -46,6 +47,8 @@ export const useChatStore = create((set, get) => ({
   setPendingInput:  (text) => set({ pendingInput: text }),
   clearPendingInput:() => set({ pendingInput: null }),
   setDisappearSeconds: (s) => set({ disappearSeconds: s }),
+  toggleSidebar:       () => set({ isSidebarCollapsed: !get().isSidebarCollapsed }),
+  setSidebarCollapsed: (c) => set({ isSidebarCollapsed: c }),
 
   toggleFavourite: (id) => {
     const isFav = get().favourites.includes(id);

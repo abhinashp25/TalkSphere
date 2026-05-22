@@ -19,6 +19,7 @@ export default function ChatHeader({ onAISummary }) {
     selectedUser, setSelectedUser, setSearchQuery, searchQuery,
     typingUsers, lastSeenMap, clearChat,
     markChatArchived, disappearSeconds, setDisappearSeconds,
+    isSidebarCollapsed, toggleSidebar,
   } = useChatStore();
   const { onlineUsers } = useAuthStore();
   const { startCall } = useCallStore();
@@ -106,6 +107,26 @@ export default function ChatHeader({ onAISummary }) {
 
           <button onClick={() => setSelectedUser(null)} className="icon-btn sm:hidden">
             <ArrowLeftIcon className="w-5 h-5" />
+          </button>
+
+          <button 
+            onClick={toggleSidebar} 
+            className="hidden sm:flex icon-btn text-[#a3a3a3] hover:text-white transition-all duration-200"
+            title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {isSidebarCollapsed ? (
+              <svg className="w-[18px] h-[18px] transition-transform duration-300 hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M9 3v18"/>
+                <path d="m14 9 3 3-3 3"/>
+              </svg>
+            ) : (
+              <svg className="w-[18px] h-[18px] transition-transform duration-300 hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/>
+                <path d="M9 3v18"/>
+                <path d="m16 15-3-3 3-3"/>
+              </svg>
+            )}
           </button>
 
           <div className="relative flex-shrink-0 cursor-pointer" onClick={() => setShowContactInfo(true)}>

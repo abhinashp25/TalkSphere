@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useGroupStore } from "../store/useGroupStore";
 import { useAuthStore }  from "../store/useAuthStore";
+import { useChatStore }  from "../store/useChatStore";
 import {
   ArrowLeftIcon, UsersIcon, MoreVerticalIcon, SendIcon,
   ImageIcon, SmileIcon, XIcon, LogOutIcon, MicIcon,
@@ -13,6 +14,7 @@ const STOP_DELAY = 1500;
 
 export default function GroupChatWindow({ group, onClose }) {
   const { authUser } = useAuthStore();
+  const { isSidebarCollapsed, toggleSidebar } = useChatStore();
   const {
     groupMessages, fetchGroupMessages, sendGroupMessage,
     leaveGroup, groupTypingUsers, emitGroupTyping, emitGroupStopTyping,
@@ -96,6 +98,26 @@ export default function GroupChatWindow({ group, onClose }) {
 
         <button onClick={onClose} className="icon-btn sm:hidden">
           <ArrowLeftIcon className="w-5 h-5" />
+        </button>
+
+        <button 
+          onClick={toggleSidebar} 
+          className="hidden sm:flex icon-btn text-[#a3a3a3] hover:text-white transition-all duration-200"
+          title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        >
+          {isSidebarCollapsed ? (
+            <svg className="w-[18px] h-[18px] transition-transform duration-300 hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M9 3v18"/>
+              <path d="m14 9 3 3-3 3"/>
+            </svg>
+          ) : (
+            <svg className="w-[18px] h-[18px] transition-transform duration-300 hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M9 3v18"/>
+              <path d="m16 15-3-3 3-3"/>
+            </svg>
+          )}
         </button>
 
         {/* Group avatar */}
@@ -234,7 +256,7 @@ export default function GroupChatWindow({ group, onClose }) {
                           <img src={msg.image} alt="Shared"
                             className="rounded-xl max-h-[220px] w-full object-cover mb-1.5" />
                         )}
-                        {msg.audio && <AudioPlayer src={msg.audio} />}
+                        {msg.audio && <AudioPlayer src={msg.audio} isMine={isMine} />}
                         {msg.text && (
                           <p className="text-[14px] leading-[1.5] break-words">{msg.text}</p>
                         )}
@@ -255,7 +277,7 @@ export default function GroupChatWindow({ group, onClose }) {
       </div>
 
       {/* ── Input area — WhatsApp style, same as 1-on-1 chat ─────────── */}
-      <div className="flex-shrink-0 safe-bottom header-glass" style={{ borderTop: '1px solid var(--border)' }}>
+      <div className="flex-shrink-0 pb-[env(safe-area-inset-bottom,0px)] header-glass" style={{ borderTop: '1px solid var(--border)' }}>
 
         {/* Image preview */}
         {imgPreview && (
@@ -333,10 +355,83 @@ export default function GroupChatWindow({ group, onClose }) {
   );
 }
 
-function AudioPlayer({ src }) {
+function AudioPlayer({ src, isMine }) {
+  const [playing,  setPlaying]  = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef(null);
+
+  const toggle = () => {
+    if (!audioRef.current) return;
+    if (playing) { audioRef.current.pause(); setPlaying(false); }
+    else { audioRef.current.play().then(() => setPlaying(true)).catch(() => {}); }
+  };
+
+  const fmtTime = (s) => {
+    if (!s || isNaN(s)) return "0:00";
+    return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, "0")}`;
+  };
+
+  const pct  = duration > 0 ? (progress / duration) * 100 : 0;
+  const BARS = [3,5,8,6,9,4,7,10,6,8,5,4,9,7,6,8,5,3,7,9,4,6,8,5,7,9,6,4,8,6];
+
   return (
-    <audio controls className="w-full max-w-[220px] h-8 mt-1 mb-1" style={{ accentColor: '#4fd1c5' }}>
-      <source src={src} />
-    </audio>
+    <div className="flex items-center gap-2.5 mb-1" style={{ minWidth: 230, maxWidth: 290 }}>
+      <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden"
+        style={{ background: isMine ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.15)" }}>
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full p-2"
+          style={{ color: isMine ? "rgba(255,255,255,0.7)" : "white" }}>
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+        </svg>
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-1.5">
+          <button onClick={toggle}
+            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all active:scale-90"
+            style={{ background: isMine ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.15)" }}>
+            {playing ? (
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" style={{ color: "white" }}>
+                <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5 ml-0.5" viewBox="0 0 24 24" fill="currentColor" style={{ color: "white" }}>
+                <polygon points="5,3 19,12 5,21"/>
+              </svg>
+            )}
+          </button>
+          <div className="flex items-center gap-[2px] flex-1 cursor-pointer h-8"
+            onClick={(e) => {
+              if (!audioRef.current || !duration) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const p = (e.clientX - rect.left) / rect.width;
+              audioRef.current.currentTime = p * duration;
+              setProgress(p * duration);
+            }}>
+            {BARS.map((h, i) => {
+              const barPct = (i / BARS.length) * 100;
+              const active = barPct <= pct;
+              return (
+                <div key={i} className="rounded-full flex-1 transition-all"
+                  style={{
+                    height: `${h * 2.5}px`,
+                    background: active
+                      ? (isMine ? "rgba(255,255,255,0.9)" : "white")
+                      : (isMine ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.2)"),
+                  }} />
+              );
+            })}
+          </div>
+        </div>
+        <p className="text-[10px] mt-0.5 pl-10" style={{ color: isMine ? "rgba(255,255,255,0.5)" : "#a3a3a3" }}>
+          {fmtTime(playing || progress > 0 ? progress : duration)}
+        </p>
+      </div>
+      <audio ref={audioRef} src={src} preload="metadata"
+        onLoadedMetadata={() => { if (audioRef.current) setDuration(audioRef.current.duration); }}
+        onTimeUpdate={() => { if (audioRef.current) setProgress(audioRef.current.currentTime); }}
+        onEnded={() => { setPlaying(false); setProgress(0); }}
+        className="hidden" />
+    </div>
   );
 }

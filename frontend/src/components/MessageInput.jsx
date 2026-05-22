@@ -197,7 +197,7 @@ export default function MessageInput({ onTextChange }) {
   const toneDotColor = toneScore ? TONE_COLORS[toneScore] : null;
 
   return (
-    <div className="flex-shrink-0 safe-bottom" style={{ background: "var(--bg-secondary)", borderTop: "1px solid var(--border)" }}>
+    <div className="flex-shrink-0 pb-[env(safe-area-inset-bottom,0px)]" style={{ background: "var(--bg-secondary)", borderTop: "1px solid var(--border)" }}>
 
       {replyingTo && <ReplyBar />}
 
@@ -331,7 +331,7 @@ export default function MessageInput({ onTextChange }) {
                     <div
                       className="absolute bottom-7 right-0 w-52 p-3 rounded-xl text-xs text-white z-50 pointer-events-none
                         opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: "#1a1a1a", border: "1px solid #262626" }}>
+                      style={{ background: "var(--bg-panel)", border: "1px solid var(--border)" }}>
                       <p className="font-semibold mb-1 capitalize" style={{ color: toneDotColor }}>
                         {toneScore} tone
                       </p>
@@ -352,9 +352,9 @@ export default function MessageInput({ onTextChange }) {
                 onClick={canSend ? undefined : () => setVoiceMode(true)}
                 className="w-11 h-11 rounded-full flex items-center justify-center transition-all select-none"
                 style={{
-                  background: canSend ? "#ffffff" : "#1a1a1a",
-                  color:      canSend ? "#000000" : "#737373",
-                  border:     canSend ? "none" : "1px solid #262626",
+                  background: canSend ? "var(--accent)" : "var(--bg-input)",
+                  color:      canSend ? "var(--bg-primary)" : "var(--text-secondary)",
+                  border:     canSend ? "none" : "1px solid var(--border)",
                   touchAction: "none",
                 }}
                 title={canSend ? "Send (hold to schedule)" : "Record voice"}>

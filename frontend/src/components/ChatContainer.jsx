@@ -171,8 +171,17 @@ export default function ChatContainer() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!showScrollBtn) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!messages || messages.length === 0) return;
+    const lastMsg = messages[messages.length - 1];
+    const isMyLastMsg = lastMsg.senderId === authUser?._id || lastMsg.senderId?._id === authUser?._id;
+    if (isMyLastMsg) {
+      // Instant snap scroll for our own messages (removes the "flip" or "drop down" effect)
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
+    } else if (!showScrollBtn) {
+      // Smooth scroll for received messages
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, showScrollBtn, authUser?._id]);
 
   useEffect(() => {
     const close = () => setCtx(null);

@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useAIStore } from "../store/useAIStore";
+import { useChatStore } from "../store/useChatStore";
 import { SendIcon, XIcon, SparklesIcon, RefreshCwIcon } from "lucide-react";
 
 export default function AIChatWindow({ onClose }) {
+  const { isSidebarCollapsed, toggleSidebar } = useChatStore();
   const { aiMessages, isAILoading, sendAIMessage, clearAI, retryAfter } = useAIStore();
   const [input, setInput] = useState("");
   const bottomRef = useRef(null);
@@ -30,23 +32,43 @@ export default function AIChatWindow({ onClose }) {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-[#111111]/80 backdrop-blur-xl border-l border-white/5">
+    <div className="flex flex-col h-full border-l" style={{ background: "var(--bg-primary)", borderColor: "var(--border)" }}>
 
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 h-[64px] flex-shrink-0 relative bg-white/5 border-b border-white/10 backdrop-blur-md">
+      <div className="flex items-center gap-3 px-4 h-[64px] flex-shrink-0 relative border-b" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
         <div className="absolute top-0 left-0 right-0 h-[2px]"
-          style={{ background: 'linear-gradient(90deg, #667eea 0%, #4fd1c5 100%)' }} />
+          style={{ background: 'linear-gradient(90deg, var(--accent) 0%, var(--bg-hover) 100%)' }} />
+
+        <button 
+          onClick={toggleSidebar} 
+          className="hidden sm:flex icon-btn text-[#a3a3a3] hover:text-white transition-all duration-200"
+          title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        >
+          {isSidebarCollapsed ? (
+            <svg className="w-[18px] h-[18px] transition-transform duration-300 hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M9 3v18"/>
+              <path d="m14 9 3 3-3 3"/>
+            </svg>
+          ) : (
+            <svg className="w-[18px] h-[18px] transition-transform duration-300 hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M9 3v18"/>
+              <path d="m16 15-3-3 3-3"/>
+            </svg>
+          )}
+        </button>
 
         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #1a2535 0%, #0d1a2a 100%)', boxShadow: '0 4px 16px rgba(102,126,234,0.35), 0 0 0 1px rgba(102,126,234,0.2)' }}>
-          <img src="/ai-avatar.png" alt="Chatify AI" className="w-9 h-9 object-contain" style={{ filter: 'drop-shadow(0 1px 4px rgba(102,126,234,0.5))' }} />
+          style={{ background: 'linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-secondary) 100%)', boxShadow: '0 4px 16px rgba(0, 168, 132, 0.15)', border: '1px solid var(--border)' }}>
+          <img src="/ai-avatar.png" alt="Chatify AI" className="w-9 h-9 object-contain" style={{ filter: 'drop-shadow(0 1px 4px rgba(0,168,132,0.3))' }} />
           <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px]"
-            style={{ background: 'linear-gradient(135deg, #667eea, #4fd1c5)', border: '1.5px solid #0f1621' }}>✦</span>
+            style={{ background: 'var(--accent)', border: '1.5px solid var(--bg-primary)', color: 'var(--bg-primary)' }}>✦</span>
         </div>
 
         <div className="flex-1">
           <p className="text-[15px] font-bold text-white">Chatify AI</p>
-          <p className="text-[11px]" style={{ color: retryAfter > 0 ? '#f6ad55' : '#ffffff' }}>
+          <p className="text-[11px]" style={{ color: retryAfter > 0 ? '#f6ad55' : 'var(--text-secondary)' }}>
             {retryAfter > 0 ? `⏳ Cooling down ${retryAfter}s…` : "Always online · Powered by Gemini AI"}
           </p>
         </div>
@@ -71,17 +93,21 @@ export default function AIChatWindow({ onClose }) {
         {aiMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-6">
             <div className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, rgba(102,126,234,0.2), rgba(79,209,197,0.2))', border: '1px solid rgba(79,209,197,0.2)' }}>
-              <SparklesIcon className="w-9 h-9" style={{ color: '#4fd1c5' }} />
+              style={{ background: 'var(--bg-active)', border: '1px solid var(--border)' }}>
+              <SparklesIcon className="w-9 h-9" style={{ color: 'var(--accent)' }} />
             </div>
             <div className="text-center">
               <p className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>Hi! I'm Chatify AI</p>
               <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Ask me anything — I'm here to help</p>
             </div>
-            <div className="grid grid-cols-2 gap-2 w-full max-w-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
               {STARTERS.map((s) => (
-                <button key={s} onClick={() => { setInput(s.replace(/^[^\s]+\s/, "")); inputRef.current?.focus(); }}
-                  className="text-left text-[12px] px-3 py-2.5 rounded-xl transition-all hover:scale-[1.02] bg-white/5 text-[#d1d7db] border border-white/10 hover:bg-white/10 backdrop-blur-sm">
+                <button 
+                  key={s} 
+                  onClick={() => { setInput(s.replace(/^[^\s]+\s/, "")); inputRef.current?.focus(); }}
+                  className="text-left text-[12.5px] p-3 rounded-xl transition-all hover:scale-[1.02] hover:bg-[var(--bg-hover)] text-[#e9edef] border active:scale-95 duration-200"
+                  style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}
+                >
                   {s}
                 </button>
               ))}
@@ -93,20 +119,20 @@ export default function AIChatWindow({ onClose }) {
           <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} gap-2`}>
             {msg.role === "assistant" && (
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
-                style={{ background: msg.isError ? 'rgba(246,173,85,0.3)' : 'linear-gradient(135deg, #667eea, #4fd1c5)' }}>
-                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                style={{ background: msg.isError ? 'rgba(246,173,85,0.3)' : 'var(--accent)' }}>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" style={{ color: msg.isError ? 'orange' : 'var(--bg-primary)' }}>
                   <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
                 </svg>
               </div>
             )}
-            <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-[14px] leading-relaxed whitespace-pre-wrap backdrop-blur-sm shadow-sm`}
+            <div className="max-w-[80%] px-4 py-2.5 text-[14px] leading-relaxed whitespace-pre-wrap border shadow-sm"
               style={{
-                background: msg.role === "user" ? 'rgba(0,168,132,0.2)' 
+                background: msg.role === "user" ? 'var(--bubble-mine)' 
                   : msg.isError ? 'rgba(246,173,85,0.15)'
-                  : 'rgba(255,255,255,0.05)',
-                color: msg.isError ? '#f6ad55' : '#e9edef',
-                border: msg.isError ? '1px solid rgba(246,173,85,0.2)' : '1px solid rgba(255,255,255,0.1)',
-                borderRadius: msg.role === "user" ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                  : 'var(--bubble-theirs)',
+                color: msg.isError ? '#f6ad55' : 'var(--text-primary)',
+                borderColor: msg.isError ? 'rgba(246,173,85,0.2)' : 'var(--border)',
+                borderRadius: msg.role === "user" ? '8px 8px 2px 8px' : '8px 8px 8px 2px',
               }}>
               {msg.content}
             </div>
@@ -116,16 +142,16 @@ export default function AIChatWindow({ onClose }) {
         {isAILoading && (
           <div className="flex justify-start gap-2">
             <div className="w-7 h-7 rounded-full flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #667eea, #4fd1c5)' }}>
-              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+              style={{ background: 'var(--accent)' }}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--bg-primary)' }}>
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
               </svg>
             </div>
-            <div className="flex items-center gap-1.5 px-4 py-3 rounded-2xl rounded-tl-sm"
-              style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)' }}>
+            <div className="flex items-center gap-1.5 px-4 py-3 rounded-2xl rounded-tl-sm border"
+              style={{ background: 'var(--bg-panel)', borderColor: 'var(--border)' }}>
               {[0, 150, 300].map((d) => (
                 <span key={d} className="w-1.5 h-1.5 rounded-full animate-bounce"
-                  style={{ background: '#4fd1c5', animationDelay: `${d}ms` }} />
+                  style={{ background: 'var(--accent)', animationDelay: `${d}ms` }} />
               ))}
             </div>
           </div>
@@ -146,8 +172,8 @@ export default function AIChatWindow({ onClose }) {
       )}
 
       {/* Input */}
-      <div className="px-4 py-3 flex-shrink-0 border-t border-white/5 bg-white/5 backdrop-blur-md">
-        <div className="flex items-center gap-2 rounded-2xl px-3 py-2 bg-black/40 border border-white/10">
+      <div className="px-4 py-3 flex-shrink-0 border-t" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
+        <div className="flex items-center gap-2 rounded-2xl px-3 py-2 border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
           <input
             ref={inputRef}
             type="text"
@@ -157,17 +183,16 @@ export default function AIChatWindow({ onClose }) {
             placeholder={retryAfter > 0 ? `Cooling down… ${retryAfter}s` : "Ask me anything…"}
             disabled={isBlocked}
             className="flex-1 bg-transparent border-none focus:outline-none text-[15px]"
-            style={{ color: isBlocked ? '#a3a3a3' : '#d1d7db' }}
+            style={{ color: isBlocked ? 'var(--text-muted)' : 'var(--text-primary)' }}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isBlocked}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all disabled:opacity-30"
             style={{
-              background: !input.trim() || isBlocked ? 'transparent' : 'linear-gradient(135deg, #667eea, #4fd1c5)',
-              opacity: !input.trim() || isBlocked ? 0.3 : 1,
+              background: !input.trim() || isBlocked ? 'transparent' : 'var(--accent)',
             }}>
-            <SendIcon className="w-3.5 h-3.5 text-white" />
+            <SendIcon className="w-3.5 h-3.5" style={{ color: !input.trim() || isBlocked ? 'var(--text-muted)' : 'var(--bg-primary)' }} />
           </button>
         </div>
       </div>
