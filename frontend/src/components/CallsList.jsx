@@ -64,7 +64,7 @@ export default function CallsList() {
       </div>
 
       {/* Call list */}
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-24 sm:pb-0">
         {filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Phone size={40} className="text-gray-600" />

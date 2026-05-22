@@ -195,7 +195,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
       </div>
 
       {/* Chat Rows */}
-      <div className="flex-1 overflow-y-auto w-full no-scrollbar pt-1 pb-4 relative" style={{ background: "var(--bg-primary)" }}>
+      <div className="flex-1 overflow-y-auto w-full no-scrollbar pt-1 pb-24 sm:pb-4 relative" style={{ background: "var(--bg-primary)" }}>
         <AnimatePresence>
           {/* Pinned Chatify AI Row */}
           {(!localSearch || "chatify ai".includes(localSearch.toLowerCase())) && (activeFilter === "all" || !activeFilter) && (

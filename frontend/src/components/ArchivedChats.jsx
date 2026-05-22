@@ -38,7 +38,7 @@ export default function ArchivedChats({ onClose }) {
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-24 sm:pb-0">
         {loading && (
           <div className="flex justify-center py-10">
             <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin border-[#ffffff]" />

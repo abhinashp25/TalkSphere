@@ -118,14 +118,14 @@ function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col-reverse sm:flex-row w-full h-screen overflow-hidden text-white" style={{ background: "var(--bg-primary)" }}>
+    <div className="flex flex-col sm:flex-row w-full h-screen overflow-hidden text-white" style={{ background: "var(--bg-primary)" }}>
 
       {/* Column 1: Native 60px Nav Rail (Bottom on Mobile, Left on Desktop) */}
       <LeftRail activeTab={activeTab} setActiveTab={setActiveTab} isHiddenOnMobile={panelOpen} />
 
       {/* Column 2: Collapsible Middle Chat List Panel */}
       <aside
-        className={`sidebar-collapse flex-shrink-0 flex flex-col z-10 relative
+        className={`sidebar-collapse flex-shrink-0 flex flex-col z-10 relative h-full
           ${isSidebarCollapsed
             ? "w-0 opacity-0 pointer-events-none"
             : "w-full sm:w-[320px] md:w-[360px] lg:w-[380px] opacity-100"}
@@ -144,16 +144,16 @@ function ChatPage() {
             onOpenDrawer={() => setIsDrawerOpen(true)}
           />
         )}
-        {activeTab === "contacts"    && <div className="flex-1 overflow-y-auto"><ContactList /></div>}
+        {activeTab === "contacts"    && <div className="flex-1 overflow-y-auto pb-24 sm:pb-0"><ContactList /></div>}
         {activeTab === "profile"     && <ProfileSection onClose={() => setActiveTab("chats")} />}
         {activeTab === "communities" && (
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto pb-24 sm:pb-0">
             <GroupsList groups={groups} selected={selectedGroup} onSelect={openGroup} />
           </div>
         )}
         {activeTab === "calls"    && <CallsList />}
         {activeTab === "archived" && <ArchivedChats onClose={() => setActiveTab("chats")} />}
-        {activeTab === "status"   && <div className="flex-1 overflow-y-auto"><StatusTray /></div>}
+        {activeTab === "status"   && <div className="flex-1 overflow-y-auto pb-24 sm:pb-0"><StatusTray /></div>}
       </aside>
 
       {/* Column 3: Main conversation area — always visible on sm+ when panel is open */}
