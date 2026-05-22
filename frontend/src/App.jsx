@@ -55,7 +55,13 @@ function App() {
       <Toaster
         position="top-center"
         toastOptions={{
-          style: { background: '#1f2c34', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '14px' },
+          style: {
+            background: 'var(--bg-panel)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border)',
+            borderRadius: '12px',
+            fontSize: '14px',
+          },
         }}
       />
     </div>

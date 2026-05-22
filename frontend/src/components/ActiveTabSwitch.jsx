@@ -94,7 +94,7 @@ export default function ActiveTabSwitch({ extraActions }) {
             )}
             {tab === "groups" && groups.length > 0 && (
               <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold text-white"
-                style={{ background: '#667eea' }}>
+                style={{ background: 'var(--accent-secondary, #6366f1)' }}>
                 {groups.length}
               </span>
             )}
@@ -135,7 +135,7 @@ function Pill({ label, active, onClick }) {
       className="flex-shrink-0 px-3 py-1 text-[12px] font-semibold rounded-full transition-all"
       style={{
         background: active ? 'var(--accent)' : 'var(--bg-input)',
-        color: active ? (active ? '#0a1a18' : 'white') : 'var(--text-secondary)',
+        color: active ? 'var(--bg-primary)' : 'var(--text-secondary)',
         border: active ? 'none' : '1px solid var(--border)',
       }}>
       {label}

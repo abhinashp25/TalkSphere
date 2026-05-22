@@ -217,7 +217,7 @@ export default function StatusTray() {
       </div>
 
       {/* Main Container */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6">
+      <div className="flex-1 overflow-y-auto p-4 pb-24 sm:pb-4 flex flex-col gap-6">
         
         {/* My Status Section Card */}
         <div className="rounded-2xl p-4 flex items-center justify-between border" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>

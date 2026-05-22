@@ -23,7 +23,7 @@ function Toggle({ checked, onChange }) {
   return (
     <label className="relative inline-flex items-center cursor-pointer">
       <input type="checkbox" className="sr-only peer" checked={checked} onChange={onChange} />
-      <div className="w-11 h-6 bg-[#333] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white" />
+      <div className="w-11 h-6 bg-[var(--bg-input)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)] border border-[var(--border)]" />
     </label>
   );
 }
@@ -132,16 +132,16 @@ export default function DrawerPanel({ isOpen, onClose }) {
 
                     {/* Mini profile */}
                     <div
-                      className="p-6 flex items-center gap-4 border-b cursor-pointer hover:bg-white/5 transition-colors"
+                      className="p-6 flex items-center gap-4 border-b cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
                       style={{ borderBottomColor: "var(--border)" }}
                       onClick={() => setActiveView("profile")}
                     >
-                      <div className="w-16 h-16 rounded-full overflow-hidden bg-[#141414] border border-[#262626] flex-shrink-0">
+                      <div className="w-16 h-16 rounded-full overflow-hidden bg-[var(--bg-input)] border border-[var(--border)] flex-shrink-0">
                         <img src={authUser?.profilePic || "/avatar.png"} className="w-full h-full object-cover" />
                       </div>
                       <div className="min-w-0">
                         <h3 className="text-xl font-bold brand-font text-white truncate">{authUser?.fullName}</h3>
-                        <p className="text-sm text-white/50 truncate">{authUser?.status || authUser?.bio || "Available"}</p>
+                        <p className="text-sm text-[var(--text-secondary)] truncate">{authUser?.status || authUser?.bio || "Available"}</p>
                       </div>
                     </div>
 
@@ -149,15 +149,15 @@ export default function DrawerPanel({ isOpen, onClose }) {
                     <div className="p-4 space-y-1 mt-2">
                       {DRAWER_SECTIONS.map(section => (
                         <button key={section.id} onClick={() => setActiveView(section.id)}
-                          className="w-full flex items-center justify-between p-4 rounded-xl transition-all group hover:bg-white/5">
+                          className="w-full flex items-center justify-between p-4 rounded-xl transition-all group hover:bg-[var(--bg-hover)]">
                           <div className="flex items-center gap-4">
-                            <div className="p-2 rounded-lg group-hover:bg-white/10 transition-colors"
-                              style={{ color: "var(--text-secondary)" }}>
+                            <div className="p-2 rounded-lg group-hover:bg-[var(--bg-active)] transition-colors"
+                               style={{ color: "var(--text-secondary)" }}>
                               {section.icon}
                             </div>
                             <span className="font-medium text-[15px] text-white">{section.label}</span>
                           </div>
-                          <ChevronRight size={18} className="text-[#a3a3a3] group-hover:text-white transition-colors" />
+                          <ChevronRight size={18} className="text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors" />
                         </button>
                       ))}
 
@@ -178,7 +178,7 @@ export default function DrawerPanel({ isOpen, onClose }) {
                     initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }}
                     className="p-6 flex flex-col items-center">
 
-                    <div className="w-32 h-32 rounded-full overflow-hidden bg-[#141414] border border-[#262626] mb-6 relative group cursor-pointer"
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-[var(--bg-input)] border border-[var(--border)] mb-6 relative group cursor-pointer"
                       onClick={() => fileInputRef.current?.click()}>
                       <img src={authUser?.profilePic || "/avatar.png"} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
@@ -197,15 +197,15 @@ export default function DrawerPanel({ isOpen, onClose }) {
                       <div>
                         <label className="text-xs text-white uppercase tracking-widest font-semibold mb-2 block">Your Name</label>
                         <input type="text" value={editName} onChange={e => setEditName(e.target.value)}
-                          className="w-full bg-[#111111] border-b-2 border-[#262626] focus:border-white p-2 text-white outline-none transition-colors" />
-                        <p className="text-[11px] text-[#a3a3a3] mt-2">Visible to your Chatify contacts.</p>
+                          className="w-full bg-[var(--bg-input)] border-b-2 border-[var(--border)] focus:border-[var(--accent)] p-2 text-white outline-none transition-colors" />
+                        <p className="text-[11px] text-[var(--text-secondary)] mt-2">Visible to your Chatify contacts.</p>
                       </div>
                       <div>
                         <label className="text-xs text-white uppercase tracking-widest font-semibold mb-2 block">About</label>
                         <input type="text" value={editBio} onChange={e => setEditBio(e.target.value)}
-                          className="w-full bg-[#111111] border-b-2 border-[#262626] focus:border-white p-2 text-white outline-none transition-colors" />
+                          className="w-full bg-[var(--bg-input)] border-b-2 border-[var(--border)] focus:border-[var(--accent)] p-2 text-white outline-none transition-colors" />
                       </div>
-                      <div className="text-xs text-[#a3a3a3] flex flex-col gap-1">
+                      <div className="text-xs text-[var(--text-secondary)] flex flex-col gap-1">
                         <span>Email: {authUser?.email}</span>
                         <span>Member since: {authUser?.createdAt ? new Date(authUser.createdAt).toLocaleDateString() : "—"}</span>
                       </div>
@@ -223,14 +223,14 @@ export default function DrawerPanel({ isOpen, onClose }) {
                     initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }}
                     className="p-6">
                     <div>
-                      <h4 className="text-sm font-semibold text-[#a3a3a3] mb-4 uppercase tracking-wider">Themes</h4>
+                      <h4 className="text-sm font-semibold text-[var(--text-secondary)] mb-4 uppercase tracking-wider">Themes</h4>
                       <div className="grid grid-cols-2 gap-3">
                         {Object.entries(THEMES).map(([key, themeObj]) => (
                           <button key={key} onClick={() => setTheme(key)}
                             className={`p-3 rounded-xl border transition-all flex items-center justify-between
                               ${activeTheme === key
-                                ? "bg-white/20 border-white text-white"
-                                : "bg-[#141414] border-[#262626] text-white hover:border-[#555]"}`}>
+                                ? "bg-[var(--bg-active)] border-[var(--accent)] text-[var(--text-primary)]"
+                                : "bg-[var(--bg-input)] border-[var(--border)] text-[var(--text-primary)] hover:border-[var(--accent)]"}`}>
                             <span className="flex items-center gap-2 text-sm">
                               <span>{themeObj.emoji}</span>
                               <span>{themeObj.name}</span>
@@ -251,7 +251,7 @@ export default function DrawerPanel({ isOpen, onClose }) {
                     <div className="flex items-center justify-between py-3">
                       <div>
                         <p className="text-white font-medium">Message Sounds</p>
-                        <p className="text-xs text-[#a3a3a3] mt-0.5">Play sounds for incoming messages</p>
+                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">Play sounds for incoming messages</p>
                       </div>
                       <Toggle checked={isSoundEnabled} onChange={toggleSound} />
                     </div>
@@ -265,10 +265,10 @@ export default function DrawerPanel({ isOpen, onClose }) {
                     className="p-6">
                     <div className="space-y-6">
 
-                      <div className="flex items-center justify-between py-2 border-b border-[#1f1f1f]">
+                      <div className="flex items-center justify-between py-2 border-b border-[var(--border)]">
                         <div>
                           <p className="text-white font-medium">Read Receipts</p>
-                          <p className="text-xs text-[#a3a3a3] mt-0.5">Let others know you've read their messages</p>
+                          <p className="text-xs text-[var(--text-secondary)] mt-0.5">Let others know you've read their messages</p>
                         </div>
                         <Toggle
                           checked={privacy.readReceipts}
@@ -276,26 +276,26 @@ export default function DrawerPanel({ isOpen, onClose }) {
                         />
                       </div>
 
-                      <div className="py-2 border-b border-[#1f1f1f]">
+                      <div className="py-2 border-b border-[var(--border)]">
                         <p className="text-white font-medium mb-1">Last Seen</p>
-                        <p className="text-xs text-[#a3a3a3] mb-3">Who can see when you were last online</p>
+                        <p className="text-xs text-[var(--text-secondary)] mb-3">Who can see when you were last online</p>
                         <select
                           value={privacy.lastSeenFor}
                           onChange={e => handlePrivacyChange("lastSeenFor", e.target.value)}
-                          className="w-full bg-[#141414] text-white p-3 rounded-xl border border-[#262626] outline-none">
+                          className="w-full bg-[var(--bg-input)] text-white p-3 rounded-xl border border-[var(--border)] outline-none">
                           <option value="everyone">Everyone</option>
                           <option value="contacts">My Contacts Only</option>
                           <option value="nobody">Nobody</option>
                         </select>
                       </div>
 
-                      <div className="py-2 border-b border-[#1f1f1f]">
+                      <div className="py-2 border-b border-[var(--border)]">
                         <p className="text-white font-medium mb-1">Profile Photo</p>
-                        <p className="text-xs text-[#a3a3a3] mb-3">Who can see your profile picture</p>
+                        <p className="text-xs text-[var(--text-secondary)] mb-3">Who can see your profile picture</p>
                         <select
                           value={privacy.profilePhotoFor}
                           onChange={e => handlePrivacyChange("profilePhotoFor", e.target.value)}
-                          className="w-full bg-[#141414] text-white p-3 rounded-xl border border-[#262626] outline-none">
+                          className="w-full bg-[var(--bg-input)] text-white p-3 rounded-xl border border-[var(--border)] outline-none">
                           <option value="everyone">Everyone</option>
                           <option value="contacts">My Contacts Only</option>
                           <option value="nobody">Nobody</option>
@@ -307,41 +307,41 @@ export default function DrawerPanel({ isOpen, onClose }) {
                         <div className="flex items-center justify-between mb-2">
                           <div>
                             <p className="text-white font-medium flex items-center gap-2">
-                              <Lock size={15} className="text-[#a3a3a3]" />
+                              <Lock size={15} className="text-[var(--text-secondary)]" />
                               Two-Factor Authentication
                             </p>
-                            <p className="text-xs text-[#a3a3a3] mt-0.5">
+                            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                               {authUser?.twoFA?.enabled ? "2FA is active on your account" : "Add extra security with a one-time code"}
                             </p>
                           </div>
-                          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${authUser?.twoFA?.enabled ? "bg-emerald-500/15 text-emerald-400" : "bg-white/10 text-[#a3a3a3]"}`}>
+                          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${authUser?.twoFA?.enabled ? "bg-emerald-500/15 text-emerald-400" : "bg-white/10 text-[var(--text-secondary)]"}`}>
                             {authUser?.twoFA?.enabled ? "On" : "Off"}
                           </span>
                         </div>
                         {!showTwoFAForm ? (
                           <button onClick={() => setShowTwoFAForm(true)}
-                            className="w-full py-2.5 rounded-xl border border-[#262626] text-sm text-white hover:bg-white/5 transition-colors">
+                            className="w-full py-2.5 rounded-xl border border-[var(--border)] text-sm text-white hover:bg-white/5 transition-colors">
                             {authUser?.twoFA?.enabled ? "Disable 2FA" : "Enable 2FA"}
                           </button>
                         ) : (
                           <div className="space-y-3 mt-2">
-                            <p className="text-xs text-[#a3a3a3]">Confirm your password to {authUser?.twoFA?.enabled ? "disable" : "enable"} 2FA</p>
+                            <p className="text-xs text-[var(--text-secondary)]">Confirm your password to {authUser?.twoFA?.enabled ? "disable" : "enable"} 2FA</p>
                             <div className="relative">
                               <input
                                 type={showPwd ? "text" : "password"}
                                 value={twoFAPassword}
                                 onChange={e => setTwoFAPassword(e.target.value)}
                                 placeholder="Current password"
-                                className="w-full bg-[#141414] border border-[#262626] text-white p-3 pr-10 rounded-xl outline-none text-sm"
+                                className="w-full bg-[var(--bg-input)] border border-[var(--border)] text-white p-3 pr-10 rounded-xl outline-none text-sm"
                               />
                               <button type="button" onClick={() => setShowPwd(v => !v)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373]">
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
                                 {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                               </button>
                             </div>
                             <div className="flex gap-2">
                               <button onClick={() => { setShowTwoFAForm(false); setTwoFAPassword(""); }}
-                                className="flex-1 py-2.5 rounded-xl border border-[#262626] text-sm text-[#a3a3a3] hover:bg-white/5 transition-colors">
+                                className="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-white/5 transition-colors">
                                 Cancel
                               </button>
                               <button onClick={handleToggle2FA} disabled={twoFALoading}
@@ -364,7 +364,7 @@ export default function DrawerPanel({ isOpen, onClose }) {
                     <div className="flex items-center justify-between py-3">
                       <div>
                         <p className="text-white font-medium">Auto-Download Media</p>
-                        <p className="text-xs text-[#a3a3a3] mt-0.5">Automatically download photos and videos</p>
+                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">Automatically download photos and videos</p>
                       </div>
                       <Toggle checked={true} onChange={() => {}} />
                     </div>
@@ -380,12 +380,12 @@ export default function DrawerPanel({ isOpen, onClose }) {
                       <HelpCircle size={40} className="text-black" />
                     </div>
                     <h3 className="text-xl font-bold text-white mb-1">Chatify Web</h3>
-                    <p className="text-[#a3a3a3] text-sm mb-8">Version 3.0.0</p>
+                    <p className="text-[var(--text-secondary)] text-sm mb-8">Version 3.0.0</p>
                     <div className="w-full space-y-3">
-                      <button className="w-full py-3 bg-[#141414] hover:bg-[#1f1f1f] border border-[#262626] text-white font-medium rounded-xl transition-colors">
+                      <button className="w-full py-3 bg-[var(--bg-input)] hover:bg-[var(--bg-hover)] border border-[var(--border)] text-white font-medium rounded-xl transition-colors">
                         Contact Support
                       </button>
-                      <button className="w-full py-3 bg-[#141414] hover:bg-[#1f1f1f] border border-[#262626] text-white font-medium rounded-xl transition-colors">
+                      <button className="w-full py-3 bg-[var(--bg-input)] hover:bg-[var(--bg-hover)] border border-[var(--border)] text-white font-medium rounded-xl transition-colors">
                         Privacy Policy
                       </button>
                     </div>

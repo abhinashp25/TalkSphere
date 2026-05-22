@@ -53,7 +53,7 @@ export default function AIChatWindow({ onClose }) {
         {/* Desktop sidebar toggle */}
         <button 
           onClick={toggleSidebar} 
-          className="hidden sm:flex icon-btn text-[#a3a3a3] hover:text-white transition-all duration-200"
+          className="hidden sm:flex icon-btn text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200"
           title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           {isSidebarCollapsed ? (
@@ -118,7 +118,7 @@ export default function AIChatWindow({ onClose }) {
                 <button 
                   key={s} 
                   onClick={() => { setInput(s.replace(/^[^\s]+\s/, "")); inputRef.current?.focus(); }}
-                  className="text-left text-[12.5px] p-3 rounded-xl transition-all hover:scale-[1.02] hover:bg-[var(--bg-hover)] text-[#e9edef] border active:scale-95 duration-200"
+                  className="text-left text-[12.5px] p-3 rounded-xl transition-all hover:scale-[1.02] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] border active:scale-95 duration-200"
                   style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}
                 >
                   {s}

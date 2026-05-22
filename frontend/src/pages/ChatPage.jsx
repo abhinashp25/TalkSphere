@@ -153,11 +153,11 @@ function ChatPage() {
         )}
         {activeTab === "calls"    && <CallsList />}
         {activeTab === "archived" && <ArchivedChats onClose={() => setActiveTab("chats")} />}
-        {activeTab === "status"   && <div className="flex-1 overflow-y-auto pb-24 sm:pb-0"><StatusTray /></div>}
+        {activeTab === "status"   && <StatusTray />}
       </aside>
 
       {/* Column 3: Main conversation area — always visible on sm+ when panel is open */}
-      <main className={`flex-1 flex flex-col min-w-0 relative
+      <main className={`flex-1 flex flex-col min-w-0 min-h-0 relative h-full
         ${panelOpen ? "flex" : "hidden sm:flex"}`} style={{ background: "var(--bg-primary)" }}>
         {rightPanel()}
       </main>
@@ -193,8 +193,8 @@ function GroupsList({ groups, selected, onSelect }) {
       {groups.map((g) => (
         <div key={String(g._id)} onClick={() => onSelect(g)}
           className={`chat-row ${selected?._id === g._id || String(selected?._id) === String(g._id) ? "active" : ""}`}>
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-lg font-bold border border-[#262626]"
-            style={{ background: '#111111', color: 'white' }}>
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-lg font-bold"
+            style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
             {g.name[0].toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">

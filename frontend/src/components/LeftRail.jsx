@@ -89,40 +89,42 @@ export default function LeftRail({ activeTab, setActiveTab, isHiddenOnMobile }) 
       </div>
 
       {/* Mobile Bottom Navigation (Hidden on desktop, matches approved WhatsApp design) */}
-      <div className={`sm:hidden mobile-bottom-nav ${isHiddenOnMobile ? "hidden" : "flex"}`}>
-        <MobileNavTab
-          label="Chats"
-          active={!activeTab || activeTab === "chats"}
-          badge={totalUnread}
-          onClick={() => setActiveTab("chats")}
-        >
-          <MessageSquare size={20} strokeWidth={!activeTab || activeTab === "chats" ? 2.5 : 2} />
-        </MobileNavTab>
+      {!isHiddenOnMobile && (
+        <div className="sm:hidden mobile-bottom-nav">
+          <MobileNavTab
+            label="Chats"
+            active={!activeTab || activeTab === "chats"}
+            badge={totalUnread}
+            onClick={() => setActiveTab("chats")}
+          >
+            <MessageSquare size={20} strokeWidth={!activeTab || activeTab === "chats" ? 2.5 : 2} />
+          </MobileNavTab>
 
-        <MobileNavTab
-          label="Updates"
-          active={activeTab === "status"}
-          onClick={() => setActiveTab("status")}
-        >
-          <CircleDot size={20} strokeWidth={activeTab === "status" ? 2.5 : 2} />
-        </MobileNavTab>
+          <MobileNavTab
+            label="Updates"
+            active={activeTab === "status"}
+            onClick={() => setActiveTab("status")}
+          >
+            <CircleDot size={20} strokeWidth={activeTab === "status" ? 2.5 : 2} />
+          </MobileNavTab>
 
-        <MobileNavTab
-          label="Communities"
-          active={activeTab === "communities"}
-          onClick={() => setActiveTab("communities")}
-        >
-          <Users size={20} strokeWidth={activeTab === "communities" ? 2.5 : 2} />
-        </MobileNavTab>
+          <MobileNavTab
+            label="Communities"
+            active={activeTab === "communities"}
+            onClick={() => setActiveTab("communities")}
+          >
+            <Users size={20} strokeWidth={activeTab === "communities" ? 2.5 : 2} />
+          </MobileNavTab>
 
-        <MobileNavTab
-          label="Calls"
-          active={activeTab === "calls"}
-          onClick={() => setActiveTab("calls")}
-        >
-          <Phone size={20} strokeWidth={activeTab === "calls" ? 2.5 : 2} />
-        </MobileNavTab>
-      </div>
+          <MobileNavTab
+            label="Calls"
+            active={activeTab === "calls"}
+            onClick={() => setActiveTab("calls")}
+          >
+            <Phone size={20} strokeWidth={activeTab === "calls" ? 2.5 : 2} />
+          </MobileNavTab>
+        </div>
+      )}
     </>
   );
 }

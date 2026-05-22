@@ -105,13 +105,15 @@ export default function ChatHeader({ onAISummary }) {
       <div className="flex-shrink-0" style={{ background: "var(--bg-header)", borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-2 px-3 h-[64px] relative">
 
-          <button onClick={() => setSelectedUser(null)} className="icon-btn sm:hidden">
+          <button onClick={() => setSelectedUser(null)} className="icon-btn sm:hidden -ml-1">
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
 
+          {/* Desktop sidebar collapse — hidden on mobile via JS conditional */}
           <button 
             onClick={toggleSidebar} 
-            className="hidden sm:flex icon-btn text-[#a3a3a3] hover:text-white transition-all duration-200"
+            className="hidden sm:inline-flex icon-btn transition-all duration-200"
+            style={{ color: "var(--text-secondary)" }}
             title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {isSidebarCollapsed ? (
@@ -131,11 +133,11 @@ export default function ChatHeader({ onAISummary }) {
 
           <div className="relative flex-shrink-0 cursor-pointer" onClick={() => setShowContactInfo(true)}>
             <img src={selectedUser.profilePic || "/avatar.png"} alt={selectedUser.fullName}
-              className="w-10 h-10 rounded-full object-cover hover:opacity-90 transition-opacity bg-[#141414]"
-              style={{ border: "1px solid #262626" }} />
+              className="w-10 h-10 rounded-full object-cover hover:opacity-90 transition-opacity"
+              style={{ border: "1px solid var(--border)", background: "var(--bg-input)" }} />
             {isOnline && (
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2"
-                style={{ background: "#10b981", borderColor: "#0a0a0a" }} />
+                style={{ background: "var(--online, #10b981)", borderColor: "var(--bg-header)" }} />
             )}
           </div>
 
@@ -165,7 +167,7 @@ export default function ChatHeader({ onAISummary }) {
                 ))}</span>
               </div>
             ) : (
-              <p className="text-[12px] font-medium" style={{ color: isOnline ? "#10b981" : "var(--text-secondary)" }}>
+              <p className="text-[12px] font-medium" style={{ color: isOnline ? "var(--online, #10b981)" : "var(--text-secondary)" }}>
                 {isOnline ? "Online" : lastSeenLabel(lastSeen)}
               </p>
             )}
@@ -177,7 +179,7 @@ export default function ChatHeader({ onAISummary }) {
           <button className="icon-btn" title="Video call" onClick={() => startCall(selectedUser._id, true)}>
             <VideoIcon className="w-[18px] h-[18px]" />
           </button>
-          <button className="icon-btn text-[#a3a3a3] hover:text-white" title="AI Conversation Summary" onClick={onAISummary}>
+          <button className="icon-btn" style={{ color: "var(--text-secondary)" }} title="AI Conversation Summary" onClick={onAISummary}>
             <Sparkles className="w-[17px] h-[17px]" />
           </button>
 

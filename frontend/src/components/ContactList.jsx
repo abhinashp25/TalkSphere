@@ -121,7 +121,7 @@ function ContactRow({ contact, isOnline, selected, lastSeenMap, sidebarSearch, o
 
   return (
     <div onClick={onChat}
-      className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${selected ? "active" : ""}`}
+      className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors group ${selected ? "active" : ""}`}
       style={{ background: selected ? 'var(--bg-active)' : 'transparent' }}
       onMouseEnter={(e) => { if (!selected) e.currentTarget.style.background = 'var(--bg-hover)'; }}
       onMouseLeave={(e) => { if (!selected) e.currentTarget.style.background = 'transparent'; }}>
