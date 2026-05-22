@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
+import { useCallStore } from "../store/useCallStore";
 import {
   XIcon, PhoneIcon, VideoIcon, StarIcon, BellOffIcon, BellIcon,
   TrashIcon, MessageSquareXIcon, TimerIcon, ChevronRightIcon,
@@ -16,6 +17,7 @@ export default function ContactInfoPanel({ user, onClose, onClearChat, onArchive
   const { onlineUsers } = useAuthStore();
   const { lastSeenMap, toggleStarMessage, disappearSeconds, setDisappearSeconds,
           blockUser, unblockUser, isUserBlocked } = useChatStore();
+  const { startCall } = useCallStore();
 
   const [notifications, setNotifications]   = useState(true);
   const [showStarred,   setShowStarred]     = useState(false);
@@ -141,14 +143,14 @@ export default function ContactInfoPanel({ user, onClose, onClearChat, onArchive
           {/* Quick-action buttons */}
           <div className="flex items-center justify-center gap-6 mt-6">
             {[
-              { icon: <PhoneIcon size={22} />, label: "Audio" },
-              { icon: <VideoIcon size={22} />, label: "Video" },
+              { icon: <PhoneIcon size={22} />, label: "Audio", action: () => startCall(user._id, false) },
+              { icon: <VideoIcon size={22} />, label: "Video", action: () => startCall(user._id, true) },
               { icon: <QrCodeIcon size={22} />, label: "QR Code", action: () => setShowQR(true) },
             ].map(btn => (
               <button
                 key={btn.label}
                 onClick={btn.action}
-                className="flex flex-col items-center gap-2 transition-opacity hover:opacity-75"
+                className="flex flex-col items-center gap-2 transition-all hover:opacity-75 active:scale-95"
                 style={{ color: "var(--text-primary)" }}
               >
                 <div

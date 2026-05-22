@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useAuthStore } from "./useAuthStore";
 import { useChatStore } from "./useChatStore";
+import { axiosInstance } from "../lib/axios";
 
 export const useCallStore = create(persist((set, get) => ({
   localStream: null,
@@ -143,6 +144,14 @@ export const useCallStore = create(persist((set, get) => ({
         duration: null
       };
       
+      // Post a call record message to the chat if that user is selected
+      const { selectedUser } = useChatStore.getState();
+      if (selectedUser && selectedUser._id === incomingCall.from) {
+        axiosInstance.post(`/messages/send/${incomingCall.from}`, {
+          text: `📵 Missed ${incomingCall.isVideo ? "video" : "voice"} call`
+        }).catch(() => {});
+      }
+      
       set({ incomingCall: null, callState: "IDLE", callHistory: [missedCall, ...get().callHistory] });
     }
   },
@@ -175,6 +184,24 @@ export const useCallStore = create(persist((set, get) => ({
         duration: isMissed ? null : `${Math.floor(diffSecs/60)}:${String(diffSecs%60).padStart(2,'0')}`
       };
       finalHistory = [newCallData, ...callHistory];
+
+      // Post a call record message to the chat so it appears in message thread (WhatsApp-style)
+      try {
+        const callTypeLabel = currentCallIsVideo ? "video" : "voice";
+        let callMsg;
+        if (isMissed) {
+          callMsg = currentCallType === "outgoing"
+            ? `📵 Missed ${callTypeLabel} call`
+            : `📵 Missed ${callTypeLabel} call`;
+        } else {
+          const dur = newCallData.duration || "";
+          callMsg = currentCallType === "outgoing"
+            ? `📞 ${callTypeLabel.charAt(0).toUpperCase() + callTypeLabel.slice(1)} call${dur ? ` · ${dur}` : ""}`
+            : `📞 ${callTypeLabel.charAt(0).toUpperCase() + callTypeLabel.slice(1)} call${dur ? ` · ${dur}` : ""}`;
+        }
+        // Only post if we have a valid user to post to
+        axiosInstance.post(`/messages/send/${currentCallUser}`, { text: callMsg }).catch(() => {});
+      } catch { /* silent */ }
     }
 
     set({

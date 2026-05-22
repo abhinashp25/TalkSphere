@@ -195,14 +195,16 @@ export default function ChatContainer() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!messages || messages.length === 0) return;
+    const el = containerRef.current;
+    if (!el) return;
     const lastMsg = messages[messages.length - 1];
     const isMyLastMsg = lastMsg.senderId === authUser?._id || lastMsg.senderId?._id === authUser?._id;
     if (isMyLastMsg) {
-      // Instant snap scroll for our own messages (removes the "flip" or "drop down" effect)
-      bottomRef.current?.scrollIntoView({ behavior: "auto" });
+      // Instant snap scroll for own messages — direct DOM scroll avoids viewport shifts from scrollIntoView
+      el.scrollTop = el.scrollHeight;
     } else if (!showScrollBtn) {
-      // Smooth scroll for received messages
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      // Smooth scroll for received messages when user is near bottom
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     }
   }, [messages, showScrollBtn, authUser?._id]);
 
@@ -521,7 +523,10 @@ export default function ChatContainer() {
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.7 }}
-            onClick={() => bottomRef.current?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => {
+              const el = containerRef.current;
+              if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+            }}
             className="absolute bottom-24 right-4 w-10 h-10 rounded-full flex items-center justify-center shadow-lg z-20"
             style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.1)" }}>
             <ChevronDown size={18} className="text-[#aebac1]" />

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Plus, Camera, Type, X, ChevronRight } from "lucide-react";
 import { useStatusStore } from "../store/useStatusStore";
 import { useAuthStore } from "../store/useAuthStore";
+import { useChatStore } from "../store/useChatStore";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
@@ -58,7 +59,13 @@ function StatusRing({ total, viewedCount, size = 52 }) {
 export default function StatusTray() {
   const { statuses, fetchStatuses, uploadStatus, isUploading } = useStatusStore();
   const { authUser } = useAuthStore();
+  const { setStatusViewerOpen } = useChatStore();
   const [activeStatus, setActiveStatus] = useState(null);
+  
+  // Sync viewer open state with store so bottom nav gets hidden on mobile
+  useEffect(() => {
+    setStatusViewerOpen(!!activeStatus);
+  }, [activeStatus, setStatusViewerOpen]);
   
   // Local viewed statuses tracking
   const [viewedIds, setViewedIds] = useState(() => {
@@ -378,7 +385,10 @@ export default function StatusTray() {
         {activeStatus && (
           <StatusViewer 
             activeStatus={activeStatus} 
-            setActiveStatus={setActiveStatus} 
+            setActiveStatus={(val) => {
+              setActiveStatus(val);
+              if (!val) setStatusViewerOpen(false);
+            }}
             markAsViewed={markAsViewed}
             replyText={replyText}
             setReplyText={setReplyText}
@@ -462,7 +472,7 @@ function StatusViewer({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-[#07080a] flex flex-col items-center justify-center sm:p-4"
+      className="fixed inset-0 z-[100] bg-[#07080a] flex flex-col items-center justify-center sm:p-4 overscroll-none"
     >
       <style>{`
         @keyframes status-progression {

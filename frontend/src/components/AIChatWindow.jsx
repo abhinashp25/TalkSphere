@@ -10,8 +10,15 @@ export default function AIChatWindow({ onClose }) {
   const [input, setInput] = useState("");
   const bottomRef = useRef(null);
   const inputRef  = useRef(null);
+  const messagesContainerRef = useRef(null);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [aiMessages, isAILoading]);
+  const scrollToBottom = (smooth = false) => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+  };
+
+  useEffect(() => { scrollToBottom(true); }, [aiMessages, isAILoading]);
   useEffect(() => { inputRef.current?.focus(); }, []);
 
   const isBlocked = isAILoading || retryAfter > 0;
@@ -102,7 +109,7 @@ export default function AIChatWindow({ onClose }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4 no-scrollbar">
         {aiMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-6">
             <div className="w-20 h-20 rounded-full flex items-center justify-center"

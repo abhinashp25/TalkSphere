@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Phone, Video, PhoneIncoming, PhoneMissed, PhoneOutgoing, PlusCircle } from "lucide-react";
-import { useAuthStore } from "../store/useAuthStore";
+import { Phone, Video, PlusCircle } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useCallStore } from "../store/useCallStore";
 
@@ -74,7 +73,7 @@ export default function CallsList() {
         {filtered.map((call) => (
           <div
             key={call._id}
-            className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer group transition-colors"
+            className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 cursor-pointer group transition-colors border-b border-white/[0.04]"
           >
             {/* Avatar */}
             <div className="relative flex-shrink-0">
@@ -94,7 +93,7 @@ export default function CallsList() {
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <CallTypeIcon type={call.type} />
-                <span className="text-[12px] text-gray-400">
+                <span className={`text-[12px] ${call.type === "missed" ? "text-red-400/70" : "text-gray-400"}`}>
                   {call.type === "missed" ? "Missed" : call.type === "incoming" ? "Incoming" : "Outgoing"}
                   {call.duration ? ` · ${call.duration}` : ""}
                   {call.isVideo ? " · Video" : " · Voice"}
@@ -102,15 +101,20 @@ export default function CallsList() {
               </div>
             </div>
 
-            {/* Timestamp + call button */}
+            {/* Timestamp + call-back button */}
             <div className="flex flex-col items-end gap-2 flex-shrink-0">
               <span className="text-[11.5px] text-gray-500">{formatTime(call.timestamp)}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); startCall(call.user._id, call.isVideo); }}
-                className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-[#1a1a1a] text-[#a3a3a3] hover:text-white transition-all"
+                className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                style={{
+                  background: "rgba(16,185,129,0.15)",
+                  color: "#10b981",
+                  border: "1px solid rgba(16,185,129,0.25)"
+                }}
                 title={`${call.isVideo ? "Video" : "Voice"} call`}
               >
-                {call.isVideo ? <Video size={18} /> : <Phone size={18} />}
+                {call.isVideo ? <Video size={16} /> : <Phone size={16} />}
               </button>
             </div>
           </div>
@@ -120,8 +124,40 @@ export default function CallsList() {
   );
 }
 
+// WhatsApp-style directional arrow icons for call types
 function CallTypeIcon({ type }) {
-  if (type === "missed") return <PhoneMissed size={14} className="text-red-500 flex-shrink-0" />;
-  if (type === "incoming") return <PhoneIncoming size={14} className="text-white flex-shrink-0" />;
-  return <PhoneOutgoing size={14} className="text-[#a3a3a3] flex-shrink-0" />;
+  if (type === "missed") {
+    // Red arrow pointing down-left = missed incoming
+    return (
+      <span title="Missed call" className="flex-shrink-0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.8"
+          strokeLinecap="round" strokeLinejoin="round">
+          <line x1="17" y1="7" x2="7" y2="17" />
+          <polyline points="17 17 7 17 7 7" />
+        </svg>
+      </span>
+    );
+  }
+  if (type === "incoming") {
+    // Green arrow pointing down-left = received call
+    return (
+      <span title="Incoming call" className="flex-shrink-0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.8"
+          strokeLinecap="round" strokeLinejoin="round">
+          <line x1="17" y1="7" x2="7" y2="17" />
+          <polyline points="17 17 7 17 7 7" />
+        </svg>
+      </span>
+    );
+  }
+  // Outgoing: green arrow pointing up-right
+  return (
+    <span title="Outgoing call" className="flex-shrink-0">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.8"
+        strokeLinecap="round" strokeLinejoin="round">
+        <line x1="7" y1="17" x2="17" y2="7" />
+        <polyline points="7 7 17 7 17 17" />
+      </svg>
+    </span>
+  );
 }

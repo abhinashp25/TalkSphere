@@ -4,9 +4,11 @@ import { useAuthStore } from "../store/useAuthStore";
 import { motion } from "framer-motion";
 
 export default function LeftRail({ activeTab, setActiveTab, isHiddenOnMobile }) {
-  const { unreadCounts } = useChatStore();
+  const { unreadCounts, isStatusViewerOpen } = useChatStore();
   const { authUser } = useAuthStore();
   const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
+  // Hide bottom nav when status viewer is open (prevents z-index conflict with reply input)
+  const shouldHideBottomNav = isHiddenOnMobile || isStatusViewerOpen;
 
   return (
     <>
@@ -89,7 +91,7 @@ export default function LeftRail({ activeTab, setActiveTab, isHiddenOnMobile }) 
       </div>
 
       {/* Mobile Bottom Navigation (Hidden on desktop, matches approved WhatsApp design) */}
-      {!isHiddenOnMobile && (
+      {!shouldHideBottomNav && (
         <div className="sm:hidden mobile-bottom-nav">
           <MobileNavTab
             label="Chats"

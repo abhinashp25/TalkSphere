@@ -47,6 +47,30 @@ function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Browser / Hardware Back Button Support ──────────────────────────────
+  useEffect(() => {
+    const pushState = () => window.history.pushState(null, "", window.location.href);
+    // Push initial state so first back press can be intercepted
+    pushState();
+
+    const handlePopState = () => {
+      // Re-push so the next back press is also interceptable
+      pushState();
+      // Close things in reverse-open order:
+      if (isDrawerOpen) { setIsDrawerOpen(false); return; }
+      if (activeTab === "settings") { setActiveTab("chats"); return; }
+      if (showAI || activeTab === "chatify-ai") { setShowAI(false); setActiveTab("chats"); return; }
+      if (selectedGroup) { setSelectedGroup(null); return; }
+      if (selectedUser) { setSelectedUser(null); return; }
+      // If nothing open, tab defaults to chats
+      if (activeTab && activeTab !== "chats") { setActiveTab("chats"); return; }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDrawerOpen, activeTab, showAI, selectedGroup, selectedUser]);
+
   useEffect(() => {
     const handleResize = () => {
       // On desktop (>= 1024px), always expand sidebar

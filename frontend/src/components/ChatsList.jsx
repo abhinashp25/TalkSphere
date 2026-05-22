@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 import UsersLoadingSkeleton from "./UsersLoadingSkeleton";
@@ -46,7 +46,10 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { getMyChatPartners(); }, []);
 
-  if (isUsersLoading) return <UsersLoadingSkeleton />;
+  const pinHoldTimer = useRef(null);
+
+  // Only show skeleton when loading with no cached data
+  if (isUsersLoading && chats.length === 0) return <UsersLoadingSkeleton />;
 
   const allConversations = [
     ...chats.map(c => ({
@@ -67,7 +70,13 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
       unreadBadge: 0, // Simplified for groups without unread counters natively
       lastMsgObj: g.lastMessage 
     }))
-  ].sort((a, b) => b.sortTime - a.sortTime);
+  ].sort((a, b) => {
+    const aFav = favourites?.includes(a._id);
+    const bFav = favourites?.includes(b._id);
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+    return b.sortTime - a.sortTime;
+  });
 
   const visible = allConversations.filter((c) => {
     if (c.isArchived) return false;
@@ -200,7 +209,6 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
           {/* Pinned Chatify AI Row */}
           {(!localSearch || "chatify ai".includes(localSearch.toLowerCase())) && (activeFilter === "all" || !activeFilter) && (
             <motion.div 
-              layout
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               key="chatify-ai-pinned-row"
@@ -272,12 +280,25 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
 
             return (
               <motion.div 
-                layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={conv._id} 
                 className={`chat-row group ${isActive ? "active" : ""} ${isFav ? "favorite-pinned" : ""}`}
                 onClick={() => handleConversationClick(conv)}
+                onDoubleClick={(e) => {
+                  // Desktop: double-click to pin/unpin
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFavourite && toggleFavourite(conv._id);
+                }}
+                onTouchStart={() => {
+                  // Mobile: long press 600ms to pin/unpin
+                  pinHoldTimer.current = setTimeout(() => {
+                    toggleFavourite && toggleFavourite(conv._id);
+                  }, 600);
+                }}
+                onTouchEnd={() => clearTimeout(pinHoldTimer.current)}
+                onTouchMove={() => clearTimeout(pinHoldTimer.current)}
               >
                 {/* Avatar with online dot */}
                 <div className="relative flex-shrink-0">
@@ -335,8 +356,9 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                       <button 
                         onClick={(e) => { e.stopPropagation(); toggleFavourite && toggleFavourite(conv._id); }}
                         className={`opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-[var(--bg-hover)] ${isFav ? "!opacity-100" : ""}`}
+                        title={isFav ? "Unpin conversation" : "Pin conversation"}
                       >
-                        <Heart size={14} className={isFav ? "fill-white text-white" : "text-[#737373]"} />
+                        <Pin size={14} className={`transform rotate-[45deg] transition-all ${isFav ? "text-violet-400 fill-violet-400/30" : "text-[#737373] hover:text-white"}`} />
                       </button>
                       {unread > 0 && (
                         <motion.span 
