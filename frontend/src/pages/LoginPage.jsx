@@ -24,6 +24,22 @@ export default function LoginPage() {
     >
       {/* Left Hemisphere: Auth Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative overflow-y-auto aurora-bg z-10">
+        {/* Floating Background Chat Bubbles for Mobile Viewport Visual Context */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
+          <div className="floating-bubble-bg floating-bubble-1 flex items-center gap-2 text-white/30 text-xs">
+            <span>💬</span> <span>Hey! Are we meeting today?</span>
+          </div>
+          <div className="floating-bubble-bg floating-bubble-2 flex items-center gap-2 text-white/30 text-xs">
+            <span>📷</span> <span>Photo sent</span>
+          </div>
+          <div className="floating-bubble-bg floating-bubble-3 flex items-center gap-2 text-white/30 text-xs">
+            <span>Yes, in 10 mins! 🙌</span>
+          </div>
+          <div className="floating-bubble-bg floating-bubble-4 flex items-center gap-2 text-white/30 text-xs">
+            <span>👍🏼</span> <span>Reaction</span>
+          </div>
+        </div>
+
         <motion.div 
           initial={{ opacity: 0, x: -30 }} 
           animate={{ opacity: 1, x: 0 }} 

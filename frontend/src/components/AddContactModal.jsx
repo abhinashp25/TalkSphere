@@ -13,7 +13,7 @@ export default function AddContactModal({ isOpen, onClose }) {
 
   useEffect(() => {
     if (isOpen) {
-      setLoading(true);
+      setTimeout(() => setLoading(true), 0);
       axiosInstance.get("/messages/contacts")
         .then(res => setAllContacts(res.data))
         .catch((err) => {

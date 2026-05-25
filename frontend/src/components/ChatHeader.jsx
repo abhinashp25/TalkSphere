@@ -134,7 +134,7 @@ export default function ChatHeader({ onAISummary }) {
           <div className="relative flex-shrink-0 cursor-pointer" onClick={() => setShowContactInfo(true)}>
             <img src={selectedUser.profilePic || "/avatar.png"} alt={selectedUser.fullName}
               className="w-10 h-10 rounded-full object-cover hover:opacity-90 transition-opacity"
-              style={{ border: "1px solid var(--border)", background: "var(--bg-input)" }} />
+              style={{ border: "1px solid var(--border)", background: "var(--bg-input)" }} referrerPolicy="no-referrer" />
             {isOnline && (
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2"
                 style={{ background: "var(--online, #10b981)", borderColor: "var(--bg-header)" }} />

@@ -19,7 +19,7 @@ export const getChatPartners = async (req, res) => {
     const myId = req.user._id;
     const messages = await Message.find({
       $or: [{ senderId: myId }, { receiverId: myId }],
-      isDeletedForAll: false,
+      deletedFor: { $nin: [myId] }
     }).sort({ createdAt: -1 });
 
     const partnerLastMsg = {};
@@ -91,7 +91,6 @@ export const getMessagesByUserId = async (req, res) => {
         { senderId: userToChatId, receiverId: myId },
       ],
       deletedFor:     { $nin: [myId] },
-      isDeletedForAll: false,
     };
 
     if (before) {
@@ -296,6 +295,17 @@ export const deleteMessage = async (req, res) => {
 
     if (deleteForEveryone) {
       message.isDeletedForAll = true;
+      message.text = undefined;
+      message.image = undefined;
+      message.audio = undefined;
+      message.document = undefined;
+      message.reactions = [];
+      message.linkPreview = undefined;
+      message.replyTo = undefined;
+      message.isPinned = false;
+      message.starredBy = [];
+      message.editedAt = null;
+      message.editHistory = [];
     } else {
       if (!message.deletedFor.includes(userId)) message.deletedFor.push(userId);
     }

@@ -753,4 +753,69 @@ h1, h2, h3, h4, h5, h6, .brand-font {
   }
 }
 
+/* ── Aurora Mesh Background for Login/Signup ────────────────────────────────── */
+.aurora-bg {
+  position: relative;
+  background-color: #050505;
+  background-image: 
+    radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+    radial-gradient(at 90% 10%, rgba(14, 165, 233, 0.1) 0px, transparent 50%),
+    radial-gradient(at 50% 80%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
+    radial-gradient(at 80% 90%, rgba(16, 185, 129, 0.04) 0px, transparent 40%);
+  background-size: 200% 200%;
+  animation: aurora-shift 18s ease infinite alternate;
+  overflow: hidden;
+}
+
+@keyframes aurora-shift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 100%; }
+}
+
+/* Floating Chat Bubbles */
+.floating-bubble-bg {
+  position: absolute;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 10px 16px;
+  pointer-events: none;
+  z-index: 1;
+  animation: float-bubble 9s ease-in-out infinite;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+@keyframes float-bubble {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+  50% { transform: translateY(-16px) scale(1.02) rotate(2deg); }
+}
+
+.floating-bubble-1 {
+  top: 12%;
+  left: 6%;
+  animation-duration: 9s;
+}
+.floating-bubble-2 {
+  bottom: 12%;
+  left: 10%;
+  animation-duration: 11s;
+  animation-delay: 1.5s;
+}
+.floating-bubble-3 {
+  top: 18%;
+  right: 6%;
+  animation-duration: 8s;
+  animation-delay: 0.5s;
+}
+.floating-bubble-4 {
+  bottom: 22%;
+  right: 8%;
+  animation-duration: 13s;
+  animation-delay: 2.2s;
+}
+
+
 

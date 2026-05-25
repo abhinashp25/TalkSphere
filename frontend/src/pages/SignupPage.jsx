@@ -46,6 +46,22 @@ export default function SignupPage() {
       
       {/* Right Hemisphere: Auth Form (On the right for logical flow difference) */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative overflow-y-auto aurora-bg z-10">
+        {/* Floating Background Chat Bubbles for Mobile Viewport Visual Context */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
+          <div className="floating-bubble-bg floating-bubble-1 flex items-center gap-2 text-white/30 text-xs">
+            <span>💬</span> <span>Let's sync up!</span>
+          </div>
+          <div className="floating-bubble-bg floating-bubble-2 flex items-center gap-2 text-white/30 text-xs">
+            <span>🎤</span> <span>Voice note 0:12</span>
+          </div>
+          <div className="floating-bubble-bg floating-bubble-3 flex items-center gap-2 text-white/30 text-xs">
+            <span>Awesome project! 🚀</span>
+          </div>
+          <div className="floating-bubble-bg floating-bubble-4 flex items-center gap-2 text-white/30 text-xs">
+            <span>❤️</span> <span>Reaction</span>
+          </div>
+        </div>
+
         <motion.div 
           initial={{ opacity: 0, x: 30 }} 
           animate={{ opacity: 1, x: 0 }} 

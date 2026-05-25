@@ -31,7 +31,7 @@ export default function LeftRail({ activeTab, setActiveTab, isHiddenOnMobile }) 
             transition: "border-color 0.2s",
           }}
         >
-          <img src={authUser?.profilePic || "/avatar.png"} alt="me" className="w-full h-full object-cover" />
+          <img src={authUser?.profilePic || "/avatar.png"} alt="me" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         </motion.button>
 
         {/* Primary Nav */}

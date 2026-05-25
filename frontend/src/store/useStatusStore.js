@@ -6,6 +6,32 @@ export const useStatusStore = create((set, get) => ({
   statuses: [],
   isFetching: false,
   isUploading: false,
+  activeStatus: null,
+  isTextModalOpen: false,
+  setIsTextModalOpen: (isOpen) => set({ isTextModalOpen: isOpen }),
+  viewedIds: (() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem("chatify-viewed-statuses") || "[]"));
+    } catch {
+      return new Set();
+    }
+  })(),
+
+  setActiveStatus: (statusOrUpdater) => {
+    set((state) => {
+      const nextStatus = typeof statusOrUpdater === "function"
+        ? statusOrUpdater(state.activeStatus)
+        : statusOrUpdater;
+      return { activeStatus: nextStatus };
+    });
+  },
+
+  markAsViewed: (id) => {
+    const next = new Set(get().viewedIds);
+    next.add(id);
+    localStorage.setItem("chatify-viewed-statuses", JSON.stringify(Array.from(next)));
+    set({ viewedIds: next });
+  },
 
   fetchStatuses: async () => {
     set({ isFetching: true });

@@ -137,7 +137,7 @@ export default function DrawerPanel({ isOpen, onClose }) {
                       onClick={() => setActiveView("profile")}
                     >
                       <div className="w-16 h-16 rounded-full overflow-hidden bg-[var(--bg-input)] border border-[var(--border)] flex-shrink-0">
-                        <img src={authUser?.profilePic || "/avatar.png"} className="w-full h-full object-cover" />
+                        <img src={authUser?.profilePic || "/avatar.png"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       </div>
                       <div className="min-w-0">
                         <h3 className="text-xl font-bold brand-font text-white truncate">{authUser?.fullName}</h3>
@@ -180,7 +180,7 @@ export default function DrawerPanel({ isOpen, onClose }) {
 
                     <div className="w-32 h-32 rounded-full overflow-hidden bg-[var(--bg-input)] border border-[var(--border)] mb-6 relative group cursor-pointer"
                       onClick={() => fileInputRef.current?.click()}>
-                      <img src={authUser?.profilePic || "/avatar.png"} className="w-full h-full object-cover" />
+                      <img src={authUser?.profilePic || "/avatar.png"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
                         <Camera size={24} className="mb-1" />
                         <span className="text-[10px] uppercase font-bold text-center leading-tight">Change<br />Photo</span>

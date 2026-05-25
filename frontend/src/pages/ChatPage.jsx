@@ -13,7 +13,8 @@ import GroupChatWindow    from "../components/GroupChatWindow";
 import AIChatWindow       from "../components/AIChatWindow";
 import ArchivedChats      from "../components/ArchivedChats";
 import StarredMessages    from "../components/StarredMessages";
-import StatusTray         from "../components/StatusTray";
+import StatusTray, { StatusViewer, WriteStatusModal } from "../components/StatusTray";
+import { useStatusStore } from "../store/useStatusStore";
 import CreateGroupModal   from "../components/CreateGroupModal";
 import NativeEmptyState   from "../components/NativeEmptyState";
 import LeftRail           from "../components/LeftRail";
@@ -32,6 +33,7 @@ function ChatPage() {
     fetchGroups, subscribeToGroupMessages, unsubscribeFromGroupMessages,
   } = useGroupStore();
   const { applyStoredTheme } = useSettingsStore();
+  const { activeStatus, isTextModalOpen } = useStatusStore();
 
   const [showAI,       setShowAI]       = useState(false);
   const [showArchived, setShowArchived] = useState(false);
@@ -199,6 +201,12 @@ function ChatPage() {
             }} 
           />
         )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {activeStatus && <StatusViewer />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {isTextModalOpen && <WriteStatusModal />}
       </AnimatePresence>
     </div>
   );

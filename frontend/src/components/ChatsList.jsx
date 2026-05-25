@@ -165,7 +165,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
               <Search size={20} />
             </button>
             <button onClick={onOpenDrawer} className="w-8 h-8 rounded-full overflow-hidden ml-1 border border-white/10 active:scale-95 transition-transform" title="Profile/Settings">
-              <img src={authUser?.profilePic || "/avatar.png"} alt="profile" className="w-full h-full object-cover" />
+              <img src={authUser?.profilePic || "/avatar.png"} alt="profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </button>
           </div>
         </div>
@@ -308,7 +308,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                       {conv.displayName[0].toUpperCase()}
                     </div>
                   ) : (
-                    <img src={conv.displayPic} alt={conv.displayName} className="w-[52px] h-[52px] rounded-2xl object-cover border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border)' }} />
+                    <img src={conv.displayPic} alt={conv.displayName} className="w-[52px] h-[52px] rounded-2xl object-cover border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border)' }} referrerPolicy="no-referrer" />
                   )}
                   {isOnline && (
                     <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-[3px] bg-[#10b981] z-10" style={{ borderColor: 'var(--bg-primary)' }} />

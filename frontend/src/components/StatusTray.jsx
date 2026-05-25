@@ -56,53 +56,27 @@ function StatusRing({ total, viewedCount, size = 52 }) {
   );
 }
 
+const gradients = [
+  "linear-gradient(135deg, #120c1f 0%, #201335 100%)",
+  "linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)",
+  "linear-gradient(135deg, #f59e0b 0%, #e11d48 100%)",
+  "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+  "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)"
+];
+
 export default function StatusTray() {
-  const { statuses, fetchStatuses, uploadStatus, isUploading } = useStatusStore();
+  const { 
+    statuses, fetchStatuses, uploadStatus, isUploading,
+    activeStatus, setActiveStatus, viewedIds,
+    setIsTextModalOpen
+  } = useStatusStore();
   const { authUser } = useAuthStore();
-  const { setStatusViewerOpen } = useChatStore();
-  const [activeStatus, setActiveStatus] = useState(null);
   
-  // Sync viewer open state with store so bottom nav gets hidden on mobile
-  useEffect(() => {
-    setStatusViewerOpen(!!activeStatus);
-  }, [activeStatus, setStatusViewerOpen]);
-  
-  // Local viewed statuses tracking
-  const [viewedIds, setViewedIds] = useState(() => {
-    try {
-      return new Set(JSON.parse(localStorage.getItem("chatify-viewed-statuses") || "[]"));
-    } catch {
-      return new Set();
-    }
-  });
-
-  // Modal forms
-  const [isTextModalOpen, setIsTextModalOpen] = useState(false);
-  const [statusText, setStatusText] = useState("");
-  const [selectedGradIndex, setSelectedGradIndex] = useState(0);
-
   const fileInputRef = useRef(null);
-
-  const gradients = [
-    "linear-gradient(135deg, #120c1f 0%, #201335 100%)",
-    "linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%)",
-    "linear-gradient(135deg, #f59e0b 0%, #e11d48 100%)",
-    "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-    "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)"
-  ];
 
   useEffect(() => {
     fetchStatuses();
   }, [fetchStatuses]);
-
-  const markAsViewed = (id) => {
-    setViewedIds(prev => {
-      const next = new Set(prev);
-      next.add(id);
-      localStorage.setItem("chatify-viewed-statuses", JSON.stringify(Array.from(next)));
-      return next;
-    });
-  };
 
   // Group statuses by user
   const groupedStatuses = statuses.reduce((acc, status) => {
@@ -113,20 +87,6 @@ export default function StatusTray() {
     return acc;
   }, {});
 
-  const handlePostTextStatus = async (e) => {
-    e.preventDefault();
-    if (!statusText.trim()) return;
-
-    const payload = JSON.stringify({
-      text: statusText.trim(),
-      gradient: gradients[selectedGradIndex]
-    });
-
-    await uploadStatus(payload, "text");
-    setStatusText("");
-    setIsTextModalOpen(false);
-  };
-
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -136,77 +96,6 @@ export default function StatusTray() {
       await uploadStatus(reader.result, "image");
     };
     reader.readAsDataURL(file);
-  };
-
-  // Status Reply logic
-  const [replyText, setReplyText] = useState("");
-  const [sendingReply, setSendingReply] = useState(false);
-
-  const handleSendReply = async (e) => {
-    e.preventDefault();
-    if (!replyText.trim() || !activeStatus) return;
-
-    setSendingReply(true);
-    try {
-      const currentItem = activeStatus.items[activeStatus.currentIndex];
-      let statusQuote = "";
-      
-      try {
-        if (currentItem.type === "text" && currentItem.content.startsWith("{")) {
-          statusQuote = JSON.parse(currentItem.content).text;
-        } else {
-          statusQuote = currentItem.type === "image" ? "📷 Status Photo" : currentItem.content;
-        }
-      } catch {
-        statusQuote = currentItem.content;
-      }
-
-      const prefix = `*Replied to status:* "${statusQuote.slice(0, 40)}${statusQuote.length > 40 ? "..." : ""}"\n`;
-      await axiosInstance.post(`/messages/send/${activeStatus.user._id}`, {
-        text: `${prefix}${replyText.trim()}`
-      });
-
-      toast.success("Reply sent directly to chat!");
-      setReplyText("");
-    } catch {
-      toast.error("Failed to send reply");
-    } finally {
-      setSendingReply(false);
-    }
-  };
-
-  // Safe parsed display logic
-  const renderStatusBody = (status) => {
-    if (status.type === "image") {
-      return <img src={status.content} className="w-full h-full object-contain" alt="Status" />;
-    }
-
-    let isJson = false;
-    let parsed = {};
-    try {
-      if (status.content.startsWith("{")) {
-        parsed = JSON.parse(status.content);
-        isJson = true;
-      }
-    } catch {}
-
-    if (isJson) {
-      return (
-        <div className="w-full h-full flex items-center justify-center p-8" style={{ background: parsed.gradient || gradients[0] }}>
-          <p className="text-white text-2xl font-bold leading-normal text-center select-none" style={{ wordBreak: 'break-word' }}>
-            {parsed.text}
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="w-full h-full flex items-center justify-center p-8 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
-        <p className="text-white text-2xl font-semibold leading-normal text-center select-none" style={{ wordBreak: 'break-word' }}>
-          {status.content}
-        </p>
-      </div>
-    );
   };
 
   // Segment ring helper calculations
@@ -230,7 +119,7 @@ export default function StatusTray() {
         <div className="rounded-2xl p-4 flex items-center justify-between border" style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
           <div className="flex items-center gap-3">
             <div className="relative w-[52px] h-[52px]">
-              <img src={authUser?.profilePic || "/avatar.png"} alt="me" className="w-full h-full rounded-2xl object-cover border" style={{ borderColor: "var(--border)" }} />
+              <img src={authUser?.profilePic || "/avatar.png"} alt="me" className="w-full h-full rounded-2xl object-cover border" style={{ borderColor: "var(--border)" }} referrerPolicy="no-referrer" />
               <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#00a884] flex items-center justify-center border border-[var(--bg-secondary)] shadow-sm">
                 <Plus className="text-white w-3.5 h-3.5" />
               </div>
@@ -292,7 +181,7 @@ export default function StatusTray() {
                     <div className="relative w-[52px] h-[52px] flex-shrink-0">
                       <StatusRing total={total} viewedCount={viewedCount} />
                       <div className="absolute inset-[3px] rounded-2xl overflow-hidden bg-slate-900">
-                        <img src={user.profilePic || "/avatar.png"} alt={user.fullName} className="w-full h-full object-cover" />
+                        <img src={user.profilePic || "/avatar.png"} alt={user.fullName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -315,142 +204,153 @@ export default function StatusTray() {
         </div>
       </div>
 
-      {/* Write Rich Text Status Modal */}
-      <AnimatePresence>
-        {isTextModalOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ backdropFilter: "blur(20px)", background: "rgba(0,0,0,0.85)" }}
-          >
-            <motion.form 
-              onSubmit={handlePostTextStatus}
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border"
-              style={{ background: gradients[selectedGradIndex], borderColor: "rgba(255,255,255,0.1)" }}
-            >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <span className="text-white font-semibold text-sm">Write a status update</span>
-                <button type="button" onClick={() => setIsTextModalOpen(false)} className="text-white/60 hover:text-white transition-colors">
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Input Area */}
-              <div className="p-8 flex flex-col items-center justify-center min-h-[220px]">
-                <textarea
-                  value={statusText}
-                  onChange={(e) => setStatusText(e.target.value)}
-                  placeholder="What's on your mind?"
-                  className="w-full bg-transparent text-white text-xl font-bold leading-normal text-center placeholder:text-white/40 focus:outline-none resize-none overflow-y-auto no-scrollbar"
-                  maxLength={120}
-                  rows={4}
-                  autoFocus
-                />
-              </div>
-
-              {/* Dynamic Gradient Selectors */}
-              <div className="p-4 border-t border-white/10 flex items-center justify-between gap-4" style={{ background: "rgba(0,0,0,0.3)" }}>
-                <div className="flex gap-2">
-                  {gradients.map((grad, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setSelectedGradIndex(idx)}
-                      className={`w-6 h-6 rounded-full border-2 transition-all ${selectedGradIndex === idx ? "scale-110 border-white" : "border-transparent opacity-60"}`}
-                      style={{ background: grad }}
-                    />
-                  ))}
-                </div>
-                <button
-                  type="submit"
-                  disabled={!statusText.trim() || isUploading}
-                  className="bg-white text-black font-semibold text-sm px-5 py-2 rounded-full hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  {isUploading ? "Posting..." : "Share Status"}
-                </button>
-              </div>
-            </motion.form>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Advanced Full-Screen Status Viewer Modal with Auto 5s Progression */}
-      <AnimatePresence>
-        {activeStatus && (
-          <StatusViewer 
-            activeStatus={activeStatus} 
-            setActiveStatus={(val) => {
-              setActiveStatus(val);
-              if (!val) setStatusViewerOpen(false);
-            }}
-            markAsViewed={markAsViewed}
-            replyText={replyText}
-            setReplyText={setReplyText}
-            handleSendReply={handleSendReply}
-            sendingReply={sendingReply}
-            renderStatusBody={renderStatusBody}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
 
+// Write status modal component to escape CSS constraints of sidebar
+export function WriteStatusModal() {
+  const { isTextModalOpen, setIsTextModalOpen, uploadStatus, isUploading } = useStatusStore();
+  const [statusText, setStatusText] = useState("");
+  const [selectedGradIndex, setSelectedGradIndex] = useState(0);
+
+  if (!isTextModalOpen) return null;
+
+  const handlePostTextStatus = async (e) => {
+    e.preventDefault();
+    if (!statusText.trim()) return;
+
+    const payload = JSON.stringify({
+      text: statusText.trim(),
+      gradient: gradients[selectedGradIndex]
+    });
+
+    await uploadStatus(payload, "text");
+    setStatusText("");
+    setIsTextModalOpen(false);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ backdropFilter: "blur(20px)", background: "rgba(0,0,0,0.85)" }}
+    >
+      <motion.form 
+        onSubmit={handlePostTextStatus}
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.95 }}
+        className="w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border"
+        style={{ background: gradients[selectedGradIndex], borderColor: "rgba(255,255,255,0.1)" }}
+      >
+        {/* Modal Header */}
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <span className="text-white font-semibold text-sm">Write a status update</span>
+          <button type="button" onClick={() => setIsTextModalOpen(false)} className="text-white/60 hover:text-white transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Input Area */}
+        <div className="p-8 flex flex-col items-center justify-center min-h-[220px]">
+          <textarea
+            value={statusText}
+            onChange={(e) => setStatusText(e.target.value)}
+            placeholder="What's on your mind?"
+            className="w-full bg-transparent text-white text-xl font-bold leading-normal text-center placeholder:text-white/40 focus:outline-none resize-none overflow-y-auto no-scrollbar"
+            maxLength={120}
+            rows={4}
+            autoFocus
+          />
+        </div>
+
+        {/* Dynamic Gradient Selectors */}
+        <div className="p-4 border-t border-white/10 flex items-center justify-between gap-4" style={{ background: "rgba(0,0,0,0.3)" }}>
+          <div className="flex gap-2">
+            {gradients.map((grad, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setSelectedGradIndex(idx)}
+                className={`w-6 h-6 rounded-full border-2 transition-all ${selectedGradIndex === idx ? "scale-110 border-white" : "border-transparent opacity-60"}`}
+                style={{ background: grad }}
+              />
+            ))}
+          </div>
+          <button
+            type="submit"
+            disabled={!statusText.trim() || isUploading}
+            className="bg-white text-black font-semibold text-sm px-5 py-2 rounded-full hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            {isUploading ? "Posting..." : "Share Status"}
+          </button>
+        </div>
+      </motion.form>
+    </motion.div>
+  );
+}
+
 // Separate component to handle internal state & layout of full screen viewer cleanly
-function StatusViewer({ 
-  activeStatus, 
-  setActiveStatus, 
-  markAsViewed, 
-  replyText, 
-  setReplyText, 
-  handleSendReply, 
-  sendingReply, 
-  renderStatusBody 
-}) {
-  const currentItem = activeStatus.items[activeStatus.currentIndex];
-  
+export function StatusViewer() {
+  const { activeStatus, setActiveStatus, markAsViewed } = useStatusStore();
+  const { setStatusViewerOpen } = useChatStore();
+
   // Real-time pausing states
   const [isPaused, setIsPaused] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
 
+  // Status Reply logic
+  const [replyText, setReplyText] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
+  const inputRef = useRef(null);
+
+  // Sync viewer open state with store so bottom nav gets hidden on mobile
   useEffect(() => {
-    if (currentItem) {
-      markAsViewed(currentItem._id);
+    if (activeStatus) {
+      setStatusViewerOpen(true);
     }
-  }, [activeStatus.currentIndex, currentItem]);
+    return () => setStatusViewerOpen(false);
+  }, [setStatusViewerOpen, activeStatus]);
+
+  useEffect(() => {
+    if (activeStatus && activeStatus.items && activeStatus.items[activeStatus.currentIndex]) {
+      markAsViewed(activeStatus.items[activeStatus.currentIndex]._id);
+    }
+  }, [activeStatus?.currentIndex, activeStatus, markAsViewed]);
 
   // Handle automatic progression (pauses when isPaused is true)
   useEffect(() => {
-    if (isPaused || isHolding) return;
+    if (!activeStatus || isPaused || isHolding) return;
 
     const timer = setTimeout(() => {
-      if (activeStatus.currentIndex < activeStatus.items.length - 1) {
-        setActiveStatus(prev => ({ ...prev, currentIndex: prev.currentIndex + 1 }));
+      if (activeStatus && activeStatus.currentIndex < activeStatus.items.length - 1) {
+        setActiveStatus(prev => prev ? { ...prev, currentIndex: prev.currentIndex + 1 } : null);
       } else {
         setActiveStatus(null);
       }
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [activeStatus.currentIndex, activeStatus.items.length, isPaused, isHolding]);
+  }, [activeStatus?.currentIndex, activeStatus?.items?.length, isPaused, isHolding, setActiveStatus, activeStatus]);
+
+  if (!activeStatus) return null;
+
+  const currentItem = activeStatus.items[activeStatus.currentIndex];
 
   const handlePrev = (e) => {
     e.stopPropagation();
-    if (activeStatus.currentIndex > 0) {
-      setActiveStatus(prev => ({ ...prev, currentIndex: prev.currentIndex - 1 }));
+    if (activeStatus && activeStatus.currentIndex > 0) {
+      setActiveStatus(prev => prev ? { ...prev, currentIndex: prev.currentIndex - 1 } : null);
     }
   };
 
   const handleNext = (e) => {
     e.stopPropagation();
-    if (activeStatus.currentIndex < activeStatus.items.length - 1) {
-      setActiveStatus(prev => ({ ...prev, currentIndex: prev.currentIndex + 1 }));
+    if (activeStatus && activeStatus.currentIndex < activeStatus.items.length - 1) {
+      setActiveStatus(prev => prev ? { ...prev, currentIndex: prev.currentIndex + 1 } : null);
     } else {
       setActiveStatus(null);
     }
@@ -465,6 +365,76 @@ function StatusViewer({
     } else {
       setIsPaused(false);
     }
+  };
+
+  const handleSendReply = async (e) => {
+    e.preventDefault();
+    if (!replyText.trim() || !activeStatus) return;
+
+    setSendingReply(true);
+    try {
+      let statusQuote = "";
+      
+      try {
+        if (currentItem.type === "text" && currentItem.content.startsWith("{")) {
+          statusQuote = JSON.parse(currentItem.content).text;
+        } else {
+          statusQuote = currentItem.type === "image" ? "📷 Status Photo" : currentItem.content;
+        }
+      } catch {
+        statusQuote = currentItem.content;
+      }
+
+      const prefix = `*Replied to status:* "${statusQuote.slice(0, 40)}${statusQuote.length > 40 ? "..." : ""}"\n`;
+      await axiosInstance.post(`/messages/send/${activeStatus.user._id}`, {
+        text: `${prefix}${replyText.trim()}`
+      });
+
+      toast.success("Reply sent directly to chat!");
+      setReplyText("");
+      setIsPaused(false);
+      inputRef.current?.blur();
+    } catch {
+      toast.error("Failed to send reply");
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
+  // Safe parsed display logic
+  const renderStatusBody = (status) => {
+    if (status.type === "image") {
+      return <img src={status.content} className="w-full h-full object-contain" alt="Status" />;
+    }
+
+    let isJson = false;
+    let parsed = {};
+    try {
+      if (status.content.startsWith("{")) {
+        parsed = JSON.parse(status.content);
+        isJson = true;
+      }
+    } catch (e) {
+      // not valid JSON, treat content as plain text status
+    }
+
+    if (isJson) {
+      return (
+        <div className="w-full h-full flex items-center justify-center p-8" style={{ background: parsed.gradient || gradients[0] }}>
+          <p className="text-white text-2xl font-bold leading-normal text-center select-none" style={{ wordBreak: 'break-word' }}>
+            {parsed.text}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-full h-full flex items-center justify-center p-8 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+        <p className="text-white text-2xl font-semibold leading-normal text-center select-none" style={{ wordBreak: 'break-word' }}>
+          {status.content}
+        </p>
+      </div>
+    );
   };
 
   return (
@@ -514,6 +484,7 @@ function StatusViewer({
             src={activeStatus.user.profilePic || "/avatar.png"} 
             className="w-10 h-10 rounded-full object-cover border border-white/10" 
             alt={activeStatus.user.fullName} 
+            referrerPolicy="no-referrer"
           />
           <div className="text-left">
             <p className="text-white font-semibold text-sm">{activeStatus.user.fullName}</p>
@@ -558,6 +529,7 @@ function StatusViewer({
         >
           <input
             type="text"
+            ref={inputRef}
             placeholder="Type a reply..."
             value={replyText}
             onChange={handleInputChange}

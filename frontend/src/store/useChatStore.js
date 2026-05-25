@@ -266,7 +266,18 @@ export const useChatStore = create((set, get) => ({
       if (deleteForEveryone) {
         set({
           messages: (get().messages || []).map(m =>
-            m._id === messageId ? { ...m, isDeletedForAll: true, text: null, image: null, audio: null } : m
+            m._id === messageId ? {
+              ...m,
+              isDeletedForAll: true,
+              text: null,
+              image: null,
+              audio: null,
+              document: null,
+              reactions: [],
+              linkPreview: null,
+              replyTo: null,
+              isPinned: false
+            } : m
           ),
         });
       } else {
@@ -386,7 +397,18 @@ export const useChatStore = create((set, get) => ({
       if (deletedForAll) {
         set({
           messages: (get().messages || []).map(m =>
-            m._id === messageId ? { ...m, isDeletedForAll: true, text: null, image: null, audio: null } : m
+            m._id === messageId ? {
+              ...m,
+              isDeletedForAll: true,
+              text: null,
+              image: null,
+              audio: null,
+              document: null,
+              reactions: [],
+              linkPreview: null,
+              replyTo: null,
+              isPinned: false
+            } : m
           ),
         });
       } else {
