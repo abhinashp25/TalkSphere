@@ -37,7 +37,7 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://*.cloudinary.com", "https://*.tenor.com", "https://*.googleapis.com", "https://*.googleusercontent.com", "https://lh3.googleusercontent.com"],
-        connectSrc: ["'self'", "ws:", "wss:", "http://localhost:3000", "https://realtime-chat-app-1b5af.firebaseapp.com", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://www.google-analytics.com", "https://*.google-analytics.com"],
+        connectSrc: ["'self'", "ws:", "wss:", "http://localhost:3000", "https://realtime-chat-app-1b5af.firebaseapp.com", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://firebase.googleapis.com", "https://*.googleapis.com", "https://www.google-analytics.com", "https://*.google-analytics.com"],
         frameAncestors: ["'none'"],
       },
     },
