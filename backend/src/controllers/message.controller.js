@@ -4,6 +4,7 @@ import { getReceiverSocketId, io } from "../lib/socket.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
 import { extractFirstUrl, fetchLinkPreview } from "../lib/linkPreview.js";
+import { validateBase64File } from "../lib/fileValidator.js";
 
 // ── Contacts & Chat List ──────────────────────────────────────────────────
 
@@ -133,11 +134,55 @@ export const sendMessage = async (req, res) => {
       return res.status(403).json({ message: "You have blocked this user." });
     if (receiver.blockedUsers.some(id => id.equals(senderId)))
       return res.status(403).json({ message: "Cannot send message." });
-
     let imageUrl, audioUrl, documentObj;
-    if (image) { const r = await cloudinary.uploader.upload(image); imageUrl = r.secure_url; }
-    if (audio) { const r = await cloudinary.uploader.upload(audio, { resource_type: "auto" }); audioUrl = r.secure_url; }
+    if (image) {
+      const validation = validateBase64File(
+        image,
+        ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        5 * 1024 * 1024 // 5MB
+      );
+      if (!validation.isValid) {
+        return res.status(400).json({ message: `Image upload failed: ${validation.message}` });
+      }
+      const r = await cloudinary.uploader.upload(image); 
+      imageUrl = r.secure_url; 
+    }
+    if (audio) {
+      const validation = validateBase64File(
+        audio,
+        ["audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg", "audio/webm", "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/aac"],
+        10 * 1024 * 1024 // 10MB
+      );
+      if (!validation.isValid) {
+        return res.status(400).json({ message: `Audio upload failed: ${validation.message}` });
+      }
+      const r = await cloudinary.uploader.upload(audio, { resource_type: "auto" }); 
+      audioUrl = r.secure_url; 
+    }
     if (req.body.document) {
+      const allowedDocTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "text/plain",
+        "text/html",
+        "text/css",
+        "application/json",
+        "application/zip",
+        "application/x-zip-compressed"
+      ];
+      const validation = validateBase64File(
+        req.body.document.data,
+        allowedDocTypes,
+        25 * 1024 * 1024 // 25MB
+      );
+      if (!validation.isValid) {
+        return res.status(400).json({ message: `Document upload failed: ${validation.message}` });
+      }
       const r = await cloudinary.uploader.upload(req.body.document.data, { resource_type: "raw" });
       documentObj = { url: r.secure_url, filename: req.body.document.filename, size: req.body.document.size };
     }

@@ -1,5 +1,6 @@
 import Message from "../models/Message.js";
 import User from "../models/User.js";
+import { escapeRegex } from "../lib/utils.js";
 
 // Searches across ALL conversations the user is part of.
 export const globalSearch = async (req, res) => {
@@ -11,10 +12,11 @@ export const globalSearch = async (req, res) => {
       return res.status(400).json({ message: "Query must be at least 2 characters." });
 
     const query = q.trim();
+    const escapedQuery = escapeRegex(query);
 
     const messages = await Message.find({
       $or: [{ senderId: myId }, { receiverId: myId }],
-      text: { $regex: query, $options: "i" },
+      text: { $regex: escapedQuery, $options: "i" },
       isDeletedForAll: false,
       deletedFor: { $nin: [myId] },
     })

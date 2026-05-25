@@ -3,6 +3,7 @@ import { io } from "../lib/socket.js";
 import Group from "../models/Group.js";
 import GroupMessage from "../models/GroupMessage.js";
 import User from "../models/User.js";
+import { validateBase64File } from "../lib/fileValidator.js";
 
 export const createGroup = async (req, res) => {
   try {
@@ -13,6 +14,14 @@ export const createGroup = async (req, res) => {
 
     let picUrl = "";
     if (groupPic) {
+      const validation = validateBase64File(
+        groupPic,
+        ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        5 * 1024 * 1024 // 5MB
+      );
+      if (!validation.isValid) {
+        return res.status(400).json({ message: `Group picture upload failed: ${validation.message}` });
+      }
       const upload = await cloudinary.uploader.upload(groupPic);
       picUrl = upload.secure_url;
     }
@@ -75,8 +84,30 @@ export const sendGroupMessage = async (req, res) => {
     if (!group) return res.status(403).json({ message: "Not a member." });
 
     let imageUrl, audioUrl;
-    if (image) { const r = await cloudinary.uploader.upload(image); imageUrl = r.secure_url; }
-    if (audio) { const r = await cloudinary.uploader.upload(audio, { resource_type: "auto" }); audioUrl = r.secure_url; }
+    if (image) {
+      const validation = validateBase64File(
+        image,
+        ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        5 * 1024 * 1024 // 5MB
+      );
+      if (!validation.isValid) {
+        return res.status(400).json({ message: `Image upload failed: ${validation.message}` });
+      }
+      const r = await cloudinary.uploader.upload(image);
+      imageUrl = r.secure_url;
+    }
+    if (audio) {
+      const validation = validateBase64File(
+        audio,
+        ["audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg", "audio/webm", "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/aac"],
+        10 * 1024 * 1024 // 10MB
+      );
+      if (!validation.isValid) {
+        return res.status(400).json({ message: `Audio upload failed: ${validation.message}` });
+      }
+      const r = await cloudinary.uploader.upload(audio, { resource_type: "auto" });
+      audioUrl = r.secure_url;
+    }
 
     const msg = new GroupMessage({
       groupId, senderId, text, image: imageUrl, audio: audioUrl,

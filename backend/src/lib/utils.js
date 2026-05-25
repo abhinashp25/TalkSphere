@@ -14,10 +14,17 @@ export const generateToken = (userId, res) => {
         secure: ENV.NODE_ENV === "development" ? false : true, // Use secure cookies in production
         sameSite: "strict" //CSRF protection by restricting cookie to same site requests    
     });
-
-     
-
 }
+
+/**
+ * Escapes characters that have special meaning in regular expressions.
+ * 
+ * @param {string} string - The raw string to escape
+ * @returns {string}
+ */
+export const escapeRegex = (string) => {
+  return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
+};
 
 // http://localhost
 // https://dsmakm.com

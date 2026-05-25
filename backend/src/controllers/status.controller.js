@@ -1,6 +1,7 @@
 import Status from "../models/status.model.js";
 import User from "../models/User.js";
 import cloudinary from "../lib/cloudinary.js";
+import { validateBase64File } from "../lib/fileValidator.js";
 
 export const uploadStatus = async (req, res) => {
   try {
@@ -8,6 +9,14 @@ export const uploadStatus = async (req, res) => {
     let imageUrl = content;
 
     if (type === "image") {
+      const validation = validateBase64File(
+        content,
+        ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        5 * 1024 * 1024 // 5MB
+      );
+      if (!validation.isValid) {
+        return res.status(400).json({ message: `Status upload failed: ${validation.message}` });
+      }
       const uploadResponse = await cloudinary.uploader.upload(content);
       imageUrl = uploadResponse.secure_url;
     }

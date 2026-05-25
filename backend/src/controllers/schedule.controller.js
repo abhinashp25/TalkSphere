@@ -3,6 +3,7 @@ import { getReceiverSocketId, io } from "../lib/socket.js";
 import Message from "../models/Message.js";
 import ScheduledMessage from "../models/ScheduledMessage.js";
 import User from "../models/User.js";
+import { validateBase64File } from "../lib/fileValidator.js";
 
 export const createScheduledMessage = async (req, res) => {
   try {
@@ -27,6 +28,14 @@ export const createScheduledMessage = async (req, res) => {
 
     let imageUrl;
     if (image) {
+      const validation = validateBase64File(
+        image,
+        ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        5 * 1024 * 1024 // 5MB
+      );
+      if (!validation.isValid) {
+        return res.status(400).json({ message: `Scheduled image upload failed: ${validation.message}` });
+      }
       const r = await cloudinary.uploader.upload(image);
       imageUrl = r.secure_url;
     }

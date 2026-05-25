@@ -66,6 +66,12 @@ const userSchema = new mongoose.Schema({
     otpHash:   { type: String, select: false },
     otpExpiry: { type: Date, select: false },
   },
+
+  // --- AI token usage ---
+  aiUsage: {
+    tokensUsed: { type: Number, default: 0 },
+    lastReset:  { type: Date, default: Date.now },
+  },
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);

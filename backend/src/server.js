@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import path from "path";
 import cors from "cors";
+import helmet from "helmet";
 
 import authRoutes      from "./routes/auth.route.js";
 import messageRoutes   from "./routes/message.route.js";
@@ -22,8 +23,45 @@ const __dirname = path.resolve();
 const PORT = ENV.PORT || 3000;
 
 app.set('trust proxy', 1); // Tell Express to trust Render's load balancer
+
+// Disable X-Powered-By header
+app.disable("x-powered-by");
+
+// Apply security headers via Helmet
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://apis.google.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://*.tenor.com", "https://*.googleapis.com"],
+        connectSrc: ["'self'", "ws:", "wss:", "http://localhost:3000", "https://realtime-chat-app-1b5af.firebaseapp.com", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com"],
+        frameAncestors: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    xssFilter: true,
+    noSniff: true,
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    frameguard: { action: "deny" },
+  })
+);
+
 app.use(express.json({ limit: "10mb" }));
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
+app.use(
+  cors({
+    origin: ENV.CLIENT_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  })
+);
 app.use(cookieParser());
 
 app.use("/api/auth",      authRoutes);
@@ -41,6 +79,21 @@ if (ENV.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }
+
+// Global error handling middleware (must be registered last)
+app.use((err, req, res, next) => {
+  console.error(`[Error] ${new Date().toISOString()} - ${req.method} ${req.originalUrl}:`, err);
+  
+  const statusCode = err.status || err.statusCode || 500;
+  const isProduction = ENV.NODE_ENV === "production";
+  
+  res.status(statusCode).json({
+    message: statusCode === 500 
+      ? "Something went wrong. Please try again later."
+      : err.message,
+    ...(isProduction ? {} : { stack: err.stack }),
+  });
+});
 
 mongoose.connection.once("open", () => {
   startScheduler();

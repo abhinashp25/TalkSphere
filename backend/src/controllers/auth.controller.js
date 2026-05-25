@@ -20,7 +20,7 @@ export const signup = async (req, res) => {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: "Email already exists" });
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
     const newUser = new User({ fullName, email, password: hashedPassword });
     const saved = await newUser.save();
@@ -186,12 +186,22 @@ export const firebaseSync = async (req, res) => {
   }
 };
 
+import { validateBase64File } from "../lib/fileValidator.js";
+
 export const updateProfile = async (req, res) => {
   try {
     const { profilePic, fullName, bio, status } = req.body;
     const updates = {};
 
     if (profilePic) {
+      const validation = validateBase64File(
+        profilePic,
+        ["image/jpeg", "image/png", "image/gif", "image/webp"],
+        5 * 1024 * 1024 // 5MB
+      );
+      if (!validation.isValid) {
+        return res.status(400).json({ message: validation.message });
+      }
       const upload = await cloudinary.uploader.upload(profilePic);
       updates.profilePic = upload.secure_url;
     }

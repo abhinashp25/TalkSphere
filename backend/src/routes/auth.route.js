@@ -8,23 +8,29 @@ import {
   firebaseSync
 } from "../controllers/auth.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
-import { arcjetProtection } from "../middleware/arcjet.middleware.js";
+import { generalRateLimit, authRateLimit, uploadRateLimit } from "../middleware/arcjet.middleware.js";
+import { validateSchema } from "../middleware/validation.middleware.js";
+import { signupSchema, loginSchema, updateProfileSchema } from "../schemas/validation.schemas.js";
 
 const router = express.Router();
-router.use(arcjetProtection);
 
-router.post("/firebase-sync",  firebaseSync);
-router.post("/signup",         signup);
-router.post("/login",          login);
-router.post("/logout",         logout);
-router.post("/2fa/verify",     verify2FALogin);
-router.post("/2fa/toggle",     protectRoute, toggle2FA);
-router.put("/update-profile",  protectRoute, updateProfile);
-router.patch("/privacy",       protectRoute, updatePrivacy);
+// Apply general API rate limits to checking and syncing
+router.post("/firebase-sync",  generalRateLimit, firebaseSync);
+router.post("/logout",         generalRateLimit, logout);
+
+// Apply strict auth rate limits and validation schemas to auth routes
+router.post("/signup",         authRateLimit, validateSchema(signupSchema), signup);
+router.post("/login",          authRateLimit, validateSchema(loginSchema), login);
+router.post("/2fa/verify",     authRateLimit, verify2FALogin);
+router.post("/2fa/toggle",     authRateLimit, protectRoute, toggle2FA);
+
+// Apply profile update validations and upload rate limits (if avatar is attached)
+router.put("/update-profile",  generalRateLimit, uploadRateLimit, protectRoute, validateSchema(updateProfileSchema), updateProfile);
+router.patch("/privacy",       generalRateLimit, protectRoute, updatePrivacy);
 
 // We manually check JWT here to avoid returning a 401 error code, 
 // which clutters the Chrome/Firefox console on startup when not logged in.
-router.get("/check", async (req, res) => {
+router.get("/check", generalRateLimit, async (req, res) => {
   try {
       const token = req.cookies.jwt;
       if (!token) return res.status(200).json(null);

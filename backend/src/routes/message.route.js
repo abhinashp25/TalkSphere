@@ -8,12 +8,16 @@ import {
   searchGifs,
 } from "../controllers/message.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
-import { arcjetProtection } from "../middleware/arcjet.middleware.js";
+import { generalRateLimit, uploadRateLimit } from "../middleware/arcjet.middleware.js";
+import { validateSchema } from "../middleware/validation.middleware.js";
+import { sendMessageSchema } from "../schemas/validation.schemas.js";
 
 const router = express.Router();
-router.use(arcjetProtection, protectRoute);
 
-// read-only
+// Apply general API rate limits and authentication baseline
+router.use(generalRateLimit, protectRoute);
+
+// Read-only endpoints
 router.get("/contacts",            getAllContacts);
 router.get("/chats",               getChatPartners);
 router.get("/archived",            getArchivedChats);
@@ -22,8 +26,8 @@ router.get("/blocked",             getBlockedUsers);
 router.get("/gifs",                searchGifs);
 router.get("/:id",                 getMessagesByUserId);
 
-// writes
-router.post("/send/:id",           sendMessage);
+// Write endpoints (uploadRateLimit runs only if attachments exist)
+router.post("/send/:id",           uploadRateLimit, validateSchema(sendMessageSchema), sendMessage);
 router.patch("/:id",               editMessage);
 router.put("/read/:id",            markMessagesAsRead);
 router.put("/react/:id",           toggleReaction);
@@ -33,6 +37,6 @@ router.put("/archive/:partnerId",  toggleArchiveChat);
 router.post("/block/:userId",      blockUser);
 router.delete("/block/:userId",    unblockUser);
 router.delete("/clear/:userId",    clearChat);
-router.delete("/:id",             deleteMessage);
+router.delete("/:id",              deleteMessage);
 
 export default router;

@@ -3,14 +3,15 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
+// Firebase configuration for frontend (public configuration, intentionally client-side exposed via VITE_)
 const firebaseConfig = {
-  apiKey: "AIzaSyBwtqBQyPzZ6WyEXxF6IagyC-BIPl1zKtY",
-  authDomain: "realtime-chat-app-1b5af.firebaseapp.com",
-  projectId: "realtime-chat-app-1b5af",
-  storageBucket: "realtime-chat-app-1b5af.firebasestorage.app",
-  messagingSenderId: "1044241114935",
-  appId: "1:1044241114935:web:3522cfee409e1d737e9cb2",
-  measurementId: "G-T23Q1PWVJG"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);

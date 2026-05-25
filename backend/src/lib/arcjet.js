@@ -1,33 +1,80 @@
 import arcjet, { shield, detectBot, slidingWindow } from "@arcjet/node";
 import { ENV } from "./env.js";
 
-const aj = arcjet({
+// Common setup options
+const baseConfig = {
   key: ENV.ARCJET_KEY,
-  // Let Arcjet know it's running behind proxies (Render)
   proxies: ["true"],
-  env: "production", // Force production mode so it stops throwing the development warning
+  env: ENV.NODE_ENV === "production" ? "production" : "development",
+};
+
+// 1. General API protection (60 requests per minute per IP)
+export const ajGeneral = arcjet({
+  ...baseConfig,
   rules: [
-    // Shield protects your app from common attacks e.g. SQL injection
     shield({ mode: "LIVE" }),
-    // Create a bot detection rule
     detectBot({
-      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
-      // Block all bots except the following
-      allow: [
-        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
-        // Uncomment to allow these other common bot categories
-        // See the full list at https://arcjet.com/bot-list
-        //"CATEGORY:MONITOR", // Uptime monitoring services
-        //"CATEGORY:PREVIEW", // Link previews e.g. Slack, Discord
-      ],
+      mode: "LIVE",
+      allow: ["CATEGORY:SEARCH_ENGINE"],
     }),
-    // Create a token bucket rate limit. Other algorithms are supported.
     slidingWindow({
-      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
-      max: 100, 
-      interval: 60, // 1 minute
+      mode: "LIVE",
+      max: 60,
+      interval: 60,
     }),
   ],
 });
 
-export default aj;
+// 2. Auth routes protection (5 requests per 15 minutes per IP)
+export const ajAuth = arcjet({
+  ...baseConfig,
+  rules: [
+    shield({ mode: "LIVE" }),
+    detectBot({
+      mode: "LIVE",
+      allow: ["CATEGORY:SEARCH_ENGINE"],
+    }),
+    slidingWindow({
+      mode: "LIVE",
+      max: 5,
+      interval: 900, // 15 minutes
+    }),
+  ],
+});
+
+// 3. AI / LLM protection (10 requests per minute per user)
+export const ajAI = arcjet({
+  ...baseConfig,
+  rules: [
+    shield({ mode: "LIVE" }),
+    detectBot({
+      mode: "LIVE",
+      allow: ["CATEGORY:SEARCH_ENGINE"],
+    }),
+    slidingWindow({
+      mode: "LIVE",
+      max: 10,
+      interval: 60,
+      characteristics: ["userId"],
+    }),
+  ],
+});
+
+// 4. File upload protection (5 requests per minute per IP)
+export const ajUpload = arcjet({
+  ...baseConfig,
+  rules: [
+    shield({ mode: "LIVE" }),
+    detectBot({
+      mode: "LIVE",
+      allow: ["CATEGORY:SEARCH_ENGINE"],
+    }),
+    slidingWindow({
+      mode: "LIVE",
+      max: 5,
+      interval: 60,
+    }),
+  ],
+});
+
+export default ajGeneral;
