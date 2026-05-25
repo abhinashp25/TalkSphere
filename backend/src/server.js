@@ -33,11 +33,12 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://apis.google.com", "https://www.googletagmanager.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://apis.google.com", "https://www.googletagmanager.com", "https://*.firebaseapp.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://*.cloudinary.com", "https://*.tenor.com", "https://*.googleapis.com", "https://*.googleusercontent.com", "https://lh3.googleusercontent.com"],
-        connectSrc: ["'self'", "ws:", "wss:", "http://localhost:3000", "https://realtime-chat-app-1b5af.firebaseapp.com", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://firebase.googleapis.com", "https://*.googleapis.com", "https://www.google-analytics.com", "https://*.google-analytics.com"],
+        imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://*.cloudinary.com", "https://*.tenor.com", "https://*.googleapis.com", "https://*.googleusercontent.com", "https://lh3.googleusercontent.com", "https://img.icons8.com", "https://i.pravatar.cc"],
+        connectSrc: ["'self'", "ws:", "wss:", "http://localhost:3000", "https://realtime-chat-app-1b5af.firebaseapp.com", "https://*.firebaseapp.com", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://firebase.googleapis.com", "https://*.googleapis.com", "https://www.google-analytics.com", "https://*.google-analytics.com", "https://accounts.google.com"],
+        frameSrc: ["'self'", "https://realtime-chat-app-1b5af.firebaseapp.com", "https://*.firebaseapp.com"],
         frameAncestors: ["'none'"],
       },
     },
