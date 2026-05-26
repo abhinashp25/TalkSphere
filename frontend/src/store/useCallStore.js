@@ -160,10 +160,8 @@ export const useCallStore = create(persist((set, get) => ({
     const socket = useAuthStore.getState().socket;
     const { peerConnection, localStream, incomingCall, currentCallStartTime, currentCallUser, currentCallIsVideo, currentCallType, callHistory } = get();
 
-    if (emit && peerConnection) {
-      // Find the remote user we were talking to - typically handled by knowing who initiated.
-      // We will just broadcast endCall cleanly if we had a connection.
-      // This is simplified.
+    if (emit && socket && currentCallUser) {
+      socket.emit("endCall", { to: currentCallUser });
     }
 
     if (peerConnection) peerConnection.close();
@@ -173,7 +171,7 @@ export const useCallStore = create(persist((set, get) => ({
     if (currentCallStartTime && currentCallUser) {
       const now = Date.now();
       const diffSecs = Math.floor((now - currentCallStartTime)/1000);
-      const isMissed = get().callState === "RINGING" || get().callState === "IDLE";
+      const isMissed = currentCallType === "incoming" && (get().callState === "RINGING" || get().callState === "IDLE");
       
       const newCallData = {
         _id: now.toString(),

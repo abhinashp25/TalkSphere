@@ -236,7 +236,7 @@ export default function CreateGroupModal({ onClose }) {
                           {c.fullName}
                         </p>
                         <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>
-                          {c.status || c.email}
+                          {c.status || "Hey there! I am using Chatify."}
                         </p>
                       </div>
                       <div

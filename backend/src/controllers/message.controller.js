@@ -51,7 +51,11 @@ export const getChatPartners = async (req, res) => {
 
     const enriched = partners.map(p => {
       const lastMsg = partnerLastMsg[p._id.toString()];
-      const disappearSeconds = currentUser.disappearTimers?.get(p._id.toString()) || 0;
+      const disappearSeconds = currentUser.disappearTimers
+        ? (typeof currentUser.disappearTimers.get === "function"
+            ? currentUser.disappearTimers.get(p._id.toString())
+            : currentUser.disappearTimers[p._id.toString()]) || 0
+        : 0;
       return {
         ...p.toObject(),
         lastMessage: {
@@ -188,7 +192,11 @@ export const sendMessage = async (req, res) => {
     }
 
     const senderUser = await User.findById(senderId).select("disappearTimers");
-    const disappearSeconds = senderUser.disappearTimers?.get(receiverId.toString()) || 0;
+    const disappearSeconds = senderUser.disappearTimers
+      ? (typeof senderUser.disappearTimers.get === "function"
+          ? senderUser.disappearTimers.get(receiverId.toString())
+          : senderUser.disappearTimers[receiverId.toString()]) || 0
+      : 0;
     const expiresAt = disappearSeconds > 0 ? new Date(Date.now() + disappearSeconds * 1000) : null;
 
     const newMessage = new Message({

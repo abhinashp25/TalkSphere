@@ -4,6 +4,19 @@ import { CameraIcon, Edit2Icon, CheckIcon, UserIcon, ArrowLeftIcon, InfoIcon } f
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
+const WHATSAPP_STATUSES = [
+  "Available",
+  "Busy",
+  "At school",
+  "At the movies",
+  "At work",
+  "Battery about to die",
+  "In a meeting",
+  "Gyming",
+  "Sleeping",
+  "Urgent calls only"
+];
+
 export default function ProfileSection({ onClose }) {
   const { authUser, updateProfile, isUpdatingProfile } = useAuthStore();
   const fileInputRef = useRef(null);
@@ -58,26 +71,31 @@ export default function ProfileSection({ onClose }) {
       </div>
 
       <div className="flex-1 overflow-y-auto" style={{ background: "var(--bg-primary)" }}>
-        {/* Avatar Section */}
-        <div className="flex justify-center py-8">
-          <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-            <img
-              src={authUser.profilePic || "/avatar.png"}
-              alt="Profile"
-              className="w-40 h-40 rounded-full object-cover transition-opacity duration-300 group-hover:opacity-60 border-2 border-transparent relative z-10"
-            />
-            <div className="absolute inset-0 z-20 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
-              <CameraIcon className="w-8 h-8 text-white mb-2" />
-              <span className="text-white text-xs text-center px-4 uppercase font-medium">
-                Change<br/>Profile Photo
-              </span>
-            </div>
-            {isUpdatingProfile && (
-              <div className="absolute inset-0 z-30 flex items-center justify-center rounded-full bg-black/60">
-                <div className="w-8 h-8 border-4 border-t-white border-white/20 rounded-full animate-spin" />
+        {/* Beautiful Premium Profile Banner */}
+        <div className="relative h-32 flex-shrink-0 w-full mb-14" style={{
+          background: "linear-gradient(135deg, rgba(79,209,197,0.85) 0%, rgba(102,126,234,0.85) 100%)",
+        }}>
+          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 z-10">
+            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              <img
+                src={authUser.profilePic || "/avatar.png"}
+                alt="Profile"
+                className="w-28 h-28 rounded-full object-cover transition-opacity duration-300 group-hover:opacity-60 border-4 relative z-10"
+                style={{ borderColor: "var(--bg-primary)" }}
+              />
+              <div className="absolute inset-0 z-20 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50">
+                <CameraIcon className="w-6 h-6 text-white mb-1" />
+                <span className="text-white text-[9px] text-center px-2 uppercase font-medium leading-tight">
+                  Change Photo
+                </span>
               </div>
-            )}
-            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
+              {isUpdatingProfile && (
+                <div className="absolute inset-0 z-30 flex items-center justify-center rounded-full bg-black/60">
+                  <div className="w-6 h-6 border-2 border-t-white border-white/20 rounded-full animate-spin" />
+                </div>
+              )}
+              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
+            </div>
           </div>
         </div>
 
@@ -134,6 +152,36 @@ export default function ProfileSection({ onClose }) {
             <button onClick={() => editBio ? saveBio() : setEditBio(true)} className="ml-4 p-1 rounded-full transition-colors" style={{ color: "var(--text-muted)" }}>
               {editBio ? <CheckIcon className="w-5 h-5" style={{ color: "var(--accent)" }} /> : <Edit2Icon className="w-5 h-5 hover:text-white" />}
             </button>
+          </div>
+        </div>
+
+        {/* Predefined Statuses (WhatsApp Style) */}
+        <div className="px-7 py-4 mt-4">
+          <p className="text-[12px] font-bold uppercase tracking-wider mb-3" style={{ color: "var(--text-muted)" }}>
+            Select standard about status
+          </p>
+          <div className="flex flex-col rounded-xl overflow-hidden shadow-lg" style={{ border: "1px solid var(--border)", background: "var(--bg-secondary)" }}>
+            {WHATSAPP_STATUSES.map((statusText, idx) => {
+              const isActive = (authUser.bio || "Available") === statusText;
+              return (
+                <button
+                  key={statusText}
+                  onClick={async () => {
+                    setBioVal(statusText);
+                    await updateProfile({ bio: statusText });
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-white/5 active:scale-[0.99] duration-100"
+                  style={{
+                    borderBottom: idx < WHATSAPP_STATUSES.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none",
+                  }}
+                >
+                  <span className="text-[14.5px]" style={{ color: isActive ? "var(--accent)" : "var(--text-primary)", fontWeight: isActive ? "600" : "400" }}>
+                    {statusText}
+                  </span>
+                  {isActive && <CheckIcon className="w-4 h-4" style={{ color: "var(--accent)" }} />}
+                </button>
+              );
+            })}
           </div>
         </div>
         

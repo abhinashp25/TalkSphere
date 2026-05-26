@@ -80,8 +80,9 @@ export const aiRateLimit = async (req, res, next) => {
 // File upload endpoint protection: 5 requests per minute per IP
 export const uploadRateLimit = async (req, res, next) => {
   try {
-    const { image, audio, document, groupPic, content } = req.body;
-    const isUpload = image || audio || document || groupPic || (content && req.body.type === "image");
+    const body = req.body || {};
+    const { image, audio, document, groupPic, content } = body;
+    const isUpload = image || audio || document || groupPic || (content && body.type === "image");
 
     if (!isUpload) {
       return next();

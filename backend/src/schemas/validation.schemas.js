@@ -29,17 +29,17 @@ export const updateProfileSchema = z.object({
 
 // Message schema
 export const sendMessageSchema = z.object({
-  text: z.string().max(2000, "Message text cannot exceed 2000 characters").optional(),
-  image: z.string().optional(),
-  audio: z.string().optional(),
-  replyTo: z.any().optional(),
-  isForwarded: z.boolean().optional(),
-  isWhisper: z.boolean().optional(),
+  text: z.string().max(2000, "Message text cannot exceed 2000 characters").nullable().optional(),
+  image: z.string().nullable().optional(),
+  audio: z.string().nullable().optional(),
+  replyTo: z.any().nullable().optional(),
+  isForwarded: z.boolean().nullable().optional(),
+  isWhisper: z.boolean().nullable().optional(),
   document: z.object({
     data: z.string(),
     filename: z.string(),
     size: z.number(),
-  }).optional(),
+  }).nullable().optional(),
 });
 
 // Create group schema

@@ -17,6 +17,11 @@ export const setDisappearTimer = async (req, res) => {
     const user = await User.findById(myId);
     if (!user) return res.status(404).json({ message: "User not found." });
 
+    // Safely ensure disappearTimers is a Map before write operations
+    if (!user.disappearTimers || typeof user.disappearTimers.set !== "function") {
+      user.disappearTimers = new Map();
+    }
+
     if (Number(seconds) === 0) {
       user.disappearTimers.delete(partnerId);
     } else {
@@ -43,7 +48,11 @@ export const getDisappearTimer = async (req, res) => {
   try {
     const { partnerId } = req.params;
     const user = await User.findById(req.user._id).select("disappearTimers");
-    const seconds = user.disappearTimers?.get(partnerId) || 0;
+    const seconds = user.disappearTimers
+      ? (typeof user.disappearTimers.get === "function"
+          ? user.disappearTimers.get(partnerId)
+          : user.disappearTimers[partnerId]) || 0
+      : 0;
     res.json({ seconds, partnerId });
   } catch (e) { console.error("Error:", e.message); res.status(500).json({ message: "Server error" }); }
 };

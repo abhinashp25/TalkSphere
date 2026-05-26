@@ -9,9 +9,9 @@ export const validateSchema = (schema) => (req, res, next) => {
     schema.parse(req.body);
     next();
   } catch (error) {
-    const errorDetails = error.errors
-      .map((err) => `${err.path.join(".")}: ${err.message}`)
-      .join(", ");
+    const errorDetails = Array.isArray(error.errors)
+      ? error.errors.map((err) => `${err.path.join(".")}: ${err.message}`).join(", ")
+      : error.message || String(error);
       
     console.warn(
       `[Validation Failed] ${new Date().toISOString()} - ${req.method} ${req.originalUrl} - IP: ${req.ip} - Error: ${errorDetails}`

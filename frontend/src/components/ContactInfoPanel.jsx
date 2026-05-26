@@ -132,7 +132,6 @@ export default function ContactInfoPanel({ user, onClose, onClearChat, onArchive
           >
             {user.fullName}
           </h2>
-          <p className="text-[15px] mt-1" style={{ color: "var(--text-secondary)" }}>{user.email}</p>
           <p
             className="text-[13px] mt-1"
             style={{ color: isOnline ? "var(--online, #10b981)" : "var(--text-muted)" }}
