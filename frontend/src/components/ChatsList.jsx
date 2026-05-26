@@ -272,7 +272,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
           )}
 
           {visible.map((conv) => {
-            const isOnline = !conv.isGroup && onlineUsers.includes(conv._id);
+            const isOnline = !conv.isGroup && onlineUsers.map(String).includes(String(conv._id));
             const isActive = conv.isGroup ? selectedGroup?._id === conv._id : selectedUser?._id === conv._id;
             const unread   = conv.unreadBadge;
             const isFav    = favourites?.includes(conv._id);

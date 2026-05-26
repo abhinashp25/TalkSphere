@@ -45,8 +45,8 @@ export default function ContactList() {
     return !sidebarSearch || c.fullName.toLowerCase().includes(sidebarSearch.toLowerCase());
   });
 
-  const online  = filtered.filter((c) => onlineUsers.includes(c._id));
-  const offline = filtered.filter((c) => !onlineUsers.includes(c._id));
+  const online  = filtered.filter((c) => onlineUsers.map(String).includes(String(c._id)));
+  const offline = filtered.filter((c) => !onlineUsers.map(String).includes(String(c._id)));
 
   if (!filtered.length) return (
     <div className="flex flex-col items-center justify-center py-20 gap-4 px-6">

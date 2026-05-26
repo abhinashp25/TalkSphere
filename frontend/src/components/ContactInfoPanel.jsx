@@ -25,7 +25,7 @@ export default function ContactInfoPanel({ user, onClose, onClearChat, onArchive
   const [showQR,        setShowQR]          = useState(false);
   const [blocked,       setBlocked]         = useState(isUserBlocked(user._id));
 
-  const isOnline = onlineUsers.includes(user._id);
+  const isOnline = onlineUsers.map(String).includes(String(user._id));
   const lastSeen = lastSeenMap[user._id] || user.lastSeen;
 
   const [now, setNow] = useState(() => Date.now());

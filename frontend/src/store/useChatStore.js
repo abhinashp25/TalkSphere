@@ -514,8 +514,11 @@ export const useChatStore = create((set, get) => ({
     });
 
     socket.on("messagesRead", ({ by }) => {
-      if (by !== selectedUser._id) return;
-      const updated = (get().messages || []).map(m => m.receiverId === by && !m.isRead ? { ...m, isRead: true } : m);
+      if (by !== selectedUser?._id) return;
+      const updated = (get().messages || []).map(m => {
+        const recId = m.receiverId?._id ? String(m.receiverId._id) : String(m.receiverId);
+        return recId === String(by) && !m.isRead ? { ...m, isRead: true } : m;
+      });
       set({ 
         messages: updated,
         messagesCache: {

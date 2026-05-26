@@ -38,7 +38,7 @@ export default function ChatHeader({ onAISummary }) {
   const menuRef   = useRef(null);
   const searchRef = useRef(null);
 
-  const isOnline = onlineUsers.includes(selectedUser._id);
+  const isOnline = onlineUsers.map(String).includes(String(selectedUser?._id));
   const isTyping = typingUsers[selectedUser._id];
   const lastSeen = lastSeenMap[selectedUser._id] || selectedUser.lastSeen;
 

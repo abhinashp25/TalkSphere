@@ -7,10 +7,11 @@ function MessageTicks({ message }) {
 
   // If it's a group, the "delivered/read" logic is incredibly complex (array of readBy, deliveredTo).
   // Assuming basic 1-to-1 logic for now.
-  const receiverId = typeof message.receiverId === 'object' ? message.receiverId._id : message.receiverId;
+  const recId = message.receiverId?._id ? String(message.receiverId._id) : String(message.receiverId);
+  const selId = selectedUser?._id ? String(selectedUser._id) : "";
   
   // Delivered if the receiver is online.
-  const isDelivered = onlineUsers.includes(receiverId || selectedUser?._id);
+  const isDelivered = onlineUsers.map(String).includes(recId || selId);
 
   if (message.isOptimistic) {
     return (
