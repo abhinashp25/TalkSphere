@@ -334,13 +334,23 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                   <div className="flex items-center justify-between gap-2 mt-0.5">
                     <div className="text-[14px] truncate flex-1 font-normal text-[#a3a3a3]">
                       {isTyping ? (
-                        <div className="flex items-center gap-1.5 text-white">
-                          <span className="italic">Typing</span>
-                          <div className="flex gap-0.5 pt-1">
-                            <span className="w-1 h-1 bg-white rounded-full typing-dot"></span>
-                            <span className="w-1 h-1 bg-white rounded-full typing-dot"></span>
-                            <span className="w-1 h-1 bg-white rounded-full typing-dot"></span>
-                          </div>
+                        <div className="flex items-center gap-1.5 text-[#4fd1c5]">
+                          <span className="italic font-medium">
+                            {isTyping === "recording" || isTyping === "audio" ? "Recording audio" : "Typing"}
+                          </span>
+                          {isTyping === "recording" || isTyping === "audio" ? (
+                            <span className="flex gap-0.5 pt-1">
+                              <span className="w-1 h-1 rounded-full bg-[#4fd1c5] animate-pulse" />
+                              <span className="w-1 h-1 rounded-full bg-[#4fd1c5] animate-pulse" style={{ animationDelay: "150ms" }} />
+                              <span className="w-1 h-1 rounded-full bg-[#4fd1c5] animate-pulse" style={{ animationDelay: "300ms" }} />
+                            </span>
+                          ) : (
+                            <div className="flex gap-0.5 pt-1 text-white">
+                              <span className="w-1 h-1 bg-white rounded-full typing-dot"></span>
+                              <span className="w-1 h-1 bg-white rounded-full typing-dot"></span>
+                              <span className="w-1 h-1 bg-white rounded-full typing-dot"></span>
+                            </div>
+                          )}
                         </div>
                       ) : conv.lastMsgObj ? (
                         <>

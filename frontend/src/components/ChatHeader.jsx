@@ -160,11 +160,21 @@ export default function ChatHeader({ onAISummary }) {
             </div>
             {isTyping ? (
               <div className="flex items-center gap-1.5">
-                <span className="text-[12px] text-white italic">typing</span>
-                <span className="flex gap-0.5 pt-1">{[0,100,200].map((d) => (
-                  <span key={d} className="w-1 h-1 rounded-full animate-bounce bg-white typing-dot"
-                    style={{ animationDelay: `${d}ms` }} />
-                ))}</span>
+                <span className="text-[12px] text-[#4fd1c5] font-medium italic">
+                  {isTyping === "recording" || isTyping === "audio" ? "recording audio" : "typing"}
+                </span>
+                {isTyping === "recording" || isTyping === "audio" ? (
+                  <span className="flex gap-0.5 pt-1">
+                    <span className="w-1 h-1 rounded-full bg-[#4fd1c5] animate-pulse" />
+                    <span className="w-1 h-1 rounded-full bg-[#4fd1c5] animate-pulse" style={{ animationDelay: "150ms" }} />
+                    <span className="w-1 h-1 rounded-full bg-[#4fd1c5] animate-pulse" style={{ animationDelay: "300ms" }} />
+                  </span>
+                ) : (
+                  <span className="flex gap-0.5 pt-1">{[0,100,200].map((d) => (
+                    <span key={d} className="w-1 h-1 rounded-full animate-bounce bg-white typing-dot"
+                      style={{ animationDelay: `${d}ms` }} />
+                  ))}</span>
+                )}
               </div>
             ) : (
               <p className="text-[12px] font-medium" style={{ color: isOnline ? "var(--online, #10b981)" : "var(--text-secondary)" }}>

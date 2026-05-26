@@ -421,10 +421,10 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  emitTyping: () => {
+  emitTyping: (type = "text") => {
     const { selectedUser } = get();
     if (!selectedUser) return;
-    useAuthStore.getState().socket?.emit("typing", { to: selectedUser._id });
+    useAuthStore.getState().socket?.emit("typing", { to: selectedUser._id, type });
   },
   emitStopTyping: () => {
     const { selectedUser } = get();
@@ -432,16 +432,49 @@ export const useChatStore = create((set, get) => ({
     useAuthStore.getState().socket?.emit("stopTyping", { to: selectedUser._id });
   },
 
+  updateCachedMessage: (messageId, updater) => {
+    const cache = { ...get().messagesCache };
+    let foundPartnerId = null;
+    for (const partnerId of Object.keys(cache)) {
+      const msgs = cache[partnerId] || [];
+      const idx = msgs.findIndex(m => String(m._id) === String(messageId));
+      if (idx !== -1) {
+        const updatedMsgs = [...msgs];
+        updatedMsgs[idx] = updater(updatedMsgs[idx]);
+        cache[partnerId] = updatedMsgs;
+        foundPartnerId = partnerId;
+        break;
+      }
+    }
+    const currentSelectedUser = get().selectedUser;
+    let activeUpdated = null;
+    if (currentSelectedUser) {
+      const idx = (get().messages || []).findIndex(m => String(m._id) === String(messageId));
+      if (idx !== -1) {
+        activeUpdated = [...get().messages];
+        activeUpdated[idx] = updater(activeUpdated[idx]);
+      }
+    }
+    set({
+      messagesCache: cache,
+      ...(activeUpdated ? { messages: activeUpdated } : {})
+    });
+  },
+
   subscribeToMessages: () => {
-    const { selectedUser, isSoundEnabled } = get();
-    if (!selectedUser) return;
+    const { isSoundEnabled } = get();
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
 
     socket.on("newMessage", (msg) => {
-      const partnerId = msg.senderId === selectedUser._id ? msg.senderId : msg.receiverId;
+      const myId = useAuthStore.getState().authUser?._id;
+      if (!myId) return;
+      const partnerId = String(msg.senderId) === String(myId) ? String(msg.receiverId) : String(msg.senderId);
+
       const cachedMsgs = get().messagesCache[partnerId] || [];
+      if (cachedMsgs.some(m => String(m._id) === String(msg._id))) return;
+
       const updatedCache = [...cachedMsgs, msg];
-      
       set({
         messagesCache: {
           ...get().messagesCache,
@@ -449,143 +482,142 @@ export const useChatStore = create((set, get) => ({
         }
       });
 
-      if (msg.senderId !== selectedUser._id) {
-        set({ unreadCounts: { ...get().unreadCounts, [msg.senderId]: (get().unreadCounts[msg.senderId] || 0) + 1 } });
+      const currentSelectedUser = get().selectedUser;
+      if (!currentSelectedUser || String(partnerId) !== String(currentSelectedUser._id)) {
+        set({ unreadCounts: { ...get().unreadCounts, [partnerId]: (get().unreadCounts[partnerId] || 0) + 1 } });
+        get().getMyChatPartners();
         return;
       }
+
       set({ messages: updatedCache });
       if (isSoundEnabled) { const s = new Audio("/sounds/notification.mp3"); s.currentTime = 0; s.play().catch(() => {}); }
-      get().markMessagesAsRead(msg.senderId);
+      get().markMessagesAsRead(partnerId);
+      get().getMyChatPartners();
     });
 
     socket.on("messageLinkPreview", (updatedMsg) => {
-      const updated = (get().messages || []).map(m =>
-        m._id === updatedMsg._id ? { ...m, linkPreview: updatedMsg.linkPreview } : m
-      );
-      set({
-        messages: updated,
-        messagesCache: {
-          ...get().messagesCache,
-          [selectedUser._id]: updated
-        }
-      });
+      get().updateCachedMessage(updatedMsg._id, (msg) => ({ ...msg, linkPreview: updatedMsg.linkPreview }));
     });
 
     socket.on("scheduledMessageSent", ({ message }) => {
-      const { selectedUser: su } = get();
-      if (!su) return;
-      const isThisChat =
-        (message.senderId === useAuthStore.getState().authUser._id && message.receiverId === su._id) ||
-        (message.receiverId === useAuthStore.getState().authUser._id && message.senderId === su._id);
-      if (isThisChat) {
-        const updated = [...(get().messages || []), message];
-        set({ 
-          messages: updated,
+      const myId = useAuthStore.getState().authUser?._id;
+      if (!myId) return;
+      const partnerId = String(message.senderId) === String(myId) ? String(message.receiverId) : String(message.senderId);
+
+      const cachedMsgs = get().messagesCache[partnerId] || [];
+      if (!cachedMsgs.some(m => String(m._id) === String(message._id))) {
+        const updatedCache = [...cachedMsgs, message];
+        set({
           messagesCache: {
             ...get().messagesCache,
-            [su._id]: updated
+            [partnerId]: updatedCache
           }
         });
+
+        const currentSelectedUser = get().selectedUser;
+        if (currentSelectedUser && String(partnerId) === String(currentSelectedUser._id)) {
+          set({ messages: updatedCache });
+        }
       }
       get().getMyChatPartners();
       toast("📅 Scheduled message sent!", { duration: 2000 });
     });
 
     socket.on("messageEdited", ({ messageId, text, editedAt }) => {
-      const updated = (get().messages || []).map(m =>
-        m._id === messageId ? { ...m, text, editedAt } : m
-      );
-      set({
-        messages: updated,
-        messagesCache: {
-          ...get().messagesCache,
-          [selectedUser._id]: updated
-        }
-      });
+      get().updateCachedMessage(messageId, (msg) => ({ ...msg, text, editedAt }));
     });
 
     socket.on("disappearTimerChanged", ({ byUserId, seconds }) => {
-      if (byUserId === selectedUser._id) {
+      const currentSelectedUser = get().selectedUser;
+      if (currentSelectedUser && String(byUserId) === String(currentSelectedUser._id)) {
+        set({ disappearSeconds: seconds });
         const label = seconds === 0 ? "disabled disappearing messages"
           : seconds === 86400 ? "set messages to disappear in 24 hours"
           : "set a disappear timer";
-        toast(`⏱ ${selectedUser.fullName} ${label}`, { duration: 3000 });
+        toast(`⏱ ${currentSelectedUser.fullName} ${label}`, { duration: 3000 });
       }
     });
 
     socket.on("messagesRead", ({ by }) => {
-      if (by !== selectedUser?._id) return;
-      const updated = (get().messages || []).map(m => {
+      const currentSelectedUser = get().selectedUser;
+      const cachedMsgs = get().messagesCache[by] || [];
+      const updatedCache = cachedMsgs.map(m => {
         const recId = m.receiverId?._id ? String(m.receiverId._id) : String(m.receiverId);
         return recId === String(by) && !m.isRead ? { ...m, isRead: true } : m;
       });
-      set({ 
-        messages: updated,
+
+      set({
         messagesCache: {
           ...get().messagesCache,
-          [selectedUser._id]: updated
+          [by]: updatedCache
         }
       });
+
+      if (currentSelectedUser && String(by) === String(currentSelectedUser._id)) {
+        set({ messages: updatedCache });
+      }
     });
 
     socket.on("messageReaction", ({ messageId, reactions }) => {
-      const updated = (get().messages || []).map(m => m._id === messageId ? { ...m, reactions } : m);
-      set({ 
-        messages: updated,
-        messagesCache: {
-          ...get().messagesCache,
-          [selectedUser._id]: updated
-        }
-      });
+      get().updateCachedMessage(messageId, (msg) => ({ ...msg, reactions }));
     });
 
     socket.on("messageDeleted", ({ messageId, deletedForAll }) => {
-      let updated;
       if (deletedForAll) {
-        updated = (get().messages || []).map(m =>
-          m._id === messageId ? {
-            ...m,
-            isDeletedForAll: true,
-            text: null,
-            image: null,
-            audio: null,
-            document: null,
-            reactions: [],
-            linkPreview: null,
-            replyTo: null,
-            isPinned: false
-          } : m
-        );
+        get().updateCachedMessage(messageId, (msg) => ({
+          ...msg,
+          isDeletedForAll: true,
+          text: null,
+          image: null,
+          audio: null,
+          document: null,
+          reactions: [],
+          linkPreview: null,
+          replyTo: null,
+          isPinned: false
+        }));
       } else {
-        updated = (get().messages || []).filter(m => m._id !== messageId);
-      }
-      set({ 
-        messages: updated,
-        messagesCache: {
-          ...get().messagesCache,
-          [selectedUser._id]: updated
+        const cache = { ...get().messagesCache };
+        for (const partnerId of Object.keys(cache)) {
+          const msgs = cache[partnerId] || [];
+          const filtered = msgs.filter(m => String(m._id) !== String(messageId));
+          if (filtered.length !== msgs.length) {
+            cache[partnerId] = filtered;
+            break;
+          }
         }
-      });
+        const currentSelectedUser = get().selectedUser;
+        const activeFiltered = (get().messages || []).filter(m => String(m._id) !== String(messageId));
+        set({
+          messagesCache: cache,
+          messages: activeFiltered
+        });
+      }
     });
 
     socket.on("messagePinned", ({ messageId, isPinned }) => {
-      const msgs = (get().messages || []).map(m => m._id === messageId ? { ...m, isPinned } : m);
-      set({ 
-        messages: msgs, 
-        pinnedMessage: isPinned ? msgs.find(m => m._id === messageId) : null,
-        messagesCache: {
-          ...get().messagesCache,
-          [selectedUser._id]: msgs
-        }
-      });
+      get().updateCachedMessage(messageId, (msg) => ({ ...msg, isPinned }));
+      const currentSelectedUser = get().selectedUser;
+      if (currentSelectedUser) {
+        const activeMsgs = get().messages || [];
+        const pinned = activeMsgs.find(m => String(m._id) === String(messageId) && isPinned);
+        set({ pinnedMessage: pinned || null });
+      }
     });
 
     socket.on("userLastSeen", ({ userId, lastSeen }) => {
       set({ lastSeenMap: { ...get().lastSeenMap, [userId]: lastSeen } });
     });
 
-    socket.on("userTyping",        ({ from }) => { if (from !== selectedUser._id) return; set({ typingUsers: { ...get().typingUsers, [from]: true } }); });
-    socket.on("userStoppedTyping", ({ from }) => { const n = { ...get().typingUsers }; delete n[from]; set({ typingUsers: n }); });
+    socket.on("userTyping", ({ from, type }) => {
+      set({ typingUsers: { ...get().typingUsers, [from]: type || "text" } });
+    });
+
+    socket.on("userStoppedTyping", ({ from }) => {
+      const n = { ...get().typingUsers };
+      delete n[from];
+      set({ typingUsers: n });
+    });
   },
 
   unsubscribeFromMessages: () => {

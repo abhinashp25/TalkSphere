@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { MicIcon, StopCircleIcon, SendIcon, XIcon, WavesIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useChatStore } from "../store/useChatStore";
+import toast from "react-hot-toast";
 
 export default function VoiceRecorder({ onSend, onCancel }) {
   const [recording, setRecording]   = useState(false);
@@ -16,6 +18,15 @@ export default function VoiceRecorder({ onSend, onCancel }) {
 
   // Animated bars for visualizer
   const [bars, setBars] = useState(Array(12).fill(0));
+
+  useEffect(() => {
+    startRecording();
+    return () => {
+      mediaRef.current?.stop();
+      recognitionRef.current?.stop();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let intv;
@@ -45,6 +56,9 @@ export default function VoiceRecorder({ onSend, onCancel }) {
       mr.start();
       mediaRef.current = mr;
       
+      // Emit recording state via socket
+      useChatStore.getState().emitTyping("recording");
+      
       // Start Live Transcription Preview if available
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SR) {
@@ -64,8 +78,9 @@ export default function VoiceRecorder({ onSend, onCancel }) {
       setSeconds(0);
       setTranscript("");
       timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
-    } catch {
-      alert("Microphone access denied. Please allow microphone access.");
+    } catch (err) {
+      toast.error("Microphone access denied or not supported.");
+      onCancel();
     }
   };
 
@@ -74,6 +89,7 @@ export default function VoiceRecorder({ onSend, onCancel }) {
     recognitionRef.current?.stop();
     setRecording(false);
     clearInterval(timerRef.current);
+    useChatStore.getState().emitStopTyping();
   };
 
   const handleSend = () => {
@@ -81,10 +97,12 @@ export default function VoiceRecorder({ onSend, onCancel }) {
     const reader = new FileReader();
     reader.onloadend = () => onSend(reader.result);
     reader.readAsDataURL(audioBlob);
+    useChatStore.getState().emitStopTyping();
   };
 
   const handleCancel = () => {
     if (recording) stopRecording();
+    else useChatStore.getState().emitStopTyping();
     setBlob(null); setURL(null); setSeconds(0); setTranscript("");
     onCancel();
   };
@@ -152,8 +170,14 @@ export default function VoiceRecorder({ onSend, onCancel }) {
   }
 
   return (
-    <button onClick={startRecording} className="icon-btn text-[#a3a3a3] hover:text-[#4fd1c5]" title="Record voice message">
-      <MicIcon className="w-5 h-5" />
-    </button>
+    <div className="flex items-center gap-3 px-4 mb-1.5 rounded-2xl flex-1"
+         style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.1)', minHeight: 44 }}>
+      <button onClick={startRecording} className="icon-btn text-[#a3a3a3] hover:text-[#4fd1c5] flex items-center gap-2" title="Record voice message">
+        <MicIcon className="w-5 h-5 animate-pulse text-[#4fd1c5]" />
+        <span className="text-[12px] text-[#a3a3a3] italic">Connecting microphone...</span>
+      </button>
+      <div className="flex-1" />
+      <button onClick={handleCancel} className="icon-btn text-[#ef4444] hover:bg-[#ef4444]/10 p-1 rounded-full"><XIcon className="w-4 h-4" /></button>
+    </div>
   );
 }

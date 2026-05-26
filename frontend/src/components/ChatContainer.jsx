@@ -11,7 +11,7 @@ import ReplyBar          from "./ReplyBar";
 import ForwardModal      from "./ForwardModal";
 import LinkPreviewCard   from "./LinkPreviewCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X, ChevronDown, Languages, Loader2 } from "lucide-react";
+import { Sparkles, X, ChevronDown, Languages, Loader2, Mic } from "lucide-react";
 import { useAIStore } from "../store/useAIStore";
 
 const REACTION_EMOJIS = ["👍","❤️","😂","😮","😢","🔥"];
@@ -503,10 +503,19 @@ export default function ChatContainer() {
                 exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                 className="flex justify-start mb-[4px] px-2"
               >
-                <div className="typing-bubble gap-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.2)] border border-white/5 backdrop-blur-md rounded-2xl p-4 bg-white/5">
-                  <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></span>
-                  <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></span>
-                  <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></span>
+                <div className="typing-bubble gap-2 shadow-[0_4px_15px_rgba(0,0,0,0.2)] border border-white/5 backdrop-blur-md rounded-2xl p-4 bg-white/5 flex items-center">
+                  {typingUsers[selectedUser._id] === "recording" || typingUsers[selectedUser._id] === "audio" ? (
+                    <>
+                      <Mic size={15} className="text-[#4fd1c5] animate-pulse" />
+                      <span className="text-[13px] text-[#4fd1c5] font-medium italic">Recording audio...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></span>
+                      <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></span>
+                      <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></span>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}

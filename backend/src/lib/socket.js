@@ -35,10 +35,10 @@ io.on("connection", (socket) => {
     socket.leave(`group:${groupId}`);
   });
 
-  socket.on("typing", ({ to }) => {
+  socket.on("typing", ({ to, type }) => {
     const receiverSocketId = userSocketMap[to];
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("userTyping", { from: userId, name: socket.user.fullName });
+      io.to(receiverSocketId).emit("userTyping", { from: userId, name: socket.user.fullName, type });
     }
   });
 
