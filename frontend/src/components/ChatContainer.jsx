@@ -154,7 +154,7 @@ function AISummaryOverlay({ messages, user, onClose }) {
 export default function ChatContainer() {
   const {
     selectedUser, getMessagesByUserId, markMessagesAsRead,
-    messages, isMessagesLoading, subscribeToMessages, unsubscribeFromMessages,
+    messages, isMessagesLoading,
     toggleReaction, deleteMessage, searchQuery,
     setReplyingTo, toggleStarMessage, togglePinMessage, pinnedMessage, typingUsers
   } = useChatStore();
@@ -177,9 +177,7 @@ export default function ChatContainer() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     getMessagesByUserId(selectedUser._id);
-    subscribeToMessages();
     markMessagesAsRead(selectedUser._id);
-    return () => unsubscribeFromMessages();
   }, [selectedUser._id]);
 
   useEffect(() => {

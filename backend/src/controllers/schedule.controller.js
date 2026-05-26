@@ -100,12 +100,10 @@ export function startScheduler() {
           await newMsg.save();
 
           // Push via socket if receiver is online
-          const receiverSocketId = getReceiverSocketId(sm.receiverId.toString());
-          if (receiverSocketId) io.to(receiverSocketId).emit("newMessage", newMsg);
+          io.to(`user:${sm.receiverId}`).emit("newMessage", newMsg);
 
           // Also notify sender so their chat list updates
-          const senderSocketId = getReceiverSocketId(sm.senderId.toString());
-          if (senderSocketId) io.to(senderSocketId).emit("scheduledMessageSent", {
+          io.to(`user:${sm.senderId}`).emit("scheduledMessageSent", {
             scheduledId: sm._id,
             message: newMsg,
           });

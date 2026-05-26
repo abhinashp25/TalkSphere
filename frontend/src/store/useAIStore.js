@@ -7,6 +7,7 @@ export const useAIStore = create((set, get) => ({
   smartReplies: [],
   rateLimitUntil: 0,
   retryAfter: 0,
+  rateLimitIntervalId: null,
 
   clearAI: () => set({ aiMessages: [], smartReplies: [] }),
 
@@ -43,20 +44,24 @@ export const useAIStore = create((set, get) => ({
       let cooldown = 0;
 
       if (status === 429) {
-        // Rate limited — enforce 30s local cooldown
-        cooldown = 30;
-        errText = `⏳ Gemini rate limit hit. I'll be ready again in ${cooldown}s — the free tier allows ~15 messages/minute.`;
+        const serverCooldown = e?.response?.data?.retryAfter;
+        cooldown = typeof serverCooldown === "number" ? serverCooldown : 60;
+        errText = `⏳ Assistant rate limit hit. I'll be ready again in ${cooldown}s.`;
         set({ rateLimitUntil: Date.now() + cooldown * 1000, retryAfter: cooldown });
+
+        const existingInterval = get().rateLimitIntervalId;
+        if (existingInterval) clearInterval(existingInterval);
 
         const tick = setInterval(() => {
           const remaining = Math.ceil((get().rateLimitUntil - Date.now()) / 1000);
           if (remaining <= 0) {
             clearInterval(tick);
-            set({ retryAfter: 0 });
+            set({ retryAfter: 0, rateLimitIntervalId: null });
           } else {
             set({ retryAfter: remaining });
           }
         }, 1000);
+        set({ rateLimitIntervalId: tick });
       }
 
       const errMsg = {

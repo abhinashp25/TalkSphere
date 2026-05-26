@@ -1,4 +1,4 @@
-import { ajGeneral, ajAuth, ajAI, ajUpload } from "../lib/arcjet.js";
+import { ajGeneral, ajAuth, ajAI, ajUpload, ajTone } from "../lib/arcjet.js";
 import { isSpoofedBot } from "@arcjet/inspect";
 
 /**
@@ -63,7 +63,7 @@ export const authRateLimit = async (req, res, next) => {
   }
 };
 
-// AI assistant endpoint protection: 10 requests per minute per user
+// AI assistant endpoint protection: 30 requests per minute per user
 export const aiRateLimit = async (req, res, next) => {
   try {
     const userId = req.user?._id?.toString() || "anonymous";
@@ -73,6 +73,20 @@ export const aiRateLimit = async (req, res, next) => {
     next();
   } catch (error) {
     console.error("Error in aiRateLimit middleware:", error);
+    next();
+  }
+};
+
+// Tone analysis protection: 150 requests per minute per user
+export const toneRateLimit = async (req, res, next) => {
+  try {
+    const userId = req.user?._id?.toString() || "anonymous";
+    const decision = await ajTone.protect(req, { userId });
+    const deniedResponse = handleDecision(decision, res, "Too many tone analysis requests. Please try again in a minute.");
+    if (deniedResponse) return;
+    next();
+  } catch (error) {
+    console.error("Error in toneRateLimit middleware:", error);
     next();
   }
 };

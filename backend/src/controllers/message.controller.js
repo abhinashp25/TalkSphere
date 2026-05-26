@@ -215,15 +215,13 @@ export const sendMessage = async (req, res) => {
         if (!preview) return;
         await Message.findByIdAndUpdate(newMessage._id, { linkPreview: preview });
         const updated = await Message.findById(newMessage._id).lean();
-        const rSock = getReceiverSocketId(receiverId.toString());
-        const sSock = getReceiverSocketId(senderId.toString());
-        if (rSock) io.to(rSock).emit("messageLinkPreview", updated);
-        if (sSock) io.to(sSock).emit("messageLinkPreview", updated);
+        io.to(`user:${receiverId}`).emit("messageLinkPreview", updated);
+        io.to(`user:${senderId}`).emit("messageLinkPreview", updated);
       }).catch(err => console.error("link preview:", err.message));
     }
 
-    const receiverSocketId = getReceiverSocketId(receiverId);
-    if (receiverSocketId) io.to(receiverSocketId).emit("newMessage", newMessage);
+    io.to(`user:${receiverId}`).emit("newMessage", newMessage);
+    io.to(`user:${senderId}`).emit("newMessage", newMessage);
 
     res.status(201).json(newMessage);
   } catch (e) {
@@ -264,10 +262,8 @@ export const editMessage = async (req, res) => {
       editedAt:  message.editedAt,
     };
 
-    const sSocket = getReceiverSocketId(userId.toString());
-    const rSocket = getReceiverSocketId(message.receiverId.toString());
-    if (sSocket) io.to(sSocket).emit("messageEdited", payload);
-    if (rSocket) io.to(rSocket).emit("messageEdited", payload);
+    io.to(`user:${userId}`).emit("messageEdited", payload);
+    io.to(`user:${message.receiverId}`).emit("messageEdited", payload);
 
     res.json(message);
   } catch (e) {
@@ -292,8 +288,7 @@ export const markMessagesAsRead = async (req, res) => {
       { $set: { isRead: true } }
     );
     if (result.modifiedCount > 0) {
-      const sSocket = getReceiverSocketId(senderId);
-      if (sSocket) io.to(sSocket).emit("messagesRead", { by: receiverId.toString() });
+      io.to(`user:${senderId}`).emit("messagesRead", { by: receiverId.toString() });
     }
     res.json({ count: result.modifiedCount });
   } catch (e) { console.error("Error:", e.message); res.status(500).json({ error: "Internal server error" }); }
@@ -323,10 +318,8 @@ export const toggleReaction = async (req, res) => {
 
     const payload = { messageId: message._id.toString(), reactions: message.reactions };
     const otherId = message.senderId.equals(userId) ? message.receiverId : message.senderId;
-    const s1 = getReceiverSocketId(otherId.toString());
-    const s2 = getReceiverSocketId(userId.toString());
-    if (s1) io.to(s1).emit("messageReaction", payload);
-    if (s2) io.to(s2).emit("messageReaction", payload);
+    io.to(`user:${otherId}`).emit("messageReaction", payload);
+    io.to(`user:${userId}`).emit("messageReaction", payload);
 
     res.json(message);
   } catch (e) { console.error("Error:", e.message); res.status(500).json({ error: "Internal server error" }); }
@@ -364,9 +357,11 @@ export const deleteMessage = async (req, res) => {
     }
     await message.save();
 
-    const otherId = isSender ? message.receiverId.toString() : message.senderId.toString();
-    const otherSocket = getReceiverSocketId(otherId);
-    if (otherSocket) io.to(otherSocket).emit("messageDeleted", {
+    io.to(`user:${message.senderId}`).emit("messageDeleted", {
+      messageId: message._id.toString(),
+      deletedForAll: deleteForEveryone,
+    });
+    io.to(`user:${message.receiverId}`).emit("messageDeleted", {
       messageId: message._id.toString(),
       deletedForAll: deleteForEveryone,
     });
@@ -411,9 +406,8 @@ export const togglePinMessage = async (req, res) => {
     message.isPinned = !message.isPinned;
     await message.save();
 
-    const otherId = message.senderId.equals(req.user._id) ? message.receiverId : message.senderId;
-    const sock = getReceiverSocketId(otherId.toString());
-    if (sock) io.to(sock).emit("messagePinned", { messageId, isPinned: message.isPinned });
+    io.to(`user:${message.senderId}`).emit("messagePinned", { messageId, isPinned: message.isPinned });
+    io.to(`user:${message.receiverId}`).emit("messagePinned", { messageId, isPinned: message.isPinned });
 
     res.json({ isPinned: message.isPinned, messageId });
   } catch (e) { console.error("Error:", e.message); res.status(500).json({ message: "Server error" }); }
@@ -468,8 +462,7 @@ export const blockUser = async (req, res) => {
       await me.save();
     }
     // Let the blocked user's client know so it can update UI
-    const blockedSocket = getReceiverSocketId(userId);
-    if (blockedSocket) io.to(blockedSocket).emit("youWereBlocked", { by: req.user._id.toString() });
+    io.to(`user:${userId}`).emit("youWereBlocked", { by: req.user._id.toString() });
 
     res.json({ blocked: true });
   } catch (e) { console.error("Error:", e.message); res.status(500).json({ message: "Server error" }); }

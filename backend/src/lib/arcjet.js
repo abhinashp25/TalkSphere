@@ -42,7 +42,7 @@ export const ajAuth = arcjet({
   ],
 });
 
-// 3. AI / LLM protection (100 requests per minute per user)
+// 3. AI / LLM protection (30 requests per minute per user)
 export const ajAI = arcjet({
   ...baseConfig,
   rules: [
@@ -53,7 +53,25 @@ export const ajAI = arcjet({
     }),
     slidingWindow({
       mode: "LIVE",
-      max: 100, // Increased to 100 to support debounced real-time message tone analysis during standard typing
+      max: 30,
+      interval: 60,
+      characteristics: ["userId"],
+    }),
+  ],
+});
+
+// 4. Tone analysis protection (150 requests per minute per user)
+export const ajTone = arcjet({
+  ...baseConfig,
+  rules: [
+    shield({ mode: "LIVE" }),
+    detectBot({
+      mode: "LIVE",
+      allow: ["CATEGORY:SEARCH_ENGINE"],
+    }),
+    slidingWindow({
+      mode: "LIVE",
+      max: 150,
       interval: 60,
       characteristics: ["userId"],
     }),

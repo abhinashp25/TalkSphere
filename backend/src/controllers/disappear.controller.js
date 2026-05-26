@@ -29,13 +29,14 @@ export const setDisappearTimer = async (req, res) => {
     }
     await user.save();
 
-    const partnerSocketId = getReceiverSocketId(partnerId);
-    if (partnerSocketId) {
-      io.to(partnerSocketId).emit("disappearTimerChanged", {
-        byUserId: myId.toString(),
-        seconds: Number(seconds),
-      });
-    }
+    io.to(`user:${partnerId}`).emit("disappearTimerChanged", {
+      byUserId: myId.toString(),
+      seconds: Number(seconds),
+    });
+    io.to(`user:${myId}`).emit("disappearTimerChanged", {
+      byUserId: myId.toString(),
+      seconds: Number(seconds),
+    });
 
     res.json({ seconds: Number(seconds), partnerId });
   } catch (e) {

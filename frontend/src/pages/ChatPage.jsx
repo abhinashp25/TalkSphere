@@ -26,7 +26,7 @@ import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
 function ChatPage() {
   const { 
     activeTab, setActiveTab, selectedUser, setSelectedUser, chats, unreadCounts,
-    isSidebarCollapsed, setSidebarCollapsed 
+    isSidebarCollapsed, setSidebarCollapsed, subscribeToMessages, unsubscribeFromMessages
   } = useChatStore();
   const {
     groups, selectedGroup, setSelectedGroup,
@@ -44,8 +44,12 @@ function ChatPage() {
   useEffect(() => {
     fetchGroups();
     subscribeToGroupMessages();
+    subscribeToMessages();
     applyStoredTheme();
-    return () => unsubscribeFromGroupMessages();
+    return () => {
+      unsubscribeFromGroupMessages();
+      unsubscribeFromMessages();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

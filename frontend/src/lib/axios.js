@@ -10,8 +10,11 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 429) {
-      const message = error.response.data?.message || "Too many requests. Please try again later.";
-      toast.error(message);
+      const isToneRequest = error.config?.url?.includes("/ai/tone");
+      if (!isToneRequest) {
+        const message = error.response.data?.message || "Too many requests. Please try again later.";
+        toast.error(message);
+      }
     }
     return Promise.reject(error);
   }

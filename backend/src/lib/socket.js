@@ -36,17 +36,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("typing", ({ to, type }) => {
-    const receiverSocketId = userSocketMap[to];
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("userTyping", { from: userId, name: socket.user.fullName, type });
-    }
+    io.to(`user:${to}`).emit("userTyping", { from: userId, name: socket.user.fullName, type });
   });
 
   socket.on("stopTyping", ({ to }) => {
-    const receiverSocketId = userSocketMap[to];
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("userStoppedTyping", { from: userId });
-    }
+    io.to(`user:${to}`).emit("userStoppedTyping", { from: userId });
   });
   socket.on("groupTyping", ({ groupId }) => {
     socket.to(`group:${groupId}`).emit("groupUserTyping", {
