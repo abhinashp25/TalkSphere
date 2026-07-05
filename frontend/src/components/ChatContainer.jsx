@@ -7,7 +7,6 @@ import MessageInput      from "./MessageInput";
 import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
 import MessageTicks      from "./MessageTicks";
 import SmartReplies      from "./SmartReplies";
-import ReplyBar          from "./ReplyBar";
 import ForwardModal      from "./ForwardModal";
 import LinkPreviewCard   from "./LinkPreviewCard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -711,7 +710,6 @@ export default function ChatContainer() {
         />
       )}
 
-      <ReplyBar />
       <MessageInput onTextChange={setCurrentInput} />
 
       {forwardMsg && <ForwardModal message={forwardMsg} onClose={() => setForwardMsg(null)} />}
