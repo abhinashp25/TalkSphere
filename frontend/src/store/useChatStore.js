@@ -271,7 +271,22 @@ export const useChatStore = create((set, get) => ({
 
     try {
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, payload);
-      const sentMsgs = (get().messages || []).map(m => m._id === tempId ? res.data : m);
+      const realMsg = res.data;
+
+      // The socket "newMessage" event may have already arrived and replaced the temp
+      // entry with the real message. Guard against that to avoid a duplicate.
+      const currentMsgs = get().messages || [];
+      const alreadyResolved = currentMsgs.some(m => String(m._id) === String(realMsg._id));
+
+      let sentMsgs;
+      if (alreadyResolved) {
+        // Socket already added the real message — just remove the lingering temp entry
+        sentMsgs = currentMsgs.filter(m => m._id !== tempId);
+      } else {
+        // Normal case: replace the temp entry with the real message from the server
+        sentMsgs = currentMsgs.map(m => m._id === tempId ? realMsg : m);
+      }
+
       set({ 
         messages: sentMsgs,
         messagesCache: {
@@ -472,9 +487,32 @@ export const useChatStore = create((set, get) => ({
       const partnerId = String(msg.senderId) === String(myId) ? String(msg.receiverId) : String(msg.senderId);
 
       const cachedMsgs = get().messagesCache[partnerId] || [];
+
+      // Hard dedup — if this exact real _id is already in the cache, do nothing.
       if (cachedMsgs.some(m => String(m._id) === String(msg._id))) return;
 
-      const updatedCache = [...cachedMsgs, msg];
+      // If WE sent this message there is already an optimistic (temp-*) entry.
+      // Replace that temp entry with the real message so we never have duplicates.
+      // This is the race-condition fix: socket fires before HTTP response maps the temp.
+      const hasTemp = String(msg.senderId) === String(myId)
+        && cachedMsgs.some(m => String(m._id).startsWith("temp-"));
+
+      let updatedCache;
+      if (hasTemp) {
+        // Replace the OLDEST temp entry (there should only ever be one per send)
+        let replaced = false;
+        updatedCache = cachedMsgs.map(m => {
+          if (!replaced && String(m._id).startsWith("temp-")) {
+            replaced = true;
+            return msg; // swap temp → real
+          }
+          return m;
+        });
+      } else {
+        // Normal case: a message from another person — just append it
+        updatedCache = [...cachedMsgs, msg];
+      }
+
       set({
         messagesCache: {
           ...get().messagesCache,
@@ -484,13 +522,21 @@ export const useChatStore = create((set, get) => ({
 
       const currentSelectedUser = get().selectedUser;
       if (!currentSelectedUser || String(partnerId) !== String(currentSelectedUser._id)) {
-        set({ unreadCounts: { ...get().unreadCounts, [partnerId]: (get().unreadCounts[partnerId] || 0) + 1 } });
+        // Message for a chat not currently open — increment unread badge
+        if (String(msg.senderId) !== String(myId)) {
+          set({ unreadCounts: { ...get().unreadCounts, [partnerId]: (get().unreadCounts[partnerId] || 0) + 1 } });
+        }
         get().getMyChatPartners();
         return;
       }
 
       set({ messages: updatedCache });
-      if (isSoundEnabled) { const s = new Audio("/sounds/notification.mp3"); s.currentTime = 0; s.play().catch(() => {}); }
+      // Only play sound for messages received from someone else
+      if (isSoundEnabled && String(msg.senderId) !== String(myId)) {
+        const s = new Audio("/sounds/notification.mp3");
+        s.currentTime = 0;
+        s.play().catch(() => {});
+      }
       get().markMessagesAsRead(partnerId);
       get().getMyChatPartners();
     });

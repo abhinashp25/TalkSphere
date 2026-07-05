@@ -24,16 +24,17 @@ export default function LinkPreviewCard({ preview, isMine }) {
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      {/* OG image */}
+      {/* OG image — fixed height container prevents layout shift during load */}
       {preview.image && !imgError && (
-        <img
-          src={preview.image}
-          alt=""
-          className="w-full object-cover"
-          style={{ maxHeight: 160 }}
-          onError={() => setImgError(true)}
-          loading="lazy"
-        />
+        <div style={{ height: 160, background: "rgba(0,0,0,0.2)", overflow: "hidden", flexShrink: 0 }}>
+          <img
+            src={preview.image}
+            alt=""
+            className="w-full h-full object-cover"
+            onError={() => setImgError(true)}
+            loading="lazy"
+          />
+        </div>
       )}
 
       <div className="px-3 py-2.5 flex items-start gap-2">

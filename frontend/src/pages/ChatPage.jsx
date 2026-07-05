@@ -165,12 +165,13 @@ function ChatPage() {
           borderRight: isSidebarCollapsed ? "none" : "1px solid var(--border)",
         }}
       >
+        {/* Show Chats list for chats / chatify-ai / settings / default */}
         {(!activeTab || ["chats", "chatify-ai", "settings"].includes(activeTab)) && (
-          <ChatsList 
-            onSelectUser={openChat} 
-            onSelectGroup={openGroup} 
-            onShowNewGroup={() => setShowNewGroup(true)} 
-            onShowStarred={() => setShowStarred(true)} 
+          <ChatsList
+            onSelectUser={openChat}
+            onSelectGroup={openGroup}
+            onShowNewGroup={() => setShowNewGroup(true)}
+            onShowStarred={() => setShowStarred(true)}
             onOpenDrawer={() => setIsDrawerOpen(true)}
           />
         )}

@@ -160,9 +160,13 @@ export default function ChatContainer() {
   } = useChatStore();
   const { authUser } = useAuthStore();
 
-  const bottomRef    = useRef(null);
-  const containerRef = useRef(null);
-  const holdTimer    = useRef(null);
+  const bottomRef      = useRef(null);
+  const containerRef   = useRef(null);
+  const holdTimer      = useRef(null);
+  // Track previous message list so we only scroll on genuinely NEW messages,
+  // not on metadata updates (read receipts, reactions, isRead flag changes).
+  const prevMsgCount   = useRef(0);
+  const prevLastMsgId  = useRef(null);
 
   // Swipe-to-reply: tracks how far each message bubble has been swiped (in px)
   const [swipeOffsets, setSwipeOffsets] = useState({});
@@ -184,6 +188,9 @@ export default function ChatContainer() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // Reset scroll tracking each time we open a different chat
+    prevMsgCount.current  = 0;
+    prevLastMsgId.current = null;
     getMessagesByUserId(selectedUser._id);
     markMessagesAsRead(selectedUser._id);
   }, [selectedUser._id]);
@@ -198,21 +205,56 @@ export default function ChatContainer() {
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
+  // WhatsApp-style scroll: only react to GENUINELY NEW messages.
+  // Metadata updates (read status, reactions) must NOT move the scroll position.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!messages || messages.length === 0) return;
-    const el = containerRef.current;
+    if (!messages || messages.length === 0) {
+      prevMsgCount.current  = 0;
+      prevLastMsgId.current = null;
+      return;
+    }
+    const el      = containerRef.current;
     if (!el) return;
-    const lastMsg = messages[messages.length - 1];
-    const isMyLastMsg = lastMsg.senderId === authUser?._id || lastMsg.senderId?._id === authUser?._id;
-    if (isMyLastMsg) {
-      // Instant snap scroll for own messages — direct DOM scroll avoids viewport shifts from scrollIntoView
+
+    const lastMsg  = messages[messages.length - 1];
+    const lastId   = lastMsg._id;
+    const count    = messages.length;
+
+    // ── Initial load: jump straight to the bottom instantly ──
+    if (prevMsgCount.current === 0) {
+      el.scrollTop          = el.scrollHeight;
+      prevMsgCount.current  = count;
+      prevLastMsgId.current = lastId;
+      return;
+    }
+
+    // ── Metadata-only update (same count, same last ID) ──
+    // Happens when isRead, reactions, isPinned etc. change.
+    // Do NOT scroll — the user may be reading old messages.
+    if (count === prevMsgCount.current && lastId === prevLastMsgId.current) {
+      return;
+    }
+
+    prevMsgCount.current  = count;
+    prevLastMsgId.current = lastId;
+
+    // ── A genuinely new message arrived ──
+    const isMyMsg    = lastMsg.senderId === authUser?._id || lastMsg.senderId?._id === authUser?._id;
+    // Check live scroll position — is the user within 150px of the bottom?
+    const distBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const nearBottom = distBottom < 150;
+
+    if (isMyMsg) {
+      // I just sent a message — always snap to bottom
       el.scrollTop = el.scrollHeight;
-    } else if (!showScrollBtn) {
-      // Smooth scroll for received messages when user is near bottom
+    } else if (nearBottom) {
+      // Received a message while already near the bottom — smooth scroll down
       el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
     }
-  }, [messages, showScrollBtn, authUser?._id]);
+    // If user is reading old messages (not near bottom), leave them alone.
+    // The scroll-to-bottom button will appear to let them jump down manually.
+  }, [messages, authUser?._id]);
 
   useEffect(() => {
     const close = () => setCtx(null);
@@ -305,7 +347,7 @@ export default function ChatContainer() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full relative" onClick={() => setCtx(null)}>
+    <div className="flex flex-col h-full min-h-0 relative" onClick={() => setCtx(null)}>
       <ChatHeader onAISummary={() => setShowAISummary(true)} />
 
       {/* Pinned message banner */}
@@ -326,7 +368,11 @@ export default function ChatContainer() {
       )}
 
       {/* Messages Area */}
-      <div ref={containerRef} className="flex-1 overflow-y-auto px-2 sm:px-3 py-3 chat-bg no-scrollbar">
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-y-auto px-2 sm:px-3 py-3 chat-bg no-scrollbar"
+        style={{ overflowAnchor: "none" }}
+      >
         {isMessagesLoading ? <MessagesLoadingSkeleton /> :
          visible.length === 0 && searchQuery ? (
           <div className="flex flex-col items-center justify-center h-full gap-3">
@@ -358,6 +404,7 @@ export default function ChatContainer() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   className={`flex ${isMine ? "justify-end" : "justify-start"} mb-[2px] px-2 relative`}
+                  style={{ touchAction: "pan-y" }}
                   // Long-press on touch to open context menu
                   onTouchStart={(e) => {
                     onSwipeTouchStart(e, msg._id);
@@ -722,8 +769,10 @@ function highlightMatch(text, query) {
   return (<>{text.slice(0, idx)}<mark className="bg-yellow-400/40 text-inherit rounded px-0.5">{text.slice(idx, idx + query.length)}</mark>{text.slice(idx + query.length)}</>);
 }
 
-function ImageBubble({ src }) {
-  const [opened, setOpened] = useState(false);
+function ImageBubble({ src, isMine }) {
+  // Sender already has the image — show it directly.
+  // Receiver gets the blur + click-to-view experience (like WhatsApp).
+  const [opened, setOpened] = useState(isMine);
   const [lightbox, setLightbox] = useState(false);
 
   if (!opened) {
@@ -747,7 +796,13 @@ function ImageBubble({ src }) {
   return (
     <>
       <div className="relative rounded-xl overflow-hidden mb-1.5 cursor-zoom-in group" onClick={() => setLightbox(true)}>
-        <img src={src} alt="img" className="rounded-xl max-h-[260px] w-full object-cover" />
+        <img
+          src={src}
+          alt="img"
+          className="rounded-xl w-full object-cover"
+          style={{ maxHeight: 260, minHeight: 120, display: "block" }}
+        />
+        {/* Download button on hover */}
         <a href={src} download target="_blank" rel="noreferrer"
           className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ background: "rgba(0,0,0,0.6)" }} onClick={(e) => e.stopPropagation()}>
