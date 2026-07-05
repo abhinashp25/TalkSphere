@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuthStore }  from "../store/useAuthStore";
 import { useChatStore }  from "../store/useChatStore";
 import ChatHeader        from "./ChatHeader";
@@ -11,7 +11,7 @@ import ReplyBar          from "./ReplyBar";
 import ForwardModal      from "./ForwardModal";
 import LinkPreviewCard   from "./LinkPreviewCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X, ChevronDown, Languages, Loader2, Mic } from "lucide-react";
+import { Sparkles, X, ChevronDown, Languages, Loader2, Mic, CornerUpLeft } from "lucide-react";
 import { useAIStore } from "../store/useAIStore";
 
 const REACTION_EMOJIS = ["👍","❤️","😂","😮","😢","🔥"];
@@ -164,6 +164,14 @@ export default function ChatContainer() {
   const containerRef = useRef(null);
   const holdTimer    = useRef(null);
 
+  // Swipe-to-reply: tracks how far each message bubble has been swiped (in px)
+  const [swipeOffsets, setSwipeOffsets] = useState({});
+  // Per-touch: start X position and which message is being swiped
+  const swipeTouchX   = useRef(null);
+  const swipeMsgId    = useRef(null);
+  // Minimum swipe distance (px) to trigger a reply action
+  const SWIPE_TRIGGER = 60;
+
   const [ctx,           setCtx]           = useState(null);
   const [hoveredMsg,    setHovered]        = useState(null);
   const [forwardMsg,    setForwardMsg]     = useState(null);
@@ -222,7 +230,7 @@ export default function ChatContainer() {
   const groupReactions = (reactions = []) =>
     reactions.reduce((acc, r) => { acc[r.emoji] = (acc[r.emoji] || 0) + 1; return acc; }, {});
 
-  const handleReply = (msg) => {
+  const handleReply = useCallback((msg) => {
     const isMine = msg.senderId === authUser._id || msg.senderId?._id === authUser._id;
     setReplyingTo({
       messageId:  msg._id,
@@ -232,7 +240,35 @@ export default function ChatContainer() {
       senderName: isMine ? "You" : selectedUser.fullName,
     });
     setCtx(null);
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUser._id, selectedUser?.fullName]);
+
+  // Swipe-to-reply touch handlers — only swipe RIGHT to reply
+  const onSwipeTouchStart = useCallback((e, msgId) => {
+    swipeTouchX.current = e.touches[0].clientX;
+    swipeMsgId.current  = msgId;
+  }, []);
+
+  const onSwipeTouchMove = useCallback((e, msgId) => {
+    if (swipeTouchX.current === null || swipeMsgId.current !== msgId) return;
+    const delta = e.touches[0].clientX - swipeTouchX.current;
+    if (delta < 0) return; // only allow right swipe
+    // Cap the drag at 80px to prevent going too far
+    const clamped = Math.min(delta, 80);
+    setSwipeOffsets((prev) => ({ ...prev, [msgId]: clamped }));
+  }, []);
+
+  const onSwipeTouchEnd = useCallback((e, msg) => {
+    const offset = swipeOffsets[msg._id] || 0;
+    if (offset >= SWIPE_TRIGGER && !msg.isDeletedForAll) {
+      handleReply(msg);
+    }
+    // Snap back with a brief delay so the user sees the motion
+    setSwipeOffsets((prev) => ({ ...prev, [msg._id]: 0 }));
+    swipeTouchX.current = null;
+    swipeMsgId.current  = null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [swipeOffsets, handleReply]);
 
   const handleTranslate = async (msg) => {
     if (!msg.text) return;
@@ -321,17 +357,53 @@ export default function ChatContainer() {
                   initial={{ opacity: 0, y: 8, scale: 0.99 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  className={`flex ${isMine ? "justify-end" : "justify-start"} mb-[2px] px-2`}
-                  onTouchStart={() => {
+                  className={`flex ${isMine ? "justify-end" : "justify-start"} mb-[2px] px-2 relative`}
+                  // Long-press on touch to open context menu
+                  onTouchStart={(e) => {
+                    onSwipeTouchStart(e, msg._id);
                     holdTimer.current = setTimeout(() => {
                       setCtx({ msgId: msg._id, isMine, touch: true, x: 100, y: 300 });
                     }, 500);
                   }}
-                  onTouchEnd={() => clearTimeout(holdTimer.current)}
+                  onTouchMove={(e) => {
+                    // If the user is swiping, cancel the long-press
+                    clearTimeout(holdTimer.current);
+                    onSwipeTouchMove(e, msg._id);
+                  }}
+                  onTouchEnd={(e) => {
+                    clearTimeout(holdTimer.current);
+                    onSwipeTouchEnd(e, msg);
+                  }}
                 >
-                  <div className="relative" style={{ maxWidth: "min(72%, 500px)" }}
+                  {/* Swipe-to-reply arrow — visible as the bubble slides right */}
+                  <AnimatePresence>
+                    {(swipeOffsets[msg._id] || 0) > 10 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.6 }}
+                        animate={{
+                          opacity: Math.min((swipeOffsets[msg._id] || 0) / SWIPE_TRIGGER, 1),
+                          scale:   Math.min(0.6 + (swipeOffsets[msg._id] || 0) / SWIPE_TRIGGER * 0.4, 1),
+                        }}
+                        exit={{ opacity: 0, scale: 0.6 }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center z-10 pointer-events-none"
+                        style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}
+                      >
+                        <CornerUpLeft size={14} className="text-white/70" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div
+                    className="relative"
+                    style={{
+                      maxWidth: "min(72%, 500px)",
+                      // Slide the bubble as the user swipes right
+                      transform: `translateX(${swipeOffsets[msg._id] || 0}px)`,
+                      transition: swipeTouchX.current === null ? "transform 0.25s cubic-bezier(0.34,1.56,0.64,1)" : "none",
+                    }}
                     onMouseEnter={() => setHovered(msg._id)}
-                    onMouseLeave={() => setHovered(null)}>
+                    onMouseLeave={() => setHovered(null)}
+                  >
 
                     {/* Reaction emoji tray */}
                     <AnimatePresence>

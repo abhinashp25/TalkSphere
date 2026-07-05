@@ -8,11 +8,13 @@ import ReplyBar          from "./ReplyBar";
 import ScheduleModal     from "./ScheduleModal";
 import GifPicker         from "./GifPicker";
 import toast from "react-hot-toast";
-import { Mic, Send, PenTool, Film } from "lucide-react";
+import { Mic, Send, PenTool, Film, Lock, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SketchCanvas from "./SketchCanvas";
 
 const STOP_DELAY = 1500;
+// How long the user must hold the mic button before recording starts (ms)
+const MIC_HOLD_THRESHOLD = 400;
 
 // Tone dot colors
 const TONE_COLORS = {
@@ -30,9 +32,19 @@ export default function MessageInput({ onTextChange }) {
   const [emojiOpen, setEmojiOpen]   = useState(false);
   const [gifOpen,   setGifOpen]     = useState(false);
   const [sketchOpen, setSketchOpen] = useState(false);
-  const [voiceMode, setVoiceMode]   = useState(false);
-  const [showSchedule, setShowSchedule] = useState(false);
-  const [isRecording, setIsRecording]   = useState(false);
+  const [voiceMode, setVoiceMode]         = useState(false);
+  const [showSchedule, setShowSchedule]   = useState(false);
+  const [isRecording, setIsRecording]     = useState(false);
+
+  // Hold-to-record state
+  const [isHoldRecording, setIsHoldRecording] = useState(false);
+  const [holdRecordLocked, setHoldRecordLocked] = useState(false);
+  const [holdSeconds, setHoldSeconds]     = useState(0);
+  const holdRecordTimer  = useRef(null);   // fires after MIC_HOLD_THRESHOLD to start recording
+  const holdMediaRef     = useRef(null);   // MediaRecorder instance during hold-recording
+  const holdChunksRef    = useRef([]);
+  const holdClockRef     = useRef(null);   // seconds counter interval
+  const holdStartedRef   = useRef(false);  // true once recording actually started
 
   // Tone Advisor
   const [toneScore, setToneScore]     = useState(null);
@@ -43,9 +55,13 @@ export default function MessageInput({ onTextChange }) {
   const fileRef     = useRef(null);
   const textareaRef = useRef(null);
   const timerRef    = useRef(null);
+  // holdTimer is used for the SEND button long-press (schedule), not mic
   const holdTimer   = useRef(null);
   const typingRef   = useRef(false);
   const recognitionRef = useRef(null);
+  // Tracks whether a message was just sent via pointer events,
+  // so the subsequent onClick doesn't accidentally open voice mode.
+  const didSendRef  = useRef(false);
 
   const {
     sendMessage, isSoundEnabled, emitTyping, emitStopTyping,
@@ -190,14 +206,121 @@ export default function MessageInput({ onTextChange }) {
     }, 0);
   };
 
+  // ── Send button pointer handlers ─────────────────────────────────────
+  // Long-press (600ms) opens the schedule modal; a quick tap sends the message.
+  // We set didSendRef so the browser's subsequent onClick does NOT fire voiceMode.
   const onSendPointerDown = () => {
     if (!canSend) return;
-    holdTimer.current = setTimeout(() => { holdTimer.current = null; setShowSchedule(true); }, 600);
+    didSendRef.current = false;
+    holdTimer.current = setTimeout(() => {
+      holdTimer.current = null;
+      setShowSchedule(true);
+    }, 600);
   };
+
   const onSendPointerUp = () => {
-    if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; handleSend(); }
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current);
+      holdTimer.current = null;
+      didSendRef.current = true; // mark: we are sending, block onClick
+      handleSend();
+    }
   };
-  const onSendPointerLeave = () => { clearTimeout(holdTimer.current); holdTimer.current = null; };
+
+  const onSendPointerLeave = () => {
+    clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+  };
+
+  // ── Hold-to-record (mic button, no text in input) ─────────────────────
+  const startHoldRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      holdChunksRef.current = [];
+      mr.ondataavailable = (e) => holdChunksRef.current.push(e.data);
+      mr.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+      };
+      mr.start();
+      holdMediaRef.current = mr;
+      holdStartedRef.current = true;
+      setIsHoldRecording(true);
+      setHoldSeconds(0);
+      useChatStore.getState().emitTyping("recording");
+      holdClockRef.current = setInterval(() => setHoldSeconds((s) => s + 1), 1000);
+    } catch {
+      toast.error("Microphone access denied.");
+      holdStartedRef.current = false;
+    }
+  };
+
+  const cancelHoldRecording = () => {
+    clearTimeout(holdRecordTimer.current);
+    clearInterval(holdClockRef.current);
+    holdMediaRef.current?.stop();
+    holdMediaRef.current = null;
+    holdStartedRef.current = false;
+    setIsHoldRecording(false);
+    setHoldRecordLocked(false);
+    setHoldSeconds(0);
+    useChatStore.getState().emitStopTyping();
+  };
+
+  const sendHoldRecording = () => {
+    clearInterval(holdClockRef.current);
+    if (!holdMediaRef.current || !holdStartedRef.current) {
+      cancelHoldRecording();
+      return;
+    }
+    holdMediaRef.current.onstop = () => {
+      const blob = new Blob(holdChunksRef.current, { type: "audio/webm" });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        sendMessage({ audio: reader.result, isWhisper: false });
+      };
+      reader.readAsDataURL(blob);
+    };
+    holdMediaRef.current.stop();
+    holdMediaRef.current = null;
+    holdStartedRef.current = false;
+    setIsHoldRecording(false);
+    setHoldRecordLocked(false);
+    setHoldSeconds(0);
+    useChatStore.getState().emitStopTyping();
+  };
+
+  const onMicPointerDown = () => {
+    if (canSend) return; // mic only activates when there is no text to send
+    holdStartedRef.current = false;
+    holdRecordTimer.current = setTimeout(() => {
+      startHoldRecording();
+    }, MIC_HOLD_THRESHOLD);
+  };
+
+  const onMicPointerUp = () => {
+    clearTimeout(holdRecordTimer.current);
+    if (holdRecordLocked) return; // locked mode: user must tap Send or X to finish
+    if (holdStartedRef.current) {
+      // Released after recording started — send
+      sendHoldRecording();
+    }
+    // Released before threshold — treat as tap, open full VoiceRecorder
+    else if (!holdStartedRef.current) {
+      setVoiceMode(true);
+    }
+  };
+
+  const onMicPointerLeave = () => {
+    clearTimeout(holdRecordTimer.current);
+    if (holdStartedRef.current && !holdRecordLocked) {
+      // Finger slid up — lock the recording so user can speak freely
+      setHoldRecordLocked(true);
+    }
+  };
+
+  const fmtSecs = (s) =>
+    `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   const canSend = text.trim() || imgPreview || docPreview;
   const disappearLabel = disappearSeconds === 0 ? null
@@ -289,6 +412,61 @@ export default function MessageInput({ onTextChange }) {
           </span>
         </div>
       )}
+
+      {/* ── Hold-to-Record Locked UI ───────────────────────────────────── */}
+      {/* Shows when the user slid their finger up to lock hands-free recording */}
+      <AnimatePresence>
+        {holdRecordLocked && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.18 }}
+            className="mx-3 mb-1 flex items-center gap-3 px-4 py-2.5 rounded-2xl"
+            style={{
+              background: "rgba(239,68,68,0.12)",
+              border: "1px solid rgba(239,68,68,0.3)",
+            }}
+          >
+            {/* Pulsing record dot */}
+            <span
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0 animate-pulse"
+              style={{ background: "#ef4444" }}
+            />
+
+            {/* Timer */}
+            <span className="text-[13px] font-mono font-semibold text-white/90 w-12 flex-shrink-0">
+              {fmtSecs(holdSeconds)}
+            </span>
+
+            {/* Hint text */}
+            <span className="flex-1 text-[12px] text-[#a3a3a3] italic truncate">
+              🔒 Locked — tap Send or ✕ to finish
+            </span>
+
+            {/* Cancel */}
+            <button
+              type="button"
+              onClick={cancelHoldRecording}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors flex-shrink-0"
+              title="Cancel recording"
+            >
+              <X size={16} />
+            </button>
+
+            {/* Send */}
+            <button
+              type="button"
+              onClick={sendHoldRecording}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-white flex-shrink-0"
+              style={{ background: "var(--accent)" }}
+              title="Send voice message"
+            >
+              <Send size={15} className="ml-0.5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Main Input Row ─────────────────────────────────────────────── */}
       <div className="flex items-end gap-2.5 px-3 py-2.5">
@@ -425,18 +603,32 @@ export default function MessageInput({ onTextChange }) {
             <input type="file" ref={fileRef} onChange={handleFile} className="hidden" />
 
             {/* ── Send / Mic Floating Action Button ──────────────── */}
+            {/*
+              BUG FIX: Previously, onPointerUp fired handleSend() which cleared
+              the text (making canSend false), then the browser's onClick fired
+              and triggered setVoiceMode(true). We now use didSendRef to block
+              the onClick when a send has already happened in this pointer cycle.
+            */}
             <motion.button
               type="button"
-              whileTap={{ scale: 0.88 }}
-              onPointerDown={canSend ? onSendPointerDown : undefined}
-              onPointerUp={canSend ? onSendPointerUp : undefined}
-              onPointerLeave={canSend ? onSendPointerLeave : undefined}
-              onClick={canSend ? undefined : () => setVoiceMode(true)}
-              title={canSend ? "Send (hold to schedule)" : "Record voice"}
+              whileTap={{ scale: 0.9 }}
+              // Send button handlers (only when there is content to send)
+              onPointerDown={canSend ? onSendPointerDown : onMicPointerDown}
+              onPointerUp={canSend ? onSendPointerUp : onMicPointerUp}
+              onPointerLeave={canSend ? onSendPointerLeave : onMicPointerLeave}
+              onClick={() => {
+                // If a send already happened via pointer events, swallow this click.
+                if (didSendRef.current) { didSendRef.current = false; return; }
+              }}
+              title={canSend ? "Send (hold to schedule)" : "Hold to record voice"}
               style={{ touchAction: "none" }}
               className="w-[44px] h-[44px] rounded-full flex-shrink-0 flex items-center justify-center shadow-lg transition-colors duration-200 select-none mb-0.5"
               animate={{
-                background: canSend ? "var(--accent)" : "var(--bg-input)",
+                background: isHoldRecording
+                  ? "#ef4444"
+                  : canSend
+                  ? "var(--accent)"
+                  : "var(--bg-input)",
                 scale: 1,
               }}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
@@ -462,9 +654,9 @@ export default function MessageInput({ onTextChange }) {
                     exit={{ rotate: -30, opacity: 0 }}
                     transition={{ duration: 0.15 }}
                     className="flex items-center justify-center"
-                    style={{ color: "var(--text-secondary)" }}
+                    style={{ color: isHoldRecording ? "#fff" : "var(--text-secondary)" }}
                   >
-                    <Mic size={20} />
+                    <Mic size={20} className={isHoldRecording ? "animate-pulse" : ""} />
                   </motion.span>
                 )}
               </AnimatePresence>
