@@ -8,3 +8,4 @@ package.json
 vercel.json
 package-lock.json
 package.json
+.vscode
