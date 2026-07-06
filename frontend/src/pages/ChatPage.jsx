@@ -41,6 +41,44 @@ function ChatPage() {
   const [showNewGroup, setShowNewGroup] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  // Swipe gesture detection state and handlers for mobile navigation
+  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length !== 1) return;
+    setTouchStart({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    });
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.changedTouches.length !== 1) return;
+    const diffX = e.changedTouches[0].clientX - touchStart.x;
+    const diffY = e.changedTouches[0].clientY - touchStart.y;
+
+    // Detect horizontal swipes: threshold X > 60px, Y < 40px (prevents scrolling interference)
+    if (Math.abs(diffX) > 60 && Math.abs(diffY) < 40) {
+      const MOBILE_TAB_SEQUENCE = ["chats", "status", "communities", "calls"];
+      const currentTabKey = !activeTab || !MOBILE_TAB_SEQUENCE.includes(activeTab) ? "chats" : activeTab;
+      const currentIndex = MOBILE_TAB_SEQUENCE.indexOf(currentTabKey);
+
+      if (currentIndex !== -1) {
+        if (diffX < 0) {
+          // Swipe Left -> Next Tab
+          if (currentIndex < MOBILE_TAB_SEQUENCE.length - 1) {
+            setActiveTab(MOBILE_TAB_SEQUENCE[currentIndex + 1]);
+          }
+        } else {
+          // Swipe Right -> Previous Tab
+          if (currentIndex > 0) {
+            setActiveTab(MOBILE_TAB_SEQUENCE[currentIndex - 1]);
+          }
+        }
+      }
+    }
+  };
+
   useEffect(() => {
     fetchGroups();
     subscribeToGroupMessages();
@@ -155,6 +193,8 @@ function ChatPage() {
 
       {/* Column 2: Collapsible Middle Chat List Panel */}
       <aside
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         className={`sidebar-collapse flex-shrink-0 flex flex-col z-10 relative h-full
           ${isSidebarCollapsed
             ? "w-0 opacity-0 pointer-events-none"
