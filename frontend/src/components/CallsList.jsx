@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { Phone, Video, PlusCircle } from "lucide-react";
+import { Phone, Video, PlusCircle, X, Search, PhoneCall, VideoIcon } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useCallStore } from "../store/useCallStore";
+import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 export default function CallsList() {
   const { chats } = useChatStore();
   const { startCall, callHistory } = useCallStore();
   const [activeCallFilter, setActiveCallFilter] = useState("all");
+  const [showNewCallModal, setShowNewCallModal] = useState(false);
+  const [newCallSearch, setNewCallSearch] = useState("");
 
   const getUserData = (userId) => chats.find(c => c._id === userId) || { fullName: "Unknown User", profilePic: "/avatar.png", _id: userId };
 
@@ -20,6 +24,10 @@ export default function CallsList() {
     ? enrichedHistory.filter(c => c.type === "missed")
     : enrichedHistory;
 
+  const filteredContacts = chats.filter(c =>
+    c.fullName?.toLowerCase().includes(newCallSearch.toLowerCase())
+  );
+
   function formatTime(date) {
     if (!date) return "";
     const now = new Date();
@@ -32,15 +40,16 @@ export default function CallsList() {
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#000000" }}>
+    <div className="flex flex-col h-full" style={{ background: "var(--bg-secondary)" }}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <h1 className="text-[22px] font-bold text-gray-200">Calls</h1>
+        <h1 className="text-[22px] font-bold brand-font text-white">Calls</h1>
         <button
-          onClick={() => {}}
-          className="hover:bg-white/10 p-2 rounded-full transition-colors text-gray-400"
+          onClick={() => setShowNewCallModal(true)}
+          className="hover:bg-white/10 p-2 rounded-full transition-colors"
+          style={{ color: "var(--accent)" }}
           title="New call">
-          <PlusCircle size={20} />
+          <PlusCircle size={22} />
         </button>
       </div>
 
@@ -48,16 +57,24 @@ export default function CallsList() {
       <div className="flex gap-2 px-4 pb-3 flex-shrink-0">
         <button
           onClick={() => setActiveCallFilter("all")}
-          className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
-            activeCallFilter === "all" ? "bg-white text-black" : "bg-[#141414] text-[#a3a3a3]"
-          }`}>
+          className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${activeCallFilter === "all"
+            ? "text-white"
+            : "text-[#a3a3a3]"
+            }`}
+          style={{
+            background: activeCallFilter === "all" ? "var(--accent)" : "var(--bg-input)",
+            border: "1px solid var(--border)"
+          }}>
           All
         </button>
         <button
           onClick={() => setActiveCallFilter("missed")}
-          className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
-            activeCallFilter === "missed" ? "bg-red-500/20 text-red-500" : "bg-[#141414] text-[#a3a3a3]"
-          }`}>
+          className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${activeCallFilter === "missed" ? "text-red-400" : "text-[#a3a3a3]"
+            }`}
+          style={{
+            background: activeCallFilter === "missed" ? "rgba(239,68,68,0.15)" : "var(--bg-input)",
+            border: `1px solid ${activeCallFilter === "missed" ? "rgba(239,68,68,0.3)" : "var(--border)"}`
+          }}>
           Missed
         </button>
       </div>
@@ -65,35 +82,40 @@ export default function CallsList() {
       {/* Call list */}
       <div className="flex-1 overflow-y-auto no-scrollbar pb-24 sm:pb-0">
         {filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Phone size={40} className="text-gray-600" />
-            <p className="text-sm text-gray-500">No call history</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "var(--bg-input)" }}>
+              <Phone size={28} style={{ color: "var(--text-muted)" }} />
+            </div>
+            <div className="text-center">
+              <p className="font-semibold text-white/80 text-[15px]">No calls yet</p>
+              <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Tap the + button to start a call</p>
+            </div>
           </div>
         )}
         {filtered.map((call) => (
           <div
             key={call._id}
-            className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 cursor-pointer group transition-colors border-b border-white/[0.04]"
-          >
+            className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 cursor-pointer group transition-colors border-b"
+            style={{ borderColor: "var(--border)" }}>
             {/* Avatar */}
             <div className="relative flex-shrink-0">
               <img
                 src={call.user.profilePic || "/avatar.png"}
                 alt={call.user.fullName}
                 className="w-12 h-12 rounded-full object-cover"
+                referrerPolicy="no-referrer"
               />
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className={`text-[14.5px] font-semibold truncate ${
-                call.type === "missed" ? "text-red-400" : "text-gray-100"
-              }`}>
+              <p className={`text-[14.5px] font-semibold truncate ${call.type === "missed" ? "text-red-400" : "text-white"
+                }`}>
                 {call.user.fullName}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <CallTypeIcon type={call.type} />
-                <span className={`text-[12px] ${call.type === "missed" ? "text-red-400/70" : "text-gray-400"}`}>
+                <span className={`text-[12px] ${call.type === "missed" ? "text-red-400/70" : "text-[#a3a3a3]"}`}>
                   {call.type === "missed" ? "Missed" : call.type === "incoming" ? "Incoming" : "Outgoing"}
                   {call.duration ? ` · ${call.duration}` : ""}
                   {call.isVideo ? " · Video" : " · Voice"}
@@ -103,31 +125,135 @@ export default function CallsList() {
 
             {/* Timestamp + call-back button */}
             <div className="flex flex-col items-end gap-2 flex-shrink-0">
-              <span className="text-[11.5px] text-gray-500">{formatTime(call.timestamp)}</span>
+              <span className="text-[11.5px]" style={{ color: "var(--text-muted)" }}>{formatTime(call.timestamp)}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); startCall(call.user._id, call.isVideo); }}
                 className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all"
                 style={{
-                  background: "rgba(16,185,129,0.15)",
-                  color: "#10b981",
-                  border: "1px solid rgba(16,185,129,0.25)"
+                  background: "rgba(0,168,132,0.15)",
+                  color: "var(--accent)",
+                  border: "1px solid rgba(0,168,132,0.25)"
                 }}
-                title={`${call.isVideo ? "Video" : "Voice"} call`}
-              >
+                title={`${call.isVideo ? "Video" : "Voice"} call`}>
                 {call.isVideo ? <Video size={16} /> : <Phone size={16} />}
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* ── New Call Modal (Portal to body to escape translateX transform on container) ── */}
+      {createPortal(
+        <AnimatePresence>
+          {showNewCallModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4"
+              style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)" }}
+              onClick={() => { setShowNewCallModal(false); setNewCallSearch(""); }}>
+              <motion.div
+                initial={{ y: 80, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 80, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 320, damping: 26 }}
+                className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col"
+                style={{
+                  background: "rgba(18,22,26,0.92)",
+                  backdropFilter: "blur(28px) saturate(180%)",
+                  WebkitBackdropFilter: "blur(28px) saturate(180%)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  boxShadow: "0 -8px 48px rgba(0,0,0,0.5)",
+                  maxHeight: "75vh"
+                }}
+                onClick={e => e.stopPropagation()}>
+                {/* Handle + Header */}
+                <div className="flex-shrink-0 px-5 py-4">
+                  <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-[17px] font-bold text-white">New Call</h2>
+                    <button
+                      onClick={() => { setShowNewCallModal(false); setNewCallSearch(""); }}
+                      className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-white/10"
+                      style={{ color: "var(--text-muted)" }}>
+                      <X size={17} />
+                    </button>
+                  </div>
+                  {/* Search */}
+                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <Search size={15} style={{ color: "var(--text-muted)" }} />
+                    <input
+                      autoFocus
+                      type="text"
+                      placeholder="Search contacts..."
+                      value={newCallSearch}
+                      onChange={e => setNewCallSearch(e.target.value)}
+                      className="flex-1 bg-transparent text-white text-[14px] outline-none placeholder:text-white/30"
+                    />
+                  </div>
+                </div>
+
+                {/* Contact List */}
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-4">
+                  {filteredContacts.length === 0 && (
+                    <div className="flex flex-col items-center py-10 gap-3">
+                      <p className="text-white/40 text-[13px]">No contacts found</p>
+                    </div>
+                  )}
+                  {filteredContacts.map(contact => (
+                    <div
+                      key={contact._id}
+                      className="flex items-center justify-between px-5 py-3 hover:bg-white/5 transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={contact.profilePic || "/avatar.png"}
+                          alt={contact.fullName}
+                          className="w-11 h-11 rounded-full object-cover flex-shrink-0"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-white font-semibold text-[14px] truncate">{contact.fullName}</p>
+                          <p className="text-[11.5px] truncate" style={{ color: "var(--text-muted)" }}>
+                            {contact.bio || "Chatify user"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                        {/* Voice call */}
+                        <button
+                          onClick={() => { startCall(contact._id, false); setShowNewCallModal(false); setNewCallSearch(""); }}
+                          className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                          style={{ background: "rgba(0,168,132,0.15)", border: "1px solid rgba(0,168,132,0.3)", color: "var(--accent)" }}
+                          title="Voice call">
+                          <PhoneCall size={16} />
+                        </button>
+                        {/* Video call */}
+                        <button
+                          onClick={() => { startCall(contact._id, true); setShowNewCallModal(false); setNewCallSearch(""); }}
+                          className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                          style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "#818cf8" }}
+                          title="Video call">
+                          <VideoIcon size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
+
   );
 }
 
 // WhatsApp-style directional arrow icons for call types
 function CallTypeIcon({ type }) {
   if (type === "missed") {
-    // Red arrow pointing down-left = missed incoming
     return (
       <span title="Missed call" className="flex-shrink-0">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.8"
@@ -139,7 +265,6 @@ function CallTypeIcon({ type }) {
     );
   }
   if (type === "incoming") {
-    // Green arrow pointing down-left = received call
     return (
       <span title="Incoming call" className="flex-shrink-0">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.8"
@@ -150,7 +275,6 @@ function CallTypeIcon({ type }) {
       </span>
     );
   }
-  // Outgoing: green arrow pointing up-right
   return (
     <span title="Outgoing call" className="flex-shrink-0">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.8"

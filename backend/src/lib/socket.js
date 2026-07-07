@@ -53,10 +53,10 @@ io.on("connection", (socket) => {
   });
 
   // --- WebRTC Signaling Events --- //
-  socket.on("callUser", ({ userToCall, signalData, from, name, isVideo }) => {
+  socket.on("callUser", ({ userToCall, signalData, from, name, isVideo, profilePic }) => {
     const receiverSocketId = userSocketMap[userToCall];
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("callUser", { signal: signalData, from, name, isVideo });
+      io.to(receiverSocketId).emit("callUser", { signal: signalData, from, name, isVideo, profilePic });
     }
   });
 

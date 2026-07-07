@@ -164,6 +164,10 @@ h1, h2, h3, h4, h5, h6, .brand-font {
   word-break: break-word;
   position: relative;
   box-shadow: 0 1.5px 1px rgba(0,0,0,0.15);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 .bubble-mine {
   background: var(--bubble-mine);
@@ -815,6 +819,62 @@ h1, h2, h3, h4, h5, h6, .brand-font {
   right: 8%;
   animation-duration: 13s;
   animation-delay: 2.2s;
+}
+
+/* ── Cross-Browser & Hardware Acceleration Performance Upgrades ─────────────────── */
+
+/* Force GPU compositing for all major container panels and scrolling views to prevent reflow lags */
+.sidebar-collapse,
+.mobile-nav-pill,
+.glass-panel,
+.glass-panel-interactive,
+.panel-glass,
+.drawer-glass,
+.header-glass,
+.bubble,
+.chat-row,
+.mobile-bottom-nav,
+.floating-bubble-bg {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform, opacity;
+}
+
+/* Fallbacks for Firefox & Brave privacy configurations */
+/* Disable laggy layout-repaint backdrop blurs on Gecko (Firefox) engines */
+@supports (-moz-appearance: none) {
+  .glass-panel,
+  .glass-panel-interactive,
+  .header-glass,
+  .panel-glass,
+  .pinned-glass,
+  .typing-bubble,
+  .dropdown-menu,
+  .drawer-glass,
+  .floating-bubble-bg {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .glass-panel { background: rgba(10, 10, 10, 0.95) !important; }
+  .glass-panel-interactive { background: rgba(10, 10, 10, 0.95) !important; }
+  .header-glass { background: rgba(8, 8, 8, 0.98) !important; }
+  .panel-glass { background: rgba(10, 10, 10, 0.98) !important; }
+  .pinned-glass { background: rgba(10, 10, 10, 0.98) !important; }
+  .typing-bubble { background: rgba(255, 255, 255, 0.08) !important; }
+  .dropdown-menu { background: rgb(15, 15, 15) !important; }
+  .drawer-glass { background: rgb(8, 8, 8) !important; }
+  .floating-bubble-bg { background: rgba(25, 25, 25, 0.95) !important; }
+}
+
+/* Fallback for Brave Shields fingerprinting blockages and Chromium variants restricting shaders */
+@media screen and (min-resolution: 1dppx) {
+  /* Ensure smooth rendering layers */
+  .chat-bg, .animated-gradient-bg {
+    background-attachment: scroll;
+  }
 }
 
 

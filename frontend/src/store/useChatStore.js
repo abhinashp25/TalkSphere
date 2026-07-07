@@ -533,9 +533,16 @@ export const useChatStore = create((set, get) => ({
       set({ messages: updatedCache });
       // Only play sound for messages received from someone else
       if (isSoundEnabled && String(msg.senderId) !== String(myId)) {
-        const s = new Audio("/sounds/notification.mp3");
+        const customMsgTone = localStorage.getItem("msg_tone") || "button-tap-sound.mp3";
+        const s = new Audio(`/Notifications/${customMsgTone}`);
         s.currentTime = 0;
         s.play().catch(() => {});
+
+        const isVibrateEnabled = localStorage.getItem("vibrate_mode") !== "false";
+        if (isVibrateEnabled) {
+          const v = new Audio("/vibration/phone-vibration.mp3");
+          v.play().catch(() => {});
+        }
       }
       get().markMessagesAsRead(partnerId);
       get().getMyChatPartners();

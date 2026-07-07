@@ -13,6 +13,7 @@ import CallOverlay from './components/CallOverlay';
 import { useCallStore } from './store/useCallStore';
 
 import { useChatStore } from './store/useChatStore';
+import PrivacyGuard from './components/PrivacyGuard';
 
 function App() {
   const location = useLocation();
@@ -45,7 +46,7 @@ function App() {
     <div className="min-h-screen min-h-[100dvh] text-white">
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          <Route path="/"       element={authUser ? <ChatPage />  : <Navigate to="/login" />} />
+          <Route path="/"       element={authUser ? <PrivacyGuard><ChatPage /></PrivacyGuard>  : <Navigate to="/login" />} />
           <Route path="/login"  element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
           <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
         </Routes>
