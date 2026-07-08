@@ -10,7 +10,7 @@ import SmartReplies      from "./SmartReplies";
 import ForwardModal      from "./ForwardModal";
 import LinkPreviewCard   from "./LinkPreviewCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X, ChevronDown, Languages, Loader2, Mic, CornerUpLeft } from "lucide-react";
+import { Sparkles, X, ChevronDown, Languages, Loader2, Mic, CornerUpLeft, PhoneMissed, VideoOff } from "lucide-react";
 import { useAIStore } from "../store/useAIStore";
 
 const REACTION_EMOJIS = ["👍","❤️","😂","😮","😢","🔥"];
@@ -543,7 +543,17 @@ export default function ChatContainer() {
                           {msg.document && <DocumentBubble doc={msg.document} isMine={isMine} />}
                           {msg.text && (
                             <p className="text-[14.2px] leading-[1.5] break-words whitespace-pre-wrap">
-                              {msg.text.startsWith('*Replied to status:*') ? (
+                              {msg.text.includes("Missed voice call") ? (
+                                <span className="flex items-center gap-1.5 text-red-400 font-semibold py-0.5">
+                                  <PhoneMissed size={16} className="text-red-500 flex-shrink-0" />
+                                  <span>Missed voice call</span>
+                                </span>
+                              ) : msg.text.includes("Missed video call") ? (
+                                <span className="flex items-center gap-1.5 text-red-400 font-semibold py-0.5">
+                                  <VideoOff size={16} className="text-red-500 flex-shrink-0" />
+                                  <span>Missed video call</span>
+                                </span>
+                              ) : msg.text.startsWith('*Replied to status:*') ? (
                                 searchQuery ? highlightMatch(parseStatusReply(translations[msg._id] || msg.text).replyText, searchQuery) : parseStatusReply(translations[msg._id] || msg.text).replyText
                               ) : (
                                 searchQuery ? highlightMatch(translations[msg._id] || msg.text, searchQuery) : (translations[msg._id] || msg.text)
@@ -659,41 +669,57 @@ export default function ChatContainer() {
         )}
       </AnimatePresence>
 
-      {/* Context menu */}
+      {/* Context menu — Liquid Glass iOS style */}
       <AnimatePresence>
         {ctx && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.93 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.93 }}
-            transition={{ duration: 0.1 }}
-            className="fixed z-50 rounded-lg overflow-hidden shadow-2xl py-1.5"
+            initial={{ opacity: 0, scale: 0.88, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.88, y: -8 }}
+            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+            className="fixed z-50 rounded-2xl overflow-hidden py-1"
             style={{
-              top: Math.min(ctx.y, window.innerHeight - 260),
-              left: Math.min(ctx.x, window.innerWidth - 225),
-              background: "#233138",
-              minWidth: 205,
-              boxShadow: "0 16px 48px rgba(0,0,0,0.7)",
-              border: "1px solid rgba(255,255,255,0.07)"
+              top: Math.min(ctx.y, window.innerHeight - 310),
+              left: Math.min(ctx.x, window.innerWidth - 230),
+              minWidth: 215,
+              background: "rgba(22,26,30,0.82)",
+              backdropFilter: "blur(24px) saturate(180%)",
+              WebkitBackdropFilter: "blur(24px) saturate(180%)",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.10)",
             }}
             onClick={(e) => e.stopPropagation()}>
-            <CtxItem emoji="↩️" label="Reply"
+            <CtxItem
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[17px] h-[17px]"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>}
+              label="Reply"
               onClick={() => { handleReply(ctx.msg || messages.find(m=>m._id===ctx.msgId)); setCtx(null); }} />
-            <CtxItem emoji="↪️" label="Forward"
+            <CtxItem
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[17px] h-[17px]"><polyline points="15 17 20 12 15 7"/><path d="M4 18v-2a4 4 0 0 1 4-4h12"/></svg>}
+              label="Forward"
               onClick={() => { setForwardMsg(ctx.msg || messages.find(m=>m._id===ctx.msgId)); setCtx(null); }} />
-            <CtxItem emoji="⭐" label="Star message"
+            <CtxItem
+              icon={<svg viewBox="0 0 24 24" fill="currentColor" className="w-[17px] h-[17px]" style={{color:"#f59e0b"}}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
+              label="Star message"
               onClick={() => { toggleStarMessage(ctx.msgId); setCtx(null); }} />
             {ctx.msg?.text && (
-              <CtxItem emoji="🌍" label={translations[ctx.msgId] ? "Show original" : "Translate to English"}
+              <CtxItem
+                icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[17px] h-[17px]" style={{color:"#60a5fa"}}><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}
+                label={translations[ctx.msgId] ? "Show original" : "Translate to English"}
                 onClick={() => { handleTranslate(ctx.msg); }} />
             )}
-            <CtxItem emoji="📌" label={messages.find(m=>m._id===ctx.msgId)?.isPinned ? "Unpin" : "Pin message"}
+            <CtxItem
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[17px] h-[17px]" style={{color:"#a78bfa"}}><line x1="12" y1="17" x2="12" y2="17.01"/><path d="M10 8V8a2 2 0 0 1 4 0v4"/><path d="m9 11-3 3 3 3m6-6 3 3-3 3"/><line x1="12" y1="2" x2="12" y2="3"/></svg>}
+              label={messages.find(m=>m._id===ctx.msgId)?.isPinned ? "Unpin" : "Pin message"}
               onClick={() => { togglePinMessage(ctx.msgId); setCtx(null); }} />
-            <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "4px 0" }} />
-            <CtxItem emoji="🗑️" label="Delete for me"
+            <div style={{ height: 1, background: "rgba(255,255,255,0.08)", margin: "3px 10px" }} />
+            <CtxItem
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[17px] h-[17px]"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>}
+              label="Delete for me" danger
               onClick={() => { deleteMessage(ctx.msgId, false); setCtx(null); }} />
             {ctx.isMine && (
-              <CtxItem emoji="🚫" label="Unsend for everyone" danger
+              <CtxItem
+                icon={<svg viewBox="0 0 24 24" fill="none" stroke="#fc8181" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[17px] h-[17px]"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>}
+                label="Unsend for everyone" danger
                 onClick={() => { deleteMessage(ctx.msgId, true); setCtx(null); }} />
             )}
           </motion.div>
@@ -728,13 +754,33 @@ export default function ChatContainer() {
   );
 }
 
-function CtxItem({ emoji, label, onClick, danger }) {
+function CtxItem({ icon, label, onClick, danger }) {
+  const [hovered, setHovered] = useState(false);
   return (
-    <button onClick={onClick}
-      className="w-full text-left px-4 py-2.5 text-[13.5px] flex items-center gap-3 transition-colors hover:bg-white/5"
-      style={{ color: danger ? "#fc8181" : "#d1d7db" }}>
-      <span className="text-base w-5 text-center">{emoji}</span>
-      {label}
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onTouchStart={() => setHovered(true)}
+      onTouchEnd={() => setHovered(false)}
+      className="w-full text-left flex items-center gap-3 transition-colors"
+      style={{
+        color: danger ? "#fc8181" : "#e5e7eb",
+        padding: "10px 14px",
+        margin: "1px 4px",
+        width: "calc(100% - 8px)",
+        borderRadius: 10,
+        background: hovered ? "rgba(255,255,255,0.10)" : "transparent",
+        fontSize: 13.5,
+        cursor: "pointer",
+        border: "none",
+        outline: "none",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+      }}>
+      <span style={{ width: 18, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", color: danger ? "#f87171" : "rgba(255,255,255,0.55)" }}>{icon}</span>
+      <span style={{ fontWeight: 500 }}>{label}</span>
     </button>
   );
 }

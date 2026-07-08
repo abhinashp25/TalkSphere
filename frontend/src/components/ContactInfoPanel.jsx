@@ -24,6 +24,7 @@ export default function ContactInfoPanel({ user, onClose, onClearChat, onArchive
   const [showDisappear, setShowDisappear]   = useState(false);
   const [showQR,        setShowQR]          = useState(false);
   const [blocked,       setBlocked]         = useState(isUserBlocked(user._id));
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
 
   const isOnline = onlineUsers.map(String).includes(String(user._id));
   const lastSeen = lastSeenMap[user._id] || user.lastSeen;
@@ -257,7 +258,7 @@ export default function ContactInfoPanel({ user, onClose, onClearChat, onArchive
           </button>
           {onClearChat && (
             <button
-              onClick={onClearChat}
+              onClick={() => setShowConfirmClear(true)}
               className="w-full flex items-center gap-4 px-5 py-4 transition-colors text-red-500"
               onMouseEnter={e => e.currentTarget.style.background = "var(--bg-hover)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
@@ -268,6 +269,61 @@ export default function ContactInfoPanel({ user, onClose, onClearChat, onArchive
           )}
         </div>
       </div>
+
+      {/* Confirm Clear Chat Modal */}
+      <AnimatePresence>
+        {showConfirmClear && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowConfirmClear(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+              className="w-full max-w-sm rounded-2xl p-6 shadow-2xl flex flex-col gap-4 text-center"
+              style={{
+                background: "var(--bg-panel)",
+                border: "1px solid var(--border)",
+                boxShadow: "0 24px 60px rgba(0,0,0,0.6)"
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-1">
+                <TrashIcon size={22} />
+              </div>
+              <div>
+                <h3 className="text-[17px] font-bold text-white mb-1.5">Clear this chat?</h3>
+                <p className="text-[13px] text-white/55 leading-relaxed">
+                  Are you sure you want to clear all messages in this chat? This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-3 mt-2">
+                <button
+                  onClick={() => setShowConfirmClear(false)}
+                  className="flex-1 py-2.5 rounded-xl border text-[13.5px] font-semibold hover:bg-white/5 transition-colors"
+                  style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    onClearChat();
+                    setShowConfirmClear(false);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-[13.5px] font-bold text-white transition-colors"
+                >
+                  Clear Chat
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* QR Modal */}
       <AnimatePresence>

@@ -298,14 +298,78 @@ export function StatusViewer() {
   const { activeStatus, setActiveStatus, markAsViewed } = useStatusStore();
   const { setStatusViewerOpen } = useChatStore();
 
+  const statusViewerRef = useRef(null);
+  
   // Real-time pausing states
   const [isPaused, setIsPaused] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
+
+  // Zoom state for image statuses
+  const [imgZoom, setImgZoom]   = useState(1);
+  const [imgOrigin, setImgOrigin] = useState({ x: 50, y: 50 });
+  const pinchRef     = useRef(null); // { startDist, startZoom }
+  const lastTapRef   = useRef(0);
 
   // Status Reply logic
   const [replyText, setReplyText] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
   const inputRef = useRef(null);
+
+  // Swipe-down-to-dismiss state
+  const [dismissY, setDismissY]       = useState(0);  // live drag offset
+  const [isDragging, setIsDragging]   = useState(false);
+  const dismissRef = useRef(null);  // { startY, startX, locked }
+
+  useEffect(() => {
+    const el = statusViewerRef.current;
+    if (!el) return;
+
+    const onDismissStart = (e) => {
+      if (imgZoom > 1) return;
+      if (e.touches.length !== 1) return;
+      dismissRef.current = { startY: e.touches[0].clientY, startX: e.touches[0].clientX, locked: null, lastY: 0 };
+    };
+
+    const onDismissMove = (e) => {
+      if (!dismissRef.current || imgZoom > 1) return;
+      const dy = e.touches[0].clientY - dismissRef.current.startY;
+      const dx = e.touches[0].clientX - dismissRef.current.startX;
+      if (!dismissRef.current.locked) {
+        if (Math.abs(dy) > Math.abs(dx) && dy > 8) dismissRef.current.locked = "v";
+        else if (Math.abs(dx) > 8) { dismissRef.current.locked = "h"; return; }
+        else return;
+      }
+      if (dismissRef.current.locked !== "v") return;
+      if (dy < 0) return; // only downward
+      setDismissY(dy);
+      setIsDragging(true);
+      dismissRef.current.lastY = dy;
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    };
+
+    const onDismissEnd = () => {
+      if (!dismissRef.current) return;
+      const finalY = dismissRef.current.lastY || 0;
+      if (finalY > 90) {
+        setActiveStatus(null);
+      }
+      setDismissY(0);
+      setIsDragging(false);
+      dismissRef.current = null;
+    };
+
+    el.addEventListener("touchstart", onDismissStart, { passive: true });
+    el.addEventListener("touchmove", onDismissMove, { passive: false });
+    el.addEventListener("touchend", onDismissEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener("touchstart", onDismissStart);
+      el.removeEventListener("touchmove", onDismissMove);
+      el.removeEventListener("touchend", onDismissEnd);
+    };
+  }, [imgZoom, setIsDragging, setActiveStatus, setDismissY]);
 
   // Sync viewer open state with store so bottom nav gets hidden on mobile
   useEffect(() => {
@@ -319,6 +383,9 @@ export function StatusViewer() {
     if (activeStatus && activeStatus.items && activeStatus.items[activeStatus.currentIndex]) {
       markAsViewed(activeStatus.items[activeStatus.currentIndex]._id);
     }
+    // Reset zoom when navigating to a new status item
+    setImgZoom(1);
+    setImgOrigin({ x: 50, y: 50 });
   }, [activeStatus?.currentIndex, activeStatus, markAsViewed]);
 
   // Handle automatic progression (pauses when isPaused is true)
@@ -404,7 +471,18 @@ export function StatusViewer() {
   // Safe parsed display logic
   const renderStatusBody = (status) => {
     if (status.type === "image") {
-      return <img src={status.content} className="w-full h-full object-contain" alt="Status" />;
+      return (
+        <ImageStatusBody
+          status={status}
+          imgZoom={imgZoom}
+          setImgZoom={setImgZoom}
+          imgOrigin={imgOrigin}
+          setImgOrigin={setImgOrigin}
+          pinchRef={pinchRef}
+          lastTapRef={lastTapRef}
+          setIsHolding={setIsHolding}
+        />
+      );
     }
 
     let isJson = false;
@@ -437,8 +515,10 @@ export function StatusViewer() {
     );
   };
 
+  // Swipe-down dismiss handlers — logic handled natively via useEffect & statusViewerRef
   return (
     <motion.div 
+      ref={statusViewerRef}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -456,8 +536,15 @@ export function StatusViewer() {
         }
       `}</style>
 
-      {/* Container holding layout: responsive full-screen on mobile, elegant mobile card mockup on desktop */}
-      <div className="relative w-full h-full sm:max-w-lg sm:h-auto sm:aspect-[9/16] bg-black sm:rounded-3xl overflow-hidden flex items-center justify-center text-center shadow-2xl sm:border sm:border-white/5">
+      {/* Container — slides down live while dragging, opacity fades the backdrop */}
+      <div
+        className="relative w-full h-full sm:max-w-lg sm:h-auto sm:aspect-[9/16] bg-black sm:rounded-3xl overflow-hidden flex items-center justify-center text-center shadow-2xl sm:border sm:border-white/5"
+        style={{
+          transform: `translateY(${dismissY}px)`,
+          transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
+          opacity: 1 - Math.min(dismissY / 200, 0.6),
+          willChange: "transform",
+        }}>
         
         {/* Dynamic progress bars */}
         <div className={`absolute top-4 left-4 right-4 flex gap-1 z-40 transition-opacity duration-250 ${isHolding ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
@@ -502,24 +589,26 @@ export function StatusViewer() {
           <X size={16} />
         </button>
 
-        {/* Content Body Viewer with mouse press and finger touch hold mechanics */}
+        {/* Content Body Viewer — hold to pause (text/non-image statuses use this; images manage their own hold) */}
         <div 
           className="w-full h-full cursor-pointer select-none"
-          onMouseDown={() => { setIsHolding(true); }}
-          onMouseUp={() => { setIsHolding(false); }}
-          onMouseLeave={() => { setIsHolding(false); }}
-          onTouchStart={() => { setIsHolding(true); }}
-          onTouchEnd={() => { setIsHolding(false); }}
+          onMouseDown={() => { if (currentItem.type !== "image") setIsHolding(true); }}
+          onMouseUp={() => { if (currentItem.type !== "image") setIsHolding(false); }}
+          onMouseLeave={() => { if (currentItem.type !== "image") setIsHolding(false); }}
+          onTouchStart={() => { if (currentItem.type !== "image") setIsHolding(true); }}
+          onTouchEnd={() => { if (currentItem.type !== "image") setIsHolding(false); }}
         >
           {renderStatusBody(currentItem)}
         </div>
 
-        {/* Left/Right manual tap controls */}
-        <div className="absolute inset-x-0 inset-y-16 flex z-30">
-          <div className="w-1/4 h-full cursor-pointer" onClick={handlePrev} />
-          <div className="w-2/4 h-full cursor-pointer" />
-          <div className="w-1/4 h-full cursor-pointer" onClick={handleNext} />
-        </div>
+        {/* Left/Right manual tap controls — hidden while zoomed in so panning doesn't accidentally skip */}
+        {imgZoom <= 1 && (
+          <div className="absolute inset-x-0 inset-y-16 flex z-30">
+            <div className="w-1/4 h-full cursor-pointer" onClick={handlePrev} />
+            <div className="w-2/4 h-full cursor-pointer" />
+            <div className="w-1/4 h-full cursor-pointer" onClick={handleNext} />
+          </div>
+        )}
 
         {/* Status reply input section - fades away cleanly on hold for premium, zero-distraction view */}
         <form 
@@ -551,3 +640,116 @@ export function StatusViewer() {
     </motion.div>
   );
 }
+
+function ImageStatusBody({ status, imgZoom, setImgZoom, imgOrigin, setImgOrigin, pinchRef, lastTapRef, setIsHolding }) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleImgTouchStart = (e) => {
+      setIsHolding(true);
+      e.stopPropagation();
+
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        pinchRef.current = { startDist: Math.hypot(dx, dy), startZoom: imgZoom };
+        if (e.cancelable) e.preventDefault();
+      } else if (e.touches.length === 1) {
+        const now = Date.now();
+        if (now - lastTapRef.current < 300) {
+          setImgZoom(prev => {
+            const next = prev > 1 ? 1 : 2.5;
+            if (next === 1) setTimeout(() => setIsHolding(false), 150);
+            return next;
+          });
+          lastTapRef.current = 0;
+        } else {
+          lastTapRef.current = now;
+        }
+      }
+    };
+
+    const handleImgTouchMove = (e) => {
+      e.stopPropagation();
+      if (e.touches.length === 2 && pinchRef.current) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const ratio = dist / pinchRef.current.startDist;
+        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const rect = el.getBoundingClientRect();
+        setImgOrigin({
+          x: ((midX - rect.left) / rect.width) * 100,
+          y: ((midY - rect.top) / rect.height) * 100,
+        });
+        setImgZoom(Math.min(5, Math.max(1, pinchRef.current.startZoom * ratio)));
+        if (e.cancelable) e.preventDefault();
+      }
+    };
+
+    const handleImgTouchEnd = (e) => {
+      e.stopPropagation();
+      pinchRef.current = null;
+      setImgZoom(prev => {
+        if (prev <= 1) {
+          setTimeout(() => setIsHolding(false), 0);
+        }
+        return prev;
+      });
+    };
+
+    el.addEventListener("touchstart", handleImgTouchStart, { passive: false });
+    el.addEventListener("touchmove", handleImgTouchMove, { passive: false });
+    el.addEventListener("touchend", handleImgTouchEnd, { passive: false });
+
+    return () => {
+      el.removeEventListener("touchstart", handleImgTouchStart);
+      el.removeEventListener("touchmove", handleImgTouchMove);
+      el.removeEventListener("touchend", handleImgTouchEnd);
+    };
+  }, [imgZoom, setImgZoom, imgOrigin, setImgOrigin, setIsHolding, pinchRef, lastTapRef]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="w-full h-full flex items-center justify-center overflow-hidden"
+      onMouseDown={(e) => { setIsHolding(true); e.stopPropagation(); }}
+      onMouseUp={(e) => { setIsHolding(false); e.stopPropagation(); }}
+      onMouseLeave={(e) => { setIsHolding(false); e.stopPropagation(); }}
+      style={{ touchAction: imgZoom > 1 ? "none" : "pan-y" }}
+    >
+      <img
+        src={status.content}
+        className="w-full h-full select-none"
+        alt="Status"
+        draggable={false}
+        style={{
+          objectFit: "contain",
+          transform: `scale(${imgZoom})`,
+          transformOrigin: `${imgOrigin.x}% ${imgOrigin.y}%`,
+          transition: pinchRef.current ? "none" : "transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)",
+          cursor: imgZoom > 1 ? "zoom-out" : "default",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+        }}
+        onDoubleClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          setImgOrigin({
+            x: ((e.clientX - rect.left) / rect.width) * 100,
+            y: ((e.clientY - rect.top) / rect.height) * 100,
+          });
+          setImgZoom(prev => {
+            const next = prev > 1 ? 1 : 2.5;
+            if (next === 1) setTimeout(() => setIsHolding(false), 150);
+            return next;
+          });
+        }}
+      />
+    </div>
+  );
+}
+

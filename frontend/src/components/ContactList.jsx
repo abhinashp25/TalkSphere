@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import UsersLoadingSkeleton from "./UsersLoadingSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
+import { Search, X } from "lucide-react";
 
 function lastSeenText(isoStr) {
   if (!isoStr) return "last seen a while ago";
@@ -32,9 +33,10 @@ function highlight(text, query) {
 export default function ContactList() {
   const {
     getAllContacts, allContacts, setSelectedUser,
-    isUsersLoading, selectedUser, sidebarSearch, lastSeenMap,
+    isUsersLoading, selectedUser, lastSeenMap,
   } = useChatStore();
   const { onlineUsers } = useAuthStore();
+  const [searchVal, setSearchVal] = useState("");
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { getAllContacts(); }, []);
@@ -42,26 +44,48 @@ export default function ContactList() {
 
   const filtered = allContacts.filter((c) => {
     if (c.isArchived) return false;
-    return !sidebarSearch || c.fullName.toLowerCase().includes(sidebarSearch.toLowerCase());
+    return !searchVal || c.fullName.toLowerCase().includes(searchVal.toLowerCase());
   });
 
   const online  = filtered.filter((c) => onlineUsers.map(String).includes(String(c._id)));
   const offline = filtered.filter((c) => !onlineUsers.map(String).includes(String(c._id)));
 
   if (!filtered.length) return (
-    <div className="flex flex-col items-center justify-center py-20 gap-4 px-6">
-      <div className="w-16 h-16 rounded-full flex items-center justify-center"
-        style={{ background: 'var(--bg-panel)' }}>
-        <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
-          style={{ color: 'var(--text-muted)' }}>
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Search contacts bar */}
+      <div className="p-3 bg-[var(--bg-secondary)] border-b border-[var(--border)]">
+        <div className="relative flex items-center h-[38px] w-full rounded-full border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
+          <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
+            <Search size={16} className="text-[#a3a3a3]" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search or start new chat..."
+            value={searchVal}
+            onChange={(e) => setSearchVal(e.target.value)}
+            className="flex-1 bg-transparent text-[14px] focus:outline-none text-[#e5e5e5] placeholder:text-[#737373] h-full"
+          />
+          {searchVal && (
+            <button onClick={() => setSearchVal("")} className="w-10 h-full flex items-center justify-center text-[#a3a3a3] hover:text-white transition-colors">
+              <X size={16} />
+            </button>
+          )}
+        </div>
       </div>
-      <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>No contacts found</p>
-      <p className="text-sm text-center" style={{ color: 'var(--text-muted)' }}>
-        {sidebarSearch ? `No results for "${sidebarSearch}"` : "Contacts will appear here once you chat with someone"}
-      </p>
+      <div className="flex-1 flex flex-col items-center justify-center py-20 gap-4 px-6">
+        <div className="w-16 h-16 rounded-full flex items-center justify-center"
+          style={{ background: 'var(--bg-panel)' }}>
+          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+            style={{ color: 'var(--text-muted)' }}>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>No contacts found</p>
+        <p className="text-sm text-center" style={{ color: 'var(--text-muted)' }}>
+          {searchVal ? `No results for "${searchVal}"` : "Contacts will appear here once you chat with someone"}
+        </p>
+      </div>
     </div>
   );
 
@@ -74,44 +98,69 @@ export default function ContactList() {
   }, {});
 
   return (
-    <div>
-      {/* Online section */}
-      {online.length > 0 && (
-        <>
-          <SectionLabel label={`Online — ${online.length}`} color="var(--online)" />
-          {online.map((c) => (
-            <ContactRow key={c._id}
-              contact={c} isOnline selected={selectedUser?._id === c._id}
-              lastSeenMap={lastSeenMap} sidebarSearch={sidebarSearch}
-              onChat={() => setSelectedUser(c)} />
-          ))}
-        </>
-      )}
-
-      {/* Alphabetical offline */}
-      {Object.keys(groups).sort().map((letter) => (
-        <div key={letter}>
-          <SectionLabel label={letter} />
-          {groups[letter].map((c) => (
-            <ContactRow key={c._id}
-              contact={c} isOnline={false} selected={selectedUser?._id === c._id}
-              lastSeenMap={lastSeenMap} sidebarSearch={sidebarSearch}
-              onChat={() => setSelectedUser(c)} />
-          ))}
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Search contacts bar */}
+      <div className="p-3 bg-[var(--bg-secondary)] border-b border-[var(--border)]">
+        <div className="relative flex items-center h-[38px] w-full rounded-full border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
+          <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
+            <Search size={16} className="text-[#a3a3a3]" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search or start new chat..."
+            value={searchVal}
+            onChange={(e) => setSearchVal(e.target.value)}
+            className="flex-1 bg-transparent text-[14px] focus:outline-none text-[#e5e5e5] placeholder:text-[#737373] h-full"
+          />
+          {searchVal && (
+            <button onClick={() => setSearchVal("")} className="w-10 h-full flex items-center justify-center text-[#a3a3a3] hover:text-white transition-colors">
+              <X size={16} />
+            </button>
+          )}
         </div>
-      ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto no-scrollbar">
+        {/* Online section */}
+        {online.length > 0 && (
+          <>
+            <SectionLabel label={`Online — ${online.length}`} color="var(--online)" />
+            {online.map((c) => (
+              <ContactRow key={c._id}
+                contact={c} isOnline selected={selectedUser?._id === c._id}
+                lastSeenMap={lastSeenMap} sidebarSearch={searchVal}
+                onChat={() => setSelectedUser(c)} />
+            ))}
+          </>
+        )}
+
+        {/* Alphabetical offline */}
+        {Object.keys(groups).sort().map((letter) => (
+          <div key={letter}>
+            <SectionLabel label={letter} />
+            {groups[letter].map((c) => (
+              <ContactRow key={c._id}
+                contact={c} isOnline={false} selected={selectedUser?._id === c._id}
+                lastSeenMap={lastSeenMap} sidebarSearch={searchVal}
+                onChat={() => setSelectedUser(c)} />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 function SectionLabel({ label, color }) {
   return (
-    <div className="px-4 py-1.5 sticky top-0 z-10"
-      style={{ background: 'var(--bg-secondary)' }}>
-      <p className="text-[11px] font-bold uppercase tracking-widest"
-        style={{ color: color || 'var(--text-muted)' }}>
-        {label}
-      </p>
+    <div className="px-5 py-2 text-xs font-bold uppercase tracking-wider sticky top-0 z-10"
+      style={{
+        background: "var(--bg-panel)",
+        color: color || "var(--text-muted)",
+        borderBottom: "1px solid var(--border)",
+      }}
+    >
+      {label}
     </div>
   );
 }

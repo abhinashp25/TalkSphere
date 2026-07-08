@@ -148,8 +148,9 @@ export default function MessageInput({ onTextChange }) {
 
   const handleSend = () => {
     if (!text.trim() && !imgPreview && !docPreview) return;
-    if (isSoundEnabled) {
-      const s = new Audio("/sounds/notification.mp3");
+    const playOutgoingSound = localStorage.getItem("outgoing_sound_enabled") !== "false";
+    if (playOutgoingSound && isSoundEnabled) {
+      const s = new Audio("/Notifications/button-tap-sound.mp3");
       s.volume = 0.4;
       s.play().catch(() => {});
     }
