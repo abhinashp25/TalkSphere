@@ -1,10 +1,10 @@
 <div align="center">
 
-# 💬 Real-Time Chat Application
+# 💬 TalkSphere
 
 ### Modern Full-Stack Real-Time Messaging Platform
 
-A real-time chat application built with the **MERN Stack**, **Socket.IO**, **Firebase Authentication**, and **Google OAuth**, enabling users to communicate instantly with a secure and responsive user experience.
+A modern full-stack real-time messaging platform built with the **MERN Stack**, **Socket.IO**, **Firebase Authentication**, and **Google OAuth**. TalkSphere enables secure one-to-one messaging, group conversations, media sharing, voice and video calling, and real-time user presence through a fast, responsive, and intuitive interface.
 
 <p align="center">
   <a href="https://real-time-chat-app-t40f.onrender.com">
@@ -14,7 +14,13 @@ A real-time chat application built with the **MERN Stack**, **Socket.IO**, **Fir
 
 <p align="center">
   <a href="https://github.com/abhinashp25/Real-time-Chat-App">
-    <img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github">
+    <img src="https://img.shields.io/github/stars/abhinashp25/Real-time-Chat-App?style=for-the-badge" alt="Stars">
+  </a>
+  <a href="https://github.com/abhinashp25/Real-time-Chat-App/network/members">
+    <img src="https://img.shields.io/github/forks/abhinashp25/Real-time-Chat-App?style=for-the-badge" alt="Forks">
+  </a>
+  <a href="https://github.com/abhinashp25/Real-time-Chat-App/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/abhinashp25/Real-time-Chat-App?style=for-the-badge" alt="License">
   </a>
 </p>
 
@@ -25,6 +31,7 @@ A real-time chat application built with the **MERN Stack**, **Socket.IO**, **Fir
 <img src="https://img.shields.io/badge/Socket.IO-010101?style=for-the-badge&logo=socketdotio"/>
 <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase"/>
 <img src="https://img.shields.io/badge/Google-OAuth-4285F4?style=for-the-badge&logo=google"/>
+<img src="https://img.shields.io/badge/TailwindCSS-38BDF8?style=for-the-badge&logo=tailwindcss"/>
 
 </div>
 
@@ -32,81 +39,123 @@ A real-time chat application built with the **MERN Stack**, **Socket.IO**, **Fir
 
 # 📖 Overview
 
-The **Real-Time Chat Application** is a modern full-stack messaging platform that enables users to communicate instantly through real-time messaging.
+**TalkHub** is a modern full-stack real-time messaging platform designed to provide a fast, secure, and seamless communication experience.
 
-Built using **React.js**, **Node.js**, **Express.js**, **MongoDB**, and **Socket.IO**, the application delivers fast and seamless communication. Authentication is handled securely with **Firebase Authentication** and **Google OAuth**, providing users with a simple and reliable sign-in experience.
-
-The application features a clean, responsive interface that works smoothly across desktop and mobile devices.
+Built with the **MERN Stack**, **Socket.IO**, **Firebase Authentication**, and **Google OAuth**, the application supports instant messaging, media sharing, voice and video calls, group conversations, online presence tracking, and a responsive user interface inspired by modern messaging applications.
 
 ---
 
-# ✨ Features
+# ✨ Core Features
 
-- 💬 Real-Time Messaging
+## 💬 Messaging
+
+- ⚡ Real-Time One-to-One Messaging
+- 👥 Group Chats
+- 📨 Instant Message Delivery
+- ❤️ Message Reactions
+- 😀 Emoji Support
+- 🕒 Persistent Chat History
+- 🔍 Search Conversations
+
+---
+
+## 📞 Communication
+
+- 📷 Image Sharing
+- 📁 File Sharing
+- 🎤 Voice Messages
+- 📞 Audio Calling
+- 🎥 Video Calling
+
+---
+
+## 👤 Authentication & Security
+
 - 🔐 Firebase Authentication
 - 🔑 Google OAuth Login
-- 👤 User Registration & Login
-- 🟢 Online & Offline User Status
-- ⚡ Instant Message Delivery
-- 📱 Fully Responsive Design
-- 🎨 Clean & Modern User Interface
-- 📂 MongoDB Database Integration
+- 👤 Secure User Registration & Login
+- 🛡️ Protected Routes
 - 🔒 Secure User Sessions
 
 ---
 
-# 📸 Project Preview
+## 🟢 Real-Time Presence
 
-> Add your screenshots inside an **images** folder.
+- 🟢 Online / Offline Status
+- ⌨️ Typing Indicators
+- 🔔 Instant Notifications
+- 📩 Unread Message Indicators
 
-```text
+---
+
+## 🎨 User Experience
+
+- 🌙 Dark Mode
+- ☀️ Light Mode
+- 📱 Fully Responsive Design
+- 🎨 Clean WhatsApp-Inspired Interface
+- ⚡ Fast Navigation
+
+---
+
+# 📸 Application Preview
+
+> Add screenshots inside an **images** folder.
+
+```
 images/
-├── login.png
-├── signup.png
-├── home.png
-├── chat.png
+│── login.png
+│── signup.png
+│── home.png
+│── chat.png
+│── group-chat.png
+│── video-call.png
 ```
 
 Example:
 
 ```markdown
-## Login Page
+## Login
 
 ![Login](images/login.png)
 
 ## Chat Window
 
 ![Chat](images/chat.png)
+
+## Video Calling
+
+![Video](images/video-call.png)
 ```
 
 ---
 
-# 🛠 Tech Stack
+# 🛠️ Tech Stack
 
-## Frontend
+### Frontend
 
 - React.js
 - Tailwind CSS
 - React Router DOM
 - Axios
 
-## Backend
+### Backend
 
 - Node.js
 - Express.js
 - Socket.IO
 
-## Database
+### Database
 
 - MongoDB
 - Mongoose
 
-## Authentication
+### Authentication
 
 - Firebase Authentication
 - Google OAuth
 
-## Deployment
+### Deployment
 
 - Render
 
@@ -114,7 +163,7 @@ Example:
 
 # 📂 Project Structure
 
-```text
+```
 Real-time-Chat-App/
 │
 ├── frontend/
@@ -140,30 +189,26 @@ Real-time-Chat-App/
 
 # 🚀 Getting Started
 
-## Clone the Repository
+## Clone Repository
 
 ```bash
 git clone https://github.com/abhinashp25/Real-time-Chat-App.git
 ```
 
-Navigate into the project:
+Navigate to the project:
 
 ```bash
 cd Real-time-Chat-App
 ```
 
----
-
-## Install Dependencies
-
-### Backend
+Install backend dependencies:
 
 ```bash
 cd backend
 npm install
 ```
 
-### Frontend
+Install frontend dependencies:
 
 ```bash
 cd frontend
@@ -196,15 +241,15 @@ FIREBASE_APP_ID=YOUR_FIREBASE_APP_ID
 
 ---
 
-# ▶️ Run the Application
+# ▶️ Run the Project
 
-Start the backend server:
+Backend
 
 ```bash
 npm run server
 ```
 
-Start the frontend:
+Frontend
 
 ```bash
 npm run dev
@@ -218,23 +263,29 @@ npm run dev
 
 ---
 
-# 📊 Key Highlights
+# ⭐ Highlights
 
-- Real-Time Communication using Socket.IO
-- Firebase Authentication
-- Google OAuth Login
-- RESTful API Architecture
-- MongoDB Database Integration
-- Responsive User Interface
-- Modern MERN Stack Architecture
-- Secure Authentication Workflow
+- 💬 WhatsApp-inspired messaging experience
+- ⚡ Real-Time Communication with Socket.IO
+- 🔐 Secure Firebase Authentication
+- 🔑 Google OAuth Integration
+- 📞 Audio & Video Calling
+- 📁 File & Image Sharing
+- 👥 Group Chat Support
+- 🟢 Live Online Presence
+- ❤️ Message Reactions
+- 😀 Emoji Support
+- 🌙 Dark & Light Theme
+- 📱 Responsive on Desktop, Tablet & Mobile
+- 🚀 MERN Stack Architecture
 
 ---
 
 # 🎯 Learning Outcomes
 
-This project strengthened practical knowledge of:
+This project strengthened my practical knowledge of:
 
+- Full Stack Web Development
 - React.js
 - Node.js
 - Express.js
@@ -243,35 +294,8 @@ This project strengthened practical knowledge of:
 - Firebase Authentication
 - Google OAuth
 - REST API Development
-- Client–Server Communication
-- Full Stack Web Development
-
----
-
-# 🚀 Future Improvements
-
-- 📁 File & Image Sharing
-- 🎤 Voice Messages
-- 📞 Audio Calling
-- 🎥 Video Calling
-- 👥 Group Chats
-- 😀 Emoji Support
-- 🔍 Message Search
-- 🌙 Dark Mode
-- ❤️ Message Reactions
-- 🔔 Push Notifications
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository.
-2. Create a new feature branch.
-3. Commit your changes.
-4. Push your branch.
-5. Open a Pull Request.
+- Real-Time Communication
+- Responsive UI Design
 
 ---
 
@@ -281,16 +305,21 @@ Contributions are welcome!
 
 Computer Science Engineering Student
 
-- GitHub: https://github.com/abhinashp25
-- Portfolio: https://my-portfolio-ten-iota-hup9a33ntx.vercel.app/
-- LinkedIn: https://www.linkedin.com/in/abhinash-pradhan/
+🌐 Portfolio  
+https://my-portfolio-ten-iota-hup9a33ntx.vercel.app/
+
+💼 LinkedIn  
+https://www.linkedin.com/in/abhinash-pradhan/
+
+🐙 GitHub  
+https://github.com/abhinashp25
 
 ---
 
 <div align="center">
 
-### ⭐ If you found this project useful, please consider giving it a Star.
+### ⭐ If you like this project, consider giving it a Star.
 
-**Made with ❤️ using React.js, Node.js, Express.js, MongoDB, Socket.IO & Firebase**
+**Built with ❤️ using React.js, Node.js, Express.js, MongoDB, Socket.IO & Firebase**
 
 </div>
