@@ -117,15 +117,13 @@ Example:
 ```markdown
 ## Login
 
-![Login](images/login.png)
+![Login](login.png)
 
 ## Chat Window
 
-![Chat](images/chat.png)
+![Chat](chat.png)
 
-## Video Calling
 
-![Video](images/video-call.png)
 ```
 
 ---
