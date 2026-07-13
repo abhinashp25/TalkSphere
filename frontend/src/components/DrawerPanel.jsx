@@ -47,14 +47,14 @@ export default function DrawerPanel({ isOpen, onClose }) {
   const { authUser, logout, updatePrivacy, toggle2FA } = useAuthStore();
   const [contacts, setContacts] = useState([]);
 
-  // Fetch contacts for payments selection
+  // Fetch contacts only when Payments panel is active to prevent lag during slide-in
   useEffect(() => {
-    if (isOpen) {
+    if (view === "payments") {
       axiosInstance.get("/messages/contacts")
         .then(res => setContacts(res.data))
         .catch(() => {});
     }
-  }, [isOpen]);
+  }, [view]);
 
   const handleLogout = () => {
     logout();

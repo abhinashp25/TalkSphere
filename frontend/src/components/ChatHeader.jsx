@@ -21,7 +21,7 @@ export default function ChatHeader({ onAISummary }) {
     markChatArchived, disappearSeconds, setDisappearSeconds,
     isSidebarCollapsed, toggleSidebar,
   } = useChatStore();
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, authUser } = useAuthStore();
   const { startCall } = useCallStore();
 
   const [menuOpen,         setMenuOpen]         = useState(false);
@@ -49,7 +49,7 @@ export default function ChatHeader({ onAISummary }) {
     if (mins < 2)  return "last seen just now";
     if (mins < 60) return `last seen ${mins} min ago`;
     const hrs = Math.floor(diff / 3600000);
-    if (hrs < 24)  return `last seen today at ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+    if (hrs < 24)  return `last seen today at ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true })}`;
     return `last seen ${d.toLocaleDateString(undefined, { day: "numeric", month: "short" })}`;
   }
 
@@ -177,8 +177,8 @@ export default function ChatHeader({ onAISummary }) {
                 )}
               </div>
             ) : (
-              <p className="text-[12px] font-medium" style={{ color: isOnline ? "var(--online, #10b981)" : "var(--text-secondary)" }}>
-                {isOnline ? "Online" : lastSeenLabel(lastSeen)}
+              <p className="text-[12px] font-medium" style={{ color: selectedUser?._id === authUser?._id ? "var(--text-secondary)" : (isOnline ? "var(--online, #10b981)" : "var(--text-secondary)") }}>
+                {selectedUser?._id === authUser?._id ? "Message yourself" : (isOnline ? "Online" : lastSeenLabel(lastSeen))}
               </p>
             )}
           </div>

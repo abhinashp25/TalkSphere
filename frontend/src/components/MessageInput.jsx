@@ -134,8 +134,12 @@ export default function MessageInput({ onTextChange }) {
         if (e.results[i].isFinal) final += e.results[i][0].transcript;
       }
       if (final) {
-        setText(prev => prev + (prev ? " " : "") + final);
-        handleTyping(text + final);
+        setText(prev => {
+          const updated = prev + (prev ? " " : "") + final.trim();
+          // Defer typing notification so React state has settled
+          setTimeout(() => handleTyping(updated), 0);
+          return updated;
+        });
       }
     };
     recognition.onerror = () => { setIsRecording(false); recognitionRef.current = null; };

@@ -232,6 +232,11 @@ export const useAuthStore = create((set, get) => ({
       await axiosInstance.post("/auth/logout");
       set({ authUser: null });
       toast.success("Logged out successfully");
+      // Reset call listeners before disconnecting socket so they're
+      // freshly registered when the user logs in again.
+      import("./useCallStore").then((m) => {
+        m.useCallStore.getState().resetListeners();
+      }).catch(() => {});
       get().disconnectSocket();
     } catch {
       toast.error("Error logging out");
@@ -275,6 +280,9 @@ export const useAuthStore = create((set, get) => ({
     socket.on("getOnlineUsers", (userIds) => set({ onlineUsers: userIds }));
     requestNotificationPermission();
     subscribeToNotifications(socket, (senderId) => get()._contactsCache[senderId]);
+    import("./useCallStore").then((m) => {
+      m.useCallStore.getState().initListeners();
+    }).catch(() => {});
   },
 
   disconnectSocket: () => {

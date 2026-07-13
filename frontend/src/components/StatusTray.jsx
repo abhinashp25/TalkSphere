@@ -192,7 +192,7 @@ export default function StatusTray() {
                         )}
                       </div>
                       <p className="text-[12px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                        {new Date(items[items.length - 1].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(items[items.length - 1].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                       </p>
                     </div>
                     <ChevronRight size={16} className="opacity-40" />
@@ -576,7 +576,7 @@ export function StatusViewer() {
           <div className="text-left">
             <p className="text-white font-semibold text-sm">{activeStatus.user.fullName}</p>
             <p className="text-white/60 text-xs mt-0.5">
-              {new Date(currentItem.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {new Date(currentItem.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
             </p>
           </div>
         </div>

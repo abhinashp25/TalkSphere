@@ -48,7 +48,7 @@ export default function ContactInfoPanel({ user, onClose, onClearChat, onArchive
     if (mins < 2)  return "last seen just now";
     if (mins < 60) return `last seen ${mins} min ago`;
     const hrs = Math.floor(diff / 3600000);
-    if (hrs < 24)  return `last seen today at ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+    if (hrs < 24)  return `last seen today at ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true })}`;
     return `last seen ${d.toLocaleDateString(undefined, { day: "numeric", month: "short" })}`;
   }
 

@@ -663,10 +663,14 @@ export const useChatStore = create((set, get) => ({
     });
 
     socket.on("userTyping", ({ from, type }) => {
+      const myId = useAuthStore.getState().authUser?._id;
+      if (myId && String(from) === String(myId)) return;
       set({ typingUsers: { ...get().typingUsers, [from]: type || "text" } });
     });
 
     socket.on("userStoppedTyping", ({ from }) => {
+      const myId = useAuthStore.getState().authUser?._id;
+      if (myId && String(from) === String(myId)) return;
       const n = { ...get().typingUsers };
       delete n[from];
       set({ typingUsers: n });

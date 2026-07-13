@@ -12,7 +12,7 @@ function lastSeenText(isoStr) {
   const hrs  = Math.floor(diff / 3600000);
   if (mins < 2)  return "last seen just now";
   if (mins < 60) return `last seen ${mins} min ago`;
-  if (hrs  < 24) return `last seen today at ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+  if (hrs  < 24) return `last seen today at ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true })}`;
   return `last seen ${d.toLocaleDateString(undefined, { day: "numeric", month: "short" })}`;
 }
 

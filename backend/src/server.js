@@ -13,6 +13,7 @@ import scheduleRoutes  from "./routes/schedule.route.js";
 import disappearRoutes from "./routes/disappear.route.js";
 import searchRoutes    from "./routes/search.route.js";
 import statusRoutes    from "./routes/status.route.js";
+import callRoutes      from "./routes/call.route.js";
 
 import { connectDB } from "./lib/db.js";
 import { ENV }       from "./lib/env.js";
@@ -37,6 +38,7 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://*.cloudinary.com", "https://*.tenor.com", "https://*.googleapis.com", "https://*.googleusercontent.com", "https://lh3.googleusercontent.com", "https://img.icons8.com", "https://i.pravatar.cc"],
+        mediaSrc: ["'self'", "blob:", "https://res.cloudinary.com", "https://*.cloudinary.com"],
         connectSrc: ["'self'", "ws:", "wss:", "http://localhost:3000", "https://realtime-chat-app-1b5af.firebaseapp.com", "https://*.firebaseapp.com", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://firebase.googleapis.com", "https://*.googleapis.com", "https://www.google-analytics.com", "https://*.google-analytics.com", "https://accounts.google.com"],
         frameSrc: ["'self'", "https://realtime-chat-app-1b5af.firebaseapp.com", "https://*.firebaseapp.com"],
         frameAncestors: ["'none'"],
@@ -74,6 +76,8 @@ app.use("/api/scheduled", scheduleRoutes);
 app.use("/api/disappear", disappearRoutes);
 app.use("/api/search",    searchRoutes);
 app.use("/api/status",    statusRoutes);
+app.use("/api/calls",     callRoutes);
+
 
 if (ENV.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

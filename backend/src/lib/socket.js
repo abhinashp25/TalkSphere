@@ -60,6 +60,13 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("ringing", ({ to }) => {
+    const receiverSocketId = userSocketMap[to];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("ringing");
+    }
+  });
+
   socket.on("answerCall", ({ to, signal }) => {
     const receiverSocketId = userSocketMap[to];
     if (receiverSocketId) {

@@ -266,7 +266,7 @@ export default function GroupChatWindow({ group, onClose }) {
                     )}
                     <div className="flex items-center justify-end gap-1 mt-1" style={{ opacity: 0.5 }}>
                       <span className="text-[10px]">
-                        {new Date(msg.createdAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(msg.createdAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true })}
                       </span>
                     </div>
                   </div>

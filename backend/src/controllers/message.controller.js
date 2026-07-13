@@ -10,8 +10,17 @@ import { validateBase64File } from "../lib/fileValidator.js";
 
 export const getAllContacts = async (req, res) => {
   try {
-    const users = await User.find({ _id: { $ne: req.user._id } }).select("-password");
-    res.json(users);
+    const myId = req.user._id;
+    const users = await User.find({}).select("-password");
+    const enrichedUsers = users.map(user => {
+      if (user._id.equals(myId)) {
+        const u = user.toObject();
+        u.fullName = `${user.fullName} (You)`;
+        return u;
+      }
+      return user;
+    });
+    res.json(enrichedUsers);
   } catch (e) { console.error("Error:", e.message); res.status(500).json({ message: "Server error" }); }
 };
 
@@ -33,8 +42,21 @@ export const getChatPartners = async (req, res) => {
 
     const partnerIds = Object.keys(partnerLastMsg);
     if (!partnerIds.length) {
-      const allUsers = await User.find({ _id: { $ne: myId } }).select("-password");
-      return res.json(allUsers.map(p => ({ ...p.toObject(), lastMessage: null, unreadCount: 0, isArchived: false, disappearSeconds: 0 })));
+      const allUsers = await User.find({}).select("-password");
+      const mapped = allUsers.map(p => {
+        const userObj = p.toObject();
+        if (p._id.equals(myId)) {
+          userObj.fullName = `${p.fullName} (You)`;
+        }
+        return {
+          ...userObj,
+          lastMessage: null,
+          unreadCount: 0,
+          isArchived: false,
+          disappearSeconds: 0
+        };
+      });
+      return res.json(mapped);
     }
 
     const partners = await User.find({ _id: { $in: partnerIds } }).select("-password");
@@ -56,8 +78,12 @@ export const getChatPartners = async (req, res) => {
             ? currentUser.disappearTimers.get(p._id.toString())
             : currentUser.disappearTimers[p._id.toString()]) || 0
         : 0;
+      const userObj = p.toObject();
+      if (p._id.equals(myId)) {
+        userObj.fullName = `${p.fullName} (You)`;
+      }
       return {
-        ...p.toObject(),
+        ...userObj,
         lastMessage: {
           text: lastMsg.isDeletedForAll ? "This message was deleted"
             : lastMsg.audio ? "🎤 Voice message"
@@ -125,8 +151,6 @@ export const sendMessage = async (req, res) => {
 
     if (!text && !image && !audio)
       return res.status(400).json({ message: "Message content required." });
-    if (senderId.equals(receiverId))
-      return res.status(400).json({ message: "Cannot message yourself." });
 
     const receiverExists = await User.exists({ _id: receiverId });
     if (!receiverExists) return res.status(404).json({ message: "Receiver not found." });

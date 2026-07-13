@@ -594,7 +594,7 @@ export default function ChatContainer() {
                           </span>
                         )}
                         <span className="text-[11px]" style={{ color: isMine ? "rgba(255,255,255,0.45)" : "#a3a3a3" }}>
-                          {new Date(msg.createdAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                          {new Date(msg.createdAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true })}
                         </span>
                         {isMine && <MessageTicks message={msg} />}
                       </div>

@@ -117,6 +117,7 @@ export default function CallOverlay() {
     isMuted, isVideoOff, isSpeaker,
     connectionQuality, callDuration,
     currentCallUserName, currentCallUserPic, currentCallIsVideo,
+    isRemoteRinging,
   } = useCallStore();
 
   const localVideoRef  = useRef(null);
@@ -175,7 +176,7 @@ export default function CallOverlay() {
           vibrateAudioRef.current = vib;
           vib.play().catch(() => {});
         }
-      } else {
+      } else if (isRemoteRinging) {
         // ── Outgoing Call Ringing (Default: community-ring-tone.mp3) ──
         const ringUrl = "/ringing/community-ring-tone.mp3";
         const rRing = new Audio(ringUrl);
@@ -190,7 +191,7 @@ export default function CallOverlay() {
     return () => {
       stopAllSounds();
     };
-  }, [callState, incomingCall]);
+  }, [callState, incomingCall, isRemoteRinging]);
 
   // Nothing to render when idle
   if (callState === "IDLE" && !incomingCall) return null;
@@ -345,7 +346,7 @@ export default function CallOverlay() {
                     animate={{ opacity: [1, 0.4, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
-                    Calling…
+                    {isRemoteRinging ? "Ringing…" : "Calling…"}
                   </motion.p>
                 </div>
               </div>

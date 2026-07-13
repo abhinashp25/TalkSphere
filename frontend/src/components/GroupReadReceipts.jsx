@@ -83,7 +83,7 @@ export function GroupReadBadge({ groupId, messageId, memberCount, readBy = [] })
                       {r.userId?.fullName || "Unknown"}
                     </p>
                     <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                      {new Date(r.readAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                      {new Date(r.readAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true })}
                     </p>
                   </div>
                   <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none"

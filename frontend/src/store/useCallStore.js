@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { useAuthStore } from "./useAuthStore";
 import { useChatStore } from "./useChatStore";
 import { axiosInstance } from "../lib/axios";
+import toast from "react-hot-toast";
 
 // Multiple STUN + public TURN servers for reliable NAT traversal across all networks
 const ICE_SERVERS = [
@@ -42,6 +43,7 @@ export const useCallStore = create(persist((set, get) => ({
   // ── Call state ─────────────────────────────────────────────────────────────
   callState:         "IDLE", // IDLE | RINGING | IN_CALL
   incomingCall:      null,   // { from, name, profilePic, signal, isVideo }
+  isRemoteRinging:   false,
   isMuted:           false,
   isVideoOff:        false,
   isSpeaker:         true,
@@ -64,16 +66,35 @@ export const useCallStore = create(persist((set, get) => ({
   // Initialise socket listeners — safe to call multiple times
   // ─────────────────────────────────────────────────────────────────────────
 
-  initListeners: () => {
-    if (listenersReady) return;
-    listenersReady = true;
+  resetListeners: () => {
+    listenersReady = false;
+    const socket = useAuthStore.getState().socket;
+    if (socket) {
+      socket.off("callUser");
+      socket.off("ringing");
+      socket.off("callAccepted");
+      socket.off("iceCandidate");
+      socket.off("callEnded");
+      socket.off("callRejected");
+    }
+  },
 
+  initListeners: () => {
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
+
+    if (listenersReady) return;
+    listenersReady = true;
 
     // Someone is calling us
     socket.on("callUser", (data) => {
       set({ incomingCall: data, callState: "RINGING" });
+      socket.emit("ringing", { to: data.from });
+    });
+
+    // Caller receives feedback that receiver's client is active and ringing
+    socket.on("ringing", () => {
+      set({ isRemoteRinging: true });
     });
 
     // Our offer was accepted — finish handshake
@@ -122,6 +143,11 @@ export const useCallStore = create(persist((set, get) => ({
     const authUser = useAuthStore.getState().authUser;
     const remoteId = typeof userToCall === "object" ? userToCall._id : userToCall;
 
+    if (remoteId === authUser._id) {
+      toast.error("You cannot call yourself.");
+      return;
+    }
+
     // Get the remote user's display info from the chat store
     const selectedUser = useChatStore.getState().selectedUser;
 
@@ -146,6 +172,7 @@ export const useCallStore = create(persist((set, get) => ({
     set({
       localStream:          stream,
       callState:            "RINGING",
+      isRemoteRinging:      false,
       isVideoOff:           !isVideo,
       currentCallUser:      remoteId,
       currentCallUserName:  selectedUser?.fullName  || null,
@@ -245,14 +272,19 @@ export const useCallStore = create(persist((set, get) => ({
 
     socket.emit("rejectCall", { to: incomingCall.from });
 
+    const authUser = useAuthStore.getState().authUser;
     const missed = {
-      _id:       Date.now().toString(),
-      userId:    incomingCall.from,
-      type:      "missed",
-      isVideo:   incomingCall.isVideo,
-      timestamp: Date.now(),
-      duration:  null,
+      callerId:   incomingCall.from,
+      receiverId: authUser._id,
+      type:       "missed",
+      isVideo:    incomingCall.isVideo,
+      duration:   null,
     };
+
+    // Save to database
+    axiosInstance.post("/calls/save", missed).then(() => {
+      get().fetchCallHistory();
+    }).catch((e) => console.error("Failed to save missed call log:", e));
 
     // Post missed-call record to the chat thread if that user is open
     const { selectedUser } = useChatStore.getState();
@@ -265,7 +297,6 @@ export const useCallStore = create(persist((set, get) => ({
     set({
       incomingCall: null,
       callState:    "IDLE",
-      callHistory:  [missed, ...get().callHistory],
     });
   },
 
@@ -280,7 +311,7 @@ export const useCallStore = create(persist((set, get) => ({
       peerConnection, localStream, callDurationTimer,
       currentCallUser, currentCallStartTime,
       currentCallIsVideo, currentCallType,
-      callState, callHistory,
+      callState,
     } = get();
 
     if (emit && socket && currentCallUser) {
@@ -291,7 +322,6 @@ export const useCallStore = create(persist((set, get) => ({
     if (peerConnection) peerConnection.close();
     if (localStream) localStream.getTracks().forEach((t) => t.stop());
 
-    let finalHistory = callHistory;
     if (currentCallStartTime && currentCallUser) {
       const diffSecs = Math.floor((Date.now() - currentCallStartTime) / 1000);
       const isMissed = callState === "RINGING";
@@ -301,17 +331,19 @@ export const useCallStore = create(persist((set, get) => ({
         ? `📵 Missed ${typeLabel} call`
         : `📞 ${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)} call · ${dur}`;
 
-      finalHistory = [
-        {
-          _id:       Date.now().toString(),
-          userId:    currentCallUser,
-          type:      isMissed ? "missed" : currentCallType,
-          isVideo:   currentCallIsVideo,
-          timestamp: currentCallStartTime,
-          duration:  isMissed ? null : dur,
-        },
-        ...callHistory,
-      ];
+      const authUser = useAuthStore.getState().authUser;
+      const logData = {
+        callerId:   currentCallType === "outgoing" ? authUser._id : currentCallUser,
+        receiverId: currentCallType === "outgoing" ? currentCallUser : authUser._id,
+        type:       isMissed ? "missed" : (currentCallType === "outgoing" ? "outgoing" : "incoming"),
+        isVideo:    currentCallIsVideo,
+        duration:   isMissed ? null : dur,
+        timestamp:  currentCallStartTime,
+      };
+
+      axiosInstance.post("/calls/save", logData).then(() => {
+        get().fetchCallHistory();
+      }).catch((e) => console.error("Failed to save end call log:", e));
 
       axiosInstance.post(`/messages/send/${currentCallUser}`, { text: msg }).catch(() => {});
     }
@@ -335,7 +367,7 @@ export const useCallStore = create(persist((set, get) => ({
       currentCallIsVideo:   false,
       currentCallType:      null,
       currentCallStartTime: null,
-      callHistory:          finalHistory,
+      isRemoteRinging:      false,
     });
   },
 
@@ -432,10 +464,38 @@ export const useCallStore = create(persist((set, get) => ({
   // History
   // ─────────────────────────────────────────────────────────────────────────
 
-  clearCallHistory: () => set({ callHistory: [] }),
+  fetchCallHistory: async () => {
+    try {
+      const res = await axiosInstance.get("/calls/history");
+      set({ callHistory: res.data });
+    } catch (e) {
+      console.error("Failed to fetch call history:", e);
+    }
+  },
+
+  deleteCallLog: async (id) => {
+    try {
+      await axiosInstance.delete(`/calls/delete/${id}`);
+      set((s) => ({ callHistory: s.callHistory.filter((c) => c._id !== id) }));
+      toast.success("Call log deleted");
+    } catch (e) {
+      console.error("Failed to delete call log:", e);
+      toast.error("Failed to delete call log");
+    }
+  },
+
+  clearCallHistory: async () => {
+    try {
+      await axiosInstance.delete("/calls/clear");
+      set({ callHistory: [] });
+      toast.success("Call history cleared");
+    } catch (e) {
+      console.error("Failed to clear call history:", e);
+      toast.error("Failed to clear call history");
+    }
+  },
 
 }), {
   name: "call-history-storage",
-  // Only persist the history list — streams and connections cannot be serialised
-  partialize: (state) => ({ callHistory: state.callHistory }),
+  partialize: () => ({}),
 }));

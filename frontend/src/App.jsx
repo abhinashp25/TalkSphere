@@ -22,23 +22,28 @@ function App() {
   useEffect(() => { checkAuth(); applyStoredTheme(); }, [checkAuth]);
   
   useEffect(() => {
-    if (authUser) {
+    if (!authUser) return;
+    // Give the socket a moment to fully connect before registering listeners.
+    // connectSocket() is sync but the underlying socket.io handshake is async.
+    const t = setTimeout(() => {
       useCallStore.getState().initListeners();
-    }
-    
+    }, 300);
+    return () => clearTimeout(t);
+  }, [authUser]);
+
+  useEffect(() => {
     const handleOffline = () => toast.error("You are offline. Messages will be queued.", { duration: 4000 });
     const handleOnline = () => {
       toast.success("Back online!", { duration: 3000 });
       useChatStore.getState().processOfflineQueue();
     };
-    
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
     return () => {
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
     };
-  }, [authUser]);
+  }, []);
 
   if (isCheckingAuth) return <PageLoader />;
 

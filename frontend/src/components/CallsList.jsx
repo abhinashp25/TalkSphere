@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Phone, Video, PlusCircle, X, Search, PhoneCall, VideoIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Phone, Video, PlusCircle, X, Search, PhoneCall, VideoIcon, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useChatStore } from "../store/useChatStore";
 import { useCallStore } from "../store/useCallStore";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,18 +8,30 @@ import { createPortal } from "react-dom";
 
 export default function CallsList() {
   const { chats } = useChatStore();
-  const { startCall, callHistory } = useCallStore();
+  const { startCall, callHistory, fetchCallHistory, deleteCallLog, clearCallHistory } = useCallStore();
   const [activeCallFilter, setActiveCallFilter] = useState("all");
   const [showNewCallModal, setShowNewCallModal] = useState(false);
   const [newCallSearch, setNewCallSearch] = useState("");
 
+  useEffect(() => {
+    fetchCallHistory();
+  }, [fetchCallHistory]);
+
   const getUserData = (userId) => chats.find(c => c._id === userId) || { fullName: "Unknown User", profilePic: "/avatar.png", _id: userId };
 
-  const enrichedHistory = callHistory.map(call => ({
-    ...call,
-    user: getUserData(call.userId),
-    timestamp: new Date(call.timestamp)
-  }));
+  const enrichedHistory = callHistory.map(call => {
+    const defaultUser = getUserData(call.userId);
+    return {
+      ...call,
+      user: {
+        _id: call.userId,
+        fullName: call.fullName || defaultUser.fullName,
+        profilePic: call.profilePic || defaultUser.profilePic,
+        bio: call.bio || defaultUser.bio,
+      },
+      timestamp: new Date(call.timestamp)
+    };
+  });
 
   const filtered = activeCallFilter === "missed"
     ? enrichedHistory.filter(c => c.type === "missed")
@@ -33,7 +46,7 @@ export default function CallsList() {
     const now = new Date();
     const diff = now - date;
     const days = Math.floor(diff / 86400000);
-    if (days === 0) return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    if (days === 0) return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
     if (days === 1) return "Yesterday";
     if (days < 7) return date.toLocaleDateString([], { weekday: "short" });
     return date.toLocaleDateString([], { day: "numeric", month: "short" });
@@ -44,13 +57,41 @@ export default function CallsList() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
         <h1 className="text-[22px] font-bold brand-font text-white">Calls</h1>
-        <button
-          onClick={() => setShowNewCallModal(true)}
-          className="hover:bg-white/10 p-2 rounded-full transition-colors"
-          style={{ color: "var(--accent)" }}
-          title="New call">
-          <PlusCircle size={22} />
-        </button>
+        <div className="flex items-center gap-1">
+          {callHistory.length > 0 && (
+            <button
+              onClick={() => {
+                toast((t) => (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm font-medium">Clear all call history?</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { clearCallHistory(); toast.dismiss(t.id); }}
+                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors"
+                      >Clear All</button>
+                      <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold"
+                        style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}
+                      >Cancel</button>
+                    </div>
+                  </div>
+                ), { duration: 8000 });
+              }}
+              className="hover:bg-white/10 p-2 rounded-full transition-colors text-red-400/80 hover:text-red-400"
+              title="Clear call history"
+            >
+              <Trash2 size={18} />
+            </button>
+          )}
+          <button
+            onClick={() => setShowNewCallModal(true)}
+            className="hover:bg-white/10 p-2 rounded-full transition-colors"
+            style={{ color: "var(--accent)" }}
+            title="New call">
+            <PlusCircle size={22} />
+          </button>
+        </div>
       </div>
 
       {/* Filter pills */}
@@ -123,20 +164,32 @@ export default function CallsList() {
               </div>
             </div>
 
-            {/* Timestamp + call-back button */}
-            <div className="flex flex-col items-end gap-2 flex-shrink-0">
-              <span className="text-[11.5px]" style={{ color: "var(--text-muted)" }}>{formatTime(call.timestamp)}</span>
-              <button
-                onClick={(e) => { e.stopPropagation(); startCall(call.user._id, call.isVideo); }}
-                className="p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                style={{
-                  background: "rgba(0,168,132,0.15)",
-                  color: "var(--accent)",
-                  border: "1px solid rgba(0,168,132,0.25)"
-                }}
-                title={`${call.isVideo ? "Video" : "Voice"} call`}>
-                {call.isVideo ? <Video size={16} /> : <Phone size={16} />}
-              </button>
+            {/* Timestamp + action buttons */}
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+              <span className="text-[11px] select-none mb-0.5" style={{ color: "var(--text-muted)" }}>{formatTime(call.timestamp)}</span>
+              <div className="flex items-center gap-1.5">
+                {/* Delete button (fades in on hover) */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); deleteCallLog(call._id); }}
+                  className="p-1.5 rounded-full text-white/30 hover:text-red-400 hover:bg-white/5 transition-all opacity-0 group-hover:opacity-100"
+                  title="Delete call log">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </button>
+                {/* Call-back button */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); startCall(call.user._id, call.isVideo); }}
+                  className="p-1.5 rounded-full opacity-80 group-hover:opacity-100 transition-all"
+                  style={{
+                    background: "rgba(0,168,132,0.15)",
+                    color: "var(--accent)",
+                    border: "1px solid rgba(0,168,132,0.25)"
+                  }}
+                  title={`${call.isVideo ? "Video" : "Voice"} call`}>
+                  {call.isVideo ? <Video size={14} /> : <Phone size={14} />}
+                </button>
+              </div>
             </div>
           </div>
         ))}

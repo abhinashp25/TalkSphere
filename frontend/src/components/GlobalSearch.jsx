@@ -22,7 +22,7 @@ function timeLabel(iso) {
   const now = new Date();
   const diffDays = Math.floor((now - d) / 86400000);
   if (diffDays === 0)
-    return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true });
   if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return d.toLocaleDateString(undefined, { weekday: "short" });
   return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });

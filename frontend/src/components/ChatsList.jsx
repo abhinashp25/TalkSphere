@@ -20,7 +20,7 @@ function timeAgo(iso) {
 
   if (mins < 1)  return "now";
   if (mins < 60) return `${mins}m`;
-  if (hrs  < 24) return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  if (hrs  < 24) return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true });
   if (days < 7)  return d.toLocaleDateString(undefined, { weekday: "short" });
   return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
