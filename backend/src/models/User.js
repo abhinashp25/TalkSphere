@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "Hey there! I am using Chatify",
+    default: "Hey there! I am using TalkSphere",
     maxlength: 139,
   },
   lastSeen: {

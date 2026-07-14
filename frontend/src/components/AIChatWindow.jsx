@@ -98,7 +98,7 @@ export default function AIChatWindow({ onClose }) {
         {/* Name + status */}
         <div className="flex-1 min-w-0">
           <p className="text-[15px] font-semibold leading-tight" style={{ color: "var(--text-primary)" }}>
-            Chatify AI
+            TalkSphere AI
           </p>
           <p className="text-[11.5px] leading-tight" style={{ color: retryAfter > 0 ? "#f6ad55" : "var(--text-secondary)" }}>
             {retryAfter > 0 ? `⏳ Cooling down ${retryAfter}s…` : "Always online · Powered by Gemini"}
@@ -143,7 +143,7 @@ export default function AIChatWindow({ onClose }) {
               </div>
               <div className="text-center">
                 <p className="text-[17px] font-bold" style={{ color: "var(--text-primary)" }}>
-                  Hi, I'm Chatify AI
+                  Hi, I'm TalkSphere AI
                 </p>
                 <p className="text-[13px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
                   Ask me anything — I'm here to help

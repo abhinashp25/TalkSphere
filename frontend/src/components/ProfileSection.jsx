@@ -126,7 +126,7 @@ export default function ProfileSection({ onClose }) {
         </div>
 
         <div className="px-7 py-4 text-[14px]" style={{ color: "var(--text-muted)" }}>
-          This is not your username or pin. This name will be visible to your Chatify contacts.
+          This is not your username or pin. This name will be visible to your TalkSphere contacts.
         </div>
 
         {/* About Section */}

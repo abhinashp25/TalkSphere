@@ -15,7 +15,7 @@ export async function fetchLinkPreview(url) {
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; ChatifyBot/1.0)",
+        "User-Agent": "Mozilla/5.0 (compatible; TalkSphereBot/1.0)",
         "Accept": "text/html",
       },
     });

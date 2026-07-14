@@ -83,14 +83,14 @@ export default function ProfileHeader({ onShowAI, onShowArchived, onShowStarred,
       {/* App name */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="text-[15px] font-bold truncate" style={{ color: 'var(--text-primary)' }}>Chatify</p>
+          <p className="text-[15px] font-bold truncate" style={{ color: 'var(--text-primary)' }}>TalkSphere</p>
           <SparklesIcon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#4fd1c5' }} />
         </div>
         <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>{authUser.fullName}</p>
       </div>
 
       {/* AI Chat shortcut */}
-      <button onClick={onShowAI} className="icon-btn" title="Chatify AI">
+      <button onClick={onShowAI} className="icon-btn" title="TalkSphere AI">
         <AIIcon className="w-[17px] h-[17px]" />
       </button>
 
@@ -134,11 +134,11 @@ export default function ProfileHeader({ onShowAI, onShowArchived, onShowStarred,
             </button>
             <button className="dropdown-item" onClick={() => { onShowAI?.(); setMenuOpen(false); }}>
               <AIIcon className="w-4 h-4" style={{ color: '#667eea' }} />
-              Chatify AI
+              TalkSphere AI
             </button>
             <button className="dropdown-item" onClick={() => { onShowAbout?.(); setMenuOpen(false); }}>
               <InfoIcon className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-              About Chatify
+              About TalkSphere
             </button>
             <div className="dropdown-divider" />
             <button className="dropdown-item" style={{ color: '#fc8181' }}

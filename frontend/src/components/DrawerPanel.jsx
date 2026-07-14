@@ -180,11 +180,11 @@ export default function DrawerPanel({ isOpen, onClose }) {
                           </div>
                           <div>
                             <span className="font-medium text-[14.5px] text-white block">Invite a friend</span>
-                            <span className="text-[11.5px] text-white/50 block">Share Chatify with friends</span>
+                            <span className="text-[11.5px] text-white/50 block">Share TalkSphere with friends</span>
                           </div>
                         </button>
 
-                        <button onClick={() => toast.success("Chatify is up to date! (v3.0.0)")}
+                        <button onClick={() => toast.success("TalkSphere is up to date! (v3.0.0)")}
                           className="w-full flex items-center gap-3.5 p-3 rounded-xl hover:bg-[var(--bg-hover)] text-left">
                           <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 text-white/70">
                             <CheckCircle size={18} />

@@ -73,16 +73,16 @@ export default function ContactQRModal({ user, onClose }) {
 
         {/* QR Code */}
         <div className="rounded-2xl overflow-hidden p-3" style={{ background: "white" }}>
-          <QRPlaceholder value={`chatify://add/${user._id}`} size={180} />
+          <QRPlaceholder value={`talksphere://add/${user._id}`} size={180} />
         </div>
 
         <div className="text-center">
           <p className="text-white font-medium">{user.fullName}</p>
-          <p className="text-[#a3a3a3] text-sm mt-0.5">Scan with Chatify to add contact</p>
+          <p className="text-[#a3a3a3] text-sm mt-0.5">Scan with TalkSphere to add contact</p>
         </div>
 
         <p className="text-xs text-[#555] text-center">
-          chatify://add/{user._id.slice(0, 12)}...
+          talksphere://add/{user._id.slice(0, 12)}...
         </p>
       </motion.div>
     </motion.div>

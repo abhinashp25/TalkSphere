@@ -56,12 +56,12 @@ export default function LeftRail({ activeTab, setActiveTab, isHiddenOnMobile }) 
         {/* Spacer for Desktop */}
         <div className="flex-1" />
 
-        {/* Chatify AI & Settings (Bottom on Desktop) */}
+        {/* TalkSphere AI & Settings (Bottom on Desktop) */}
         <div className="flex flex-col items-center gap-2">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            title="Chatify AI"
+            title="TalkSphere AI"
             onClick={() => setActiveTab("chatify-ai")}
             className="relative flex items-center justify-center w-11 h-11 rounded-xl transition-all border hover:bg-[var(--bg-hover)]"
             style={{

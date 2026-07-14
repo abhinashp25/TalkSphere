@@ -69,10 +69,10 @@ export default function SignupPage() {
           className="w-full max-w-[420px] relative z-10 glass-card p-8 sm:p-10"
         >
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0ea5e9] to-[#6366f1] flex items-center justify-center shadow-[0_0_20px_rgba(14,165,233,0.4)]">
-              <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain drop-shadow-md brightness-0 invert" />
+            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shadow-lg backdrop-blur-sm">
+              <img src="/TalkSphere_logo.png" alt="TalkSphere Logo" className="w-6.5 h-6.5 object-contain" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-white brand-font">Chatify</span>
+            <span className="text-2xl font-bold tracking-tight text-white brand-font">TalkSphere</span>
           </div>
 
           <h2 className="text-3xl font-semibold mb-2 tracking-tight brand-font">Create Account</h2>

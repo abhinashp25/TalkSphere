@@ -31,7 +31,7 @@ export default function NoConversationPlaceholder() {
 
       <div className="text-center space-y-3 max-w-[280px]">
         <h2 className="text-[22px] font-bold" style={{ color: 'var(--text-primary)' }}>
-          Chatify for Web
+          TalkSphere for Web
         </h2>
         <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           Select a conversation to start messaging, or find a contact to begin a new chat.

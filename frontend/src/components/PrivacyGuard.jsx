@@ -127,7 +127,7 @@ export default function PrivacyGuard({ children }) {
                   Screen Protected
                 </h3>
                 <p className="text-[13px] text-white/50 leading-relaxed">
-                  For your privacy, chat content is shielded while Chatify is out of focus.
+                  For your privacy, chat content is shielded while TalkSphere is out of focus.
                 </p>
               </div>
 

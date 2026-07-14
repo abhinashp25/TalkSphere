@@ -41,7 +41,7 @@ export default function PaymentsPanel({ contacts }) {
           <Landmark size={80} />
         </div>
         <div className="z-10">
-          <p className="text-xs text-white/50 font-medium">Chatify Pay Balance</p>
+          <p className="text-xs text-white/50 font-medium">TalkSphere Pay Balance</p>
           <p className="text-[32px] font-bold text-white mt-1">${paymentBalance.toFixed(2)}</p>
         </div>
         <div className="flex gap-2 z-10">

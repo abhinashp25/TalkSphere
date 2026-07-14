@@ -600,7 +600,7 @@ h1, h2, h3, h4, h5, h6, .brand-font {
     z-index: 10;
   }
 
-  /* Pinned Chatify AI Row styling */
+  /* Pinned TalkSphere AI Row styling */
   .ai-pinned-row {
     background: linear-gradient(90deg, var(--bg-active) 0%, transparent 100%) !important;
     border-left: 3px solid var(--accent) !important;

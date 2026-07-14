@@ -146,7 +146,7 @@ export default function AddContactModal({ isOpen, onClose }) {
                       className="text-[13px] truncate"
                       style={{ color: "var(--text-muted)" }}
                     >
-                      {contact.status || "Hey there! I am using Chatify."}
+                      {contact.bio || "TalkSphere user"}
                     </p>
                   </div>
                 </button>

@@ -5,7 +5,7 @@ export function createWelcomeEmailTemplate(name, clientURL) {
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Chatify</title>
+    <title>Welcome to TalkSphere</title>
   </head>
   <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height:1.6; color:#333; max-width:600px; margin:0 auto; padding:20px; background-color:#f0f4f8;">
 
@@ -21,7 +21,7 @@ export function createWelcomeEmailTemplate(name, clientURL) {
         </svg>
       </div>
 
-      <h1 style="color:white; margin:0; font-size:28px; font-weight:700; letter-spacing:-0.5px;">Welcome to Chatify!</h1>
+      <h1 style="color:white; margin:0; font-size:28px; font-weight:700; letter-spacing:-0.5px;">Welcome to TalkSphere!</h1>
       <p style="color:rgba(255,255,255,0.6); margin:8px 0 0; font-size:15px;">Real-time messaging, reimagined</p>
     </div>
 
@@ -30,12 +30,12 @@ export function createWelcomeEmailTemplate(name, clientURL) {
 
       <p style="font-size:18px; color:#1a2a3a; margin:0 0 12px;"><strong>Hey ${name} 👋</strong></p>
       <p style="color:#4a5c70; font-size:15px; margin:0 0 24px;">
-        Your Chatify account is ready. You can now connect with friends and colleagues in real-time, no matter where they are.
+        Your TalkSphere account is ready. You can now connect with friends and colleagues in real-time, no matter where they are.
       </p>
 
       <!-- Feature highlights -->
       <div style="background:#f8fafc; border-radius:12px; padding:24px; margin-bottom:28px; border-left:4px solid #4fd1c5;">
-        <p style="font-size:14px; font-weight:700; color:#0f1621; margin:0 0 14px; text-transform:uppercase; letter-spacing:0.05em;">What you can do on Chatify</p>
+        <p style="font-size:14px; font-weight:700; color:#0f1621; margin:0 0 14px; text-transform:uppercase; letter-spacing:0.05em;">What you can do on TalkSphere</p>
         <table style="width:100%; border-collapse:collapse;">
           <tr>
             <td style="padding:6px 0; color:#4a5c70; font-size:14px;">💬</td>
@@ -47,7 +47,7 @@ export function createWelcomeEmailTemplate(name, clientURL) {
           </tr>
           <tr>
             <td style="padding:6px 0; color:#4a5c70; font-size:14px;">🤖</td>
-            <td style="padding:6px 0; color:#4a5c70; font-size:14px;">Built-in AI assistant (Chatify AI)</td>
+            <td style="padding:6px 0; color:#4a5c70; font-size:14px;">Built-in AI assistant (TalkSphere AI)</td>
           </tr>
           <tr>
             <td style="padding:6px 0; color:#4a5c70; font-size:14px;">📅</td>
@@ -63,7 +63,7 @@ export function createWelcomeEmailTemplate(name, clientURL) {
       <!-- CTA button -->
       <div style="text-align:center; margin:0 0 28px;">
         <a href="${clientURL}" style="display:inline-block; background:linear-gradient(135deg, #4fd1c5, #38b2ac); color:white; text-decoration:none; padding:14px 36px; border-radius:50px; font-weight:700; font-size:15px; letter-spacing:0.02em; box-shadow:0 6px 20px rgba(79,209,197,0.35);">
-          Open Chatify →
+          Open TalkSphere →
         </a>
       </div>
 
@@ -71,15 +71,15 @@ export function createWelcomeEmailTemplate(name, clientURL) {
       <p style="color:#8fa3b8; font-size:13px; margin:0;">Happy chatting! 🚀</p>
 
       <div style="margin-top:28px; padding-top:20px; border-top:1px solid #e8edf2;">
-        <p style="color:#4a5c70; font-size:14px; margin:0;">Best regards,<br><strong style="color:#0f1621;">The Chatify Team</strong></p>
+        <p style="color:#4a5c70; font-size:14px; margin:0;">Best regards,<br><strong style="color:#0f1621;">The TalkSphere Team</strong></p>
       </div>
     </div>
 
     <!-- Footer -->
     <div style="text-align:center; padding:20px; color:#a0aec0; font-size:12px;">
-      <p style="margin:0;">© 2025 Chatify. All rights reserved.</p>
+      <p style="margin:0;">© 2025 TalkSphere. All rights reserved.</p>
       <p style="margin:6px 0 0;">
-        <a href="${clientURL}" style="color:#4fd1c5; text-decoration:none;">Visit Chatify</a>
+        <a href="${clientURL}" style="color:#4fd1c5; text-decoration:none;">Visit TalkSphere</a>
       </p>
     </div>
 
@@ -95,13 +95,13 @@ export function createOtpEmailTemplate(otp) {
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatify Verification Code</title>
+    <title>TalkSphere Verification Code</title>
   </head>
   <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height:1.6; color:#333; max-width:600px; margin:0 auto; padding:20px; background-color:#f0f4f8;">
 
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #0f1621 0%, #1a2a3a 100%); padding:36px 30px; text-align:center; border-radius:16px 16px 0 0; position:relative; overflow:hidden;">
-      <h1 style="color:white; margin:0; font-size:24px; font-weight:700; letter-spacing:-0.5px;">Chatify Verification</h1>
+      <h1 style="color:white; margin:0; font-size:24px; font-weight:700; letter-spacing:-0.5px;">TalkSphere Verification</h1>
     </div>
 
     <!-- Body -->

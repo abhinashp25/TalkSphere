@@ -26,8 +26,8 @@ export const useChatStore = create((set, get) => ({
   lastSeenMap:       {},
   pinnedMessage:     null,
   disappearSeconds:  0,
-  favourites:        JSON.parse(localStorage.getItem("chatify-favourites")) || [],
-  offlineQueue:      JSON.parse(localStorage.getItem("chatify-offline-queue")) || [],
+  favourites:        JSON.parse(localStorage.getItem("talksphere-favourites") || localStorage.getItem("chatify-favourites") || "[]"),
+  offlineQueue:      JSON.parse(localStorage.getItem("talksphere-offline-queue") || localStorage.getItem("chatify-offline-queue") || "[]"),
   blockedUsers:      [],
   isSidebarCollapsed: false,
   isStatusViewerOpen: false,
@@ -63,7 +63,7 @@ export const useChatStore = create((set, get) => ({
     const updated = isFav
       ? get().favourites.filter(f => f !== id)
       : [...get().favourites, id];
-    localStorage.setItem("chatify-favourites", JSON.stringify(updated));
+    localStorage.setItem("talksphere-favourites", JSON.stringify(updated));
     set({ favourites: updated });
     toast(isFav ? "Removed from favourites" : "Added to favourites", { duration: 1500 });
   },
@@ -217,7 +217,7 @@ export const useChatStore = create((set, get) => ({
       }
     }
     set({ offlineQueue: [] });
-    localStorage.removeItem("chatify-offline-queue");
+     localStorage.removeItem("talksphere-offline-queue");
     get().getMyChatPartners();
     if (get().selectedUser) get().getMessagesByUserId(get().selectedUser._id);
   },
@@ -256,7 +256,7 @@ export const useChatStore = create((set, get) => ({
     if (!window.navigator.onLine) {
       const newQueue = [...get().offlineQueue, { receiverId: selectedUser._id, payload }];
       set({ offlineQueue: newQueue });
-      localStorage.setItem("chatify-offline-queue", JSON.stringify(newQueue));
+      localStorage.setItem("talksphere-offline-queue", JSON.stringify(newQueue));
       const pendingMsgs = (get().messages || []).map(m => m._id === tempId ? { ...m, isPendingList: true } : m);
       set({ 
         messages: pendingMsgs,

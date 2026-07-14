@@ -11,7 +11,7 @@ export const useStatusStore = create((set, get) => ({
   setIsTextModalOpen: (isOpen) => set({ isTextModalOpen: isOpen }),
   viewedIds: (() => {
     try {
-      return new Set(JSON.parse(localStorage.getItem("chatify-viewed-statuses") || "[]"));
+      return new Set(JSON.parse(localStorage.getItem("talksphere-viewed-statuses") || localStorage.getItem("chatify-viewed-statuses") || "[]"));
     } catch {
       return new Set();
     }
@@ -29,7 +29,7 @@ export const useStatusStore = create((set, get) => ({
   markAsViewed: (id) => {
     const next = new Set(get().viewedIds);
     next.add(id);
-    localStorage.setItem("chatify-viewed-statuses", JSON.stringify(Array.from(next)));
+    localStorage.setItem("talksphere-viewed-statuses", JSON.stringify(Array.from(next)));
     set({ viewedIds: next });
   },
 

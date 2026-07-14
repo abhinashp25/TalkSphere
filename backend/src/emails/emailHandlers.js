@@ -5,7 +5,7 @@ export const sendWelcomeEmail = async (email, name, clientURL) => {
   const { data, error } = await resendClient.emails.send({
     from: `${sender.name} <${sender.email}>`,
     to: email,
-    subject: "Welcome to Chatify!",
+    subject: "Welcome to TalkSphere!",
     html: createWelcomeEmailTemplate(name, clientURL),
   });
 
@@ -21,7 +21,7 @@ export const sendOtpEmail = async (email, otp) => {
   const { data, error } = await resendClient.emails.send({
     from: `${sender.name} <${sender.email}>`,
     to: email,
-    subject: "Your Chatify Verification Code",
+    subject: "Your TalkSphere Verification Code",
     html: createOtpEmailTemplate(otp),
   });
 

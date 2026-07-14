@@ -172,9 +172,9 @@ export const THEMES = {
 };
 
 export const useSettingsStore = create((set, get) => ({
-  activeTheme: localStorage.getItem("chatify-theme") || "default",
-  fontSize:    localStorage.getItem("chatify-fontsize") || "medium",
-  enterToSend: JSON.parse(localStorage.getItem("chatify-enter") ?? "true"),
+  activeTheme: localStorage.getItem("talksphere-theme") || localStorage.getItem("chatify-theme") || "default",
+  fontSize:    localStorage.getItem("talksphere-fontsize") || localStorage.getItem("chatify-fontsize") || "medium",
+  enterToSend: JSON.parse(localStorage.getItem("talksphere-enter") ?? localStorage.getItem("chatify-enter") ?? "true"),
 
   setTheme: (themeKey) => {
     const theme = THEMES[themeKey];
@@ -182,26 +182,26 @@ export const useSettingsStore = create((set, get) => ({
     // Apply CSS variables to :root
     const root = document.documentElement;
     Object.entries(theme.vars).forEach(([key, val]) => root.style.setProperty(key, val));
-    localStorage.setItem("chatify-theme", themeKey);
+    localStorage.setItem("talksphere-theme", themeKey);
     set({ activeTheme: themeKey });
   },
 
   setFontSize: (size) => {
     const map = { small: "14px", medium: "16px", large: "18px" };
     document.documentElement.style.fontSize = map[size] || "16px";
-    localStorage.setItem("chatify-fontsize", size);
+    localStorage.setItem("talksphere-fontsize", size);
     set({ fontSize: size });
   },
 
   setEnterToSend: (v) => {
-    localStorage.setItem("chatify-enter", v);
+    localStorage.setItem("talksphere-enter", v);
     set({ enterToSend: v });
   },
 
   applyStoredTheme: () => {
-    const key = localStorage.getItem("chatify-theme") || "default";
+    const key = localStorage.getItem("talksphere-theme") || localStorage.getItem("chatify-theme") || "default";
     get().setTheme(key);
-    const size = localStorage.getItem("chatify-fontsize") || "medium";
+    const size = localStorage.getItem("talksphere-fontsize") || localStorage.getItem("chatify-fontsize") || "medium";
     get().setFontSize(size);
   },
 }));

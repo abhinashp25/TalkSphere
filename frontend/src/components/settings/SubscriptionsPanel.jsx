@@ -15,7 +15,7 @@ export default function SubscriptionsPanel() {
           <Award size={26} />
         </div>
         <div>
-          <h3 className="text-white font-bold text-[17px]">Chatify Premium</h3>
+          <h3 className="text-white font-bold text-[17px]">TalkSphere Premium</h3>
           <p className="text-xs text-white/60 mt-1">Unlock limits and explore advanced options</p>
         </div>
       </div>
@@ -68,7 +68,7 @@ export default function SubscriptionsPanel() {
           ))}
         </div>
 
-        <button onClick={() => { setIsSubscribed(true); toast.success("Subscribed to Chatify Premium!"); }}
+        <button onClick={() => { setIsSubscribed(true); toast.success("Subscribed to TalkSphere Premium!"); }}
           disabled={isSubscribed}
           className="w-full mt-4 py-3 rounded-xl font-bold transition-all text-[14px]"
           style={{ background: isSubscribed ? "var(--bg-input)" : "var(--accent)", color: isSubscribed ? "var(--text-muted)" : "var(--bg-primary)" }}>

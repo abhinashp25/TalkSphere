@@ -22,7 +22,7 @@ export function subscribeToNotifications(socket, getContactName) {
       ? newMessage.text.slice(0, 80)
       : "📷 Sent you an image";
 
-    const notification = new Notification(`Chatify — ${senderName}`, {
+    const notification = new Notification(`TalkSphere — ${senderName}`, {
       body,
       icon: "/avatar.png",
       tag: newMessage.senderId, // group notifications per sender

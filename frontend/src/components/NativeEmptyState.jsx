@@ -8,7 +8,7 @@ const ONBOARDING_TABS = [
     icon: "🗺️",
     label: "Quick Tour",
     title: "Everything at a glance",
-    subtitle: "Here's how Chatify OS is laid out",
+    subtitle: "Here's how TalkSphere OS is laid out",
     steps: [
       {
         icon: "💬",
@@ -35,14 +35,14 @@ const ONBOARDING_TABS = [
   {
     id: "ai",
     icon: "🤖",
-    label: "Chatify AI",
+    label: "TalkSphere AI",
     title: "Your smart assistant",
     subtitle: "Powered by Gemini AI — always by your side",
     steps: [
       {
         icon: "⚡",
         heading: "Instant Answers",
-        body: "Click the lightning bolt icon or say 'Chatify AI' to open your AI assistant at any time."
+        body: "Click the lightning bolt icon or say 'TalkSphere AI' to open your AI assistant at any time."
       },
       {
         icon: "✍️",
@@ -158,14 +158,9 @@ export default function NativeEmptyState({ onActivateMetaAI }) {
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="w-20 h-20 rounded-2xl flex items-center justify-center mb-8 border"
-          style={{
-            background: "var(--bg-secondary)",
-            borderColor: "var(--border)",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--border)"
-          }}
+          className="w-20 h-20 mb-8 flex items-center justify-center"
         >
-          <img src="/logo.png" alt="Chatify" className="w-10 h-10 object-contain drop-shadow-md brightness-0 invert opacity-90" />
+          <img src="/TalkSphere_logo.png" alt="TalkSphere" className="w-full h-full object-contain" />
         </motion.div>
 
         {/* Heading */}
@@ -175,7 +170,7 @@ export default function NativeEmptyState({ onActivateMetaAI }) {
           transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="text-3xl sm:text-4xl font-bold text-white tracking-tight brand-font mb-3"
         >
-          Chatify OS
+          TalkSphere OS
         </motion.h1>
 
         <motion.p
@@ -209,7 +204,7 @@ export default function NativeEmptyState({ onActivateMetaAI }) {
             style={{ background: "var(--accent)", color: "var(--bg-primary)" }}
           >
             <Zap size={17} />
-            Chatify AI
+            TalkSphere AI
           </button>
 
           <button

@@ -10,7 +10,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Are my messages end-to-end encrypted?",
-    a: "Yes. Every message, photo, voice note, and file you send on Chatify is protected with end-to-end encryption. Only you and the recipient can read them.",
+    a: "Yes. Every message, photo, voice note, and file you send on TalkSphere is protected with end-to-end encryption. Only you and the recipient can read them.",
   },
   {
     q: "How do I enable two-factor authentication?",
@@ -26,7 +26,7 @@ const FAQ_ITEMS = [
   },
 ];
 
-const PRIVACY_POLICY = `Chatify Privacy Policy — Last updated July 2026
+const PRIVACY_POLICY = `TalkSphere Privacy Policy — Last updated July 2026
 
 1. Information We Collect
 We collect only what is necessary to provide the service: your name, email address, profile photo, and the messages you send. We do not sell your data to third parties.
@@ -38,10 +38,10 @@ All messages are encrypted in transit using industry-standard protocols. We cann
 Messages are stored on our servers until you or the recipient deletes them. Profile data is retained until you delete your account.
 
 4. Third-Party Services
-Chatify uses Cloudinary for media storage and Socket.IO for real-time messaging. These services have their own privacy policies.
+TalkSphere uses Cloudinary for media storage and Socket.IO for real-time messaging. These services have their own privacy policies.
 
 5. Your Rights
-You can request deletion of your account and all associated data at any time by contacting support@chatify.app.
+You can request deletion of your account and all associated data at any time by contacting support@talksphere.app.
 
 6. Cookies
 We use session cookies strictly for authentication. No tracking or advertising cookies are used.
@@ -49,24 +49,24 @@ We use session cookies strictly for authentication. No tracking or advertising c
 7. Changes to This Policy
 We will notify you of significant changes via in-app notification. Continued use of the app constitutes acceptance.
 
-Contact: privacy@chatify.app`;
+Contact: privacy@talksphere.app`;
 
-const TERMS_OF_SERVICE = `Chatify Terms of Service — Last updated July 2026
+const TERMS_OF_SERVICE = `TalkSphere Terms of Service — Last updated July 2026
 
 1. Acceptance
-By using Chatify you agree to these terms. If you do not agree, do not use the app.
+By using TalkSphere you agree to these terms. If you do not agree, do not use the app.
 
 2. Eligibility
-You must be at least 13 years old to use Chatify. By using the app you confirm you meet this requirement.
+You must be at least 13 years old to use TalkSphere. By using the app you confirm you meet this requirement.
 
 3. Acceptable Use
-You agree not to use Chatify to send spam, harass other users, distribute malware, or share illegal content.
+You agree not to use TalkSphere to send spam, harass other users, distribute malware, or share illegal content.
 
 4. Intellectual Property
-Chatify and its logo are trademarks of the Chatify team. Your content remains yours.
+TalkSphere and its logo are trademarks of the TalkSphere team. Your content remains yours.
 
 5. Disclaimer
-Chatify is provided "as is" without warranty of any kind. We are not liable for any damages arising from use of the service.
+TalkSphere is provided "as is" without warranty of any kind. We are not liable for any damages arising from use of the service.
 
 6. Termination
 We may suspend or terminate accounts that violate these terms without prior notice.
@@ -74,7 +74,7 @@ We may suspend or terminate accounts that violate these terms without prior noti
 7. Governing Law
 These terms are governed by applicable law. Disputes will be resolved through binding arbitration.
 
-Contact: legal@chatify.app`;
+Contact: legal@talksphere.app`;
 
 function TextModal({ title, content, onClose }) {
   return (
@@ -129,13 +129,13 @@ export default function HelpPanel() {
           style={{ background: "linear-gradient(135deg, var(--accent) 0%, var(--bg-secondary) 100%)", border: "1px solid var(--border)" }}>
           <Zap size={30} className="text-white" />
         </div>
-        <h3 className="text-[18px] font-bold text-white mb-0.5">Chatify</h3>
+        <h3 className="text-[18px] font-bold text-white mb-0.5">TalkSphere</h3>
         <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>Version 3.0.0 · Build 2026.07</p>
       </div>
 
       <div className="rounded-xl p-4 mb-4 text-center border"
         style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
-        <p className="text-white font-medium text-[14px] mb-3">Enjoying Chatify?</p>
+        <p className="text-white font-medium text-[14px] mb-3">Enjoying TalkSphere?</p>
         <div className="flex justify-center gap-2">
           {[1, 2, 3, 4, 5].map(n => (
             <button
@@ -201,14 +201,14 @@ export default function HelpPanel() {
       </p>
       <div className="space-y-2">
         <a
-          href="mailto:support@chatify.app"
+          href="mailto:support@talksphere.app"
           className="w-full flex items-center gap-3 p-4 rounded-xl transition-colors hover:bg-[var(--bg-hover)] border"
           style={{ background: "var(--bg-input)", borderColor: "var(--border)", textDecoration: "none" }}
         >
           <MessageSquare size={18} style={{ color: "var(--accent)" }} />
           <div>
             <p className="text-white text-[14px] font-medium">Contact Support</p>
-            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>support@chatify.app</p>
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>support@talksphere.app</p>
           </div>
           <ChevronRight size={16} className="ml-auto" style={{ color: "var(--text-muted)" }} />
         </a>
@@ -241,7 +241,7 @@ export default function HelpPanel() {
       </div>
 
       <p className="text-center text-[11px] mt-6 mb-2" style={{ color: "var(--text-muted)" }}>
-        Made with ❤️ by the Chatify team
+        Made with ❤️ by the TalkSphere team
       </p>
 
       {/* Privacy Policy modal */}

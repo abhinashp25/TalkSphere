@@ -268,7 +268,7 @@ export default function CallsList() {
                         <div className="min-w-0">
                           <p className="text-white font-semibold text-[14px] truncate">{contact.fullName}</p>
                           <p className="text-[11.5px] truncate" style={{ color: "var(--text-muted)" }}>
-                            {contact.bio || "Chatify user"}
+                            {contact.bio || "TalkSphere user"}
                           </p>
                         </div>
                       </div>

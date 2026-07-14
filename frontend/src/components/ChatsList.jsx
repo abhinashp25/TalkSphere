@@ -159,7 +159,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
         {/* Tier 1: Brand Title & Mobile Actions */}
         <div className="flex items-center justify-between px-4 h-[56px] flex-shrink-0" style={{ background: "var(--bg-secondary)" }}>
           <h1 className="text-[22px] font-bold brand-font tracking-wide text-white flex items-center gap-0.5">
-            Chatify<span style={{ color: "var(--accent)" }}>.</span>
+            TalkSphere<span style={{ color: "var(--accent)" }}>.</span>
           </h1>
           <div className="flex items-center gap-1.5">
             <button onClick={() => setIsShareModalOpen(true)} className="p-2 rounded-full text-white/70 active:bg-white/10 transition-colors" title="Camera/QR">
@@ -207,8 +207,8 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
       {/* Chat Rows */}
       <div className="flex-1 overflow-y-auto w-full no-scrollbar pt-1 pb-24 sm:pb-4 relative" style={{ background: "var(--bg-primary)" }}>
         <AnimatePresence>
-          {/* Pinned Chatify AI Row */}
-          {(!localSearch || "chatify ai".includes(localSearch.toLowerCase())) && (activeFilter === "all" || !activeFilter) && (
+          {/* Pinned TalkSphere AI Row */}
+          {(!localSearch || "talksphere ai".includes(localSearch.toLowerCase())) && (activeFilter === "all" || !activeFilter) && (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -232,7 +232,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
               <div className="flex-1 min-w-0 flex flex-col justify-center">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[15.5px] text-white truncate brand-font tracking-wide font-semibold flex items-center gap-1.5">
-                    Chatify AI
+                    TalkSphere AI
                     <span className="w-[18px] h-[18px] rounded-full bg-violet-500/20 text-[#8b5cf6] flex items-center justify-center border border-[#8b5cf6]/30 flex-shrink-0">
                       <Sparkles size={9} className="text-violet-400 fill-violet-400/30" />
                     </span>
@@ -414,7 +414,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
           whileTap={{ scale: 0.9 }}
           onClick={() => setActiveTab("chatify-ai")}
           className="fab-secondary pointer-events-auto"
-          title="Ask Chatify AI"
+          title="Ask TalkSphere AI"
         >
           <Sparkles size={18} />
         </motion.button>

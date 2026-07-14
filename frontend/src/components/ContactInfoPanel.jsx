@@ -172,7 +172,7 @@ export default function ContactInfoPanel({ user, onClose, onClearChat, onArchive
         <div className="px-5 py-4 mb-2" style={{ background: "var(--bg-panel)" }}>
           <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>About</p>
           <p className="text-[15px]" style={{ color: "var(--text-primary)" }}>
-            {user.bio || user.status || "Hey there! I am using Chatify."}
+            {user.bio || user.status || "Hey there! I am using TalkSphere."}
           </p>
         </div>
 
