@@ -12,6 +12,7 @@ import StarredMessages    from "./StarredMessages";
 import ContactInfoPanel   from "./ContactInfoPanel";
 import DisappearTimerPicker from "./DisappearTimerPicker";
 import ScheduledList      from "./ScheduledList";
+import AvatarViewer       from "./AvatarViewer";
 import toast from "react-hot-toast";
 
 export default function ChatHeader({ onAISummary }) {
@@ -30,6 +31,7 @@ export default function ChatHeader({ onAISummary }) {
   const [showContactInfo,  setShowContactInfo]   = useState(false);
   const [showDisappear,    setShowDisappear]     = useState(false);
   const [showScheduledList,setShowScheduledList] = useState(false);
+  const [viewingDp,        setViewingDp]         = useState(false);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 60000);
@@ -131,10 +133,18 @@ export default function ChatHeader({ onAISummary }) {
             )}
           </button>
 
-          <div className="relative flex-shrink-0 cursor-pointer" onClick={() => setShowContactInfo(true)}>
-            <img src={selectedUser.profilePic || "/avatar.png"} alt={selectedUser.fullName}
-              className="w-10 h-10 rounded-full object-cover hover:opacity-90 transition-opacity"
-              style={{ border: "1px solid var(--border)", background: "var(--bg-input)" }} referrerPolicy="no-referrer" />
+          <div
+            className="relative flex-shrink-0"
+          >
+            <img
+              src={selectedUser.profilePic || "/avatar.png"}
+              alt={selectedUser.fullName}
+              className="w-10 h-10 rounded-full object-cover hover:opacity-90 transition-opacity cursor-pointer"
+              style={{ border: "1px solid var(--border)", background: "var(--bg-input)" }}
+              referrerPolicy="no-referrer"
+              onClick={() => setViewingDp(true)}
+              title="View profile photo"
+            />
             {isOnline && (
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2"
                 style={{ background: "var(--online, #10b981)", borderColor: "var(--bg-header)" }} />
@@ -271,6 +281,14 @@ export default function ChatHeader({ onAISummary }) {
           partnerId={selectedUser._id}
           onClose={() => setShowDisappear(false)}
           onChanged={(s) => setDisappearSeconds(s)}
+        />
+      )}
+
+      {viewingDp && (
+        <AvatarViewer
+          src={selectedUser.profilePic || "/avatar.png"}
+          name={selectedUser.fullName}
+          onClose={() => setViewingDp(false)}
         />
       )}
     </>

@@ -98,24 +98,18 @@ export default function CallsList() {
         </div>
       </div>
 
-      {/* Search bar — liquid glass */}
-      <div className="px-4 py-3 flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-        <div
-          className="flex items-center gap-3 px-4 py-2.5 rounded-full border"
-          style={{
-            background: "var(--bg-input)",
-            borderColor: "var(--border)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-          }}
-        >
-          {searchFocused ? (
-            <button onClick={() => { setHistorySearch(""); setSearchFocused(false); }}>
-              <ArrowLeft size={16} style={{ color: "var(--text-muted)" }} />
-            </button>
-          ) : (
-            <Search size={16} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-          )}
+      {/* Search bar — liquid glass pill (matches chat page) */}
+      <div className="px-3 py-2 flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+        <div className="relative flex items-center rounded-full h-[38px] border" style={{ background: "var(--bg-input)", borderColor: "var(--border)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+          <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
+            {searchFocused ? (
+              <button onClick={() => { setHistorySearch(""); setSearchFocused(false); }}>
+                <ArrowLeft size={16} className="text-[#a3a3a3]" />
+              </button>
+            ) : (
+              <Search size={16} className="text-[#a3a3a3]" />
+            )}
+          </div>
           <input
             type="text"
             placeholder="Search call history..."
@@ -123,12 +117,12 @@ export default function CallsList() {
             onChange={e => setHistorySearch(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => { if (!historySearch) setSearchFocused(false); }}
-            className="flex-1 bg-transparent text-[13.5px] focus:outline-none placeholder:opacity-40"
+            className="flex-1 bg-transparent text-[14px] focus:outline-none placeholder:text-[#737373] h-full"
             style={{ color: "var(--text-primary)" }}
           />
           {historySearch && (
-            <button onClick={() => { setHistorySearch(""); }}>
-              <X size={14} style={{ color: "var(--text-muted)" }} />
+            <button onClick={() => setHistorySearch("")} className="w-8 h-full flex items-center justify-center">
+              <X size={14} className="text-[#a3a3a3]" />
             </button>
           )}
         </div>

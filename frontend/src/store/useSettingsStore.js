@@ -2,24 +2,24 @@ import { create } from "zustand";
 
 export const THEMES = {
   default: {
-    name: "Midnight",
-    emoji: "🌑",
+    name: "OLED Black",
+    emoji: "⬛",
     vars: {
-      "--bg-primary":    "#050508",
-      "--bg-secondary":  "#0c0d14",
-      "--bg-panel":      "#11121d",
-      "--bg-header":     "#161726",
-      "--bg-input":      "#0d0d12",
-      "--bg-hover":      "rgba(255,255,255,0.05)",
-      "--bg-active":     "rgba(0,168,132,0.10)",
+      "--bg-primary":    "#000000",
+      "--bg-secondary":  "#0a0a0a",
+      "--bg-panel":      "#111111",
+      "--bg-header":     "#0d0d0d",
+      "--bg-input":      "#141414",
+      "--bg-hover":      "rgba(255,255,255,0.06)",
+      "--bg-active":     "rgba(0,168,132,0.12)",
       "--accent":        "#00a884",
-      "--accent-dim":    "rgba(0,168,132,0.15)",
-      "--bubble-mine":   "#005c4b",
-      "--bubble-theirs": "#202c33",
-      "--text-primary":  "#e9edef",
-      "--text-secondary":"#8696a0",
-      "--text-muted":    "#667781",
-      "--border":        "rgba(255,255,255,0.08)",
+      "--accent-dim":    "rgba(0,168,132,0.18)",
+      "--bubble-mine":   "rgba(0,90,70,0.55)",
+      "--bubble-theirs": "rgba(255,255,255,0.06)",
+      "--text-primary":  "#f0f0f0",
+      "--text-secondary":"#8a9199",
+      "--text-muted":    "#555f68",
+      "--border":        "rgba(255,255,255,0.07)",
     },
   },
   ocean: {
@@ -322,7 +322,9 @@ export const useSettingsStore = create((set, get) => ({
   },
 
   applyStoredTheme: () => {
-    const key = localStorage.getItem("talksphere-theme") || localStorage.getItem("chatify-theme") || "default";
+    // Migrate legacy 'trueblack' key to 'default' (same theme now)
+    let key = localStorage.getItem("talksphere-theme") || localStorage.getItem("chatify-theme") || "default";
+    if (key === "trueblack") { key = "default"; localStorage.setItem("talksphere-theme", "default"); }
     get().setTheme(key);
     const size = localStorage.getItem("talksphere-fontsize") || localStorage.getItem("chatify-fontsize") || "medium";
     get().setFontSize(size);

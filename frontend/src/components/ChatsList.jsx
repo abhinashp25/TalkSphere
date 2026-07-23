@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import { useStatusStore } from "../store/useStatusStore";
+import AvatarViewer from "./AvatarViewer";
 
 function timeAgo(iso) {
   if (!iso) return "";
@@ -44,6 +45,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedConvs, setSelectedConvs] = useState([]);
   const [contextMenuConv, setContextMenuConv] = useState(null);
+  const [viewingDp, setViewingDp] = useState(null); // { src, name } for AvatarViewer
   const [markedUnread, setMarkedUnread] = useState(() => {
     try { return JSON.parse(localStorage.getItem("talksphere_unread_manual") || "[]"); } catch { return []; }
   });
@@ -375,10 +377,12 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                   e.preventDefault();
                   setContextMenuConv(conv);
                 }}
-                onTouchStart={() => {
+                onTouchStart={(e) => {
                   pinHoldTimer.current = setTimeout(() => {
-                    handleSelectConv(conv._id);
-                  }, 450);
+                    // Long press on mobile → open WhatsApp-style context sheet
+                    if (navigator.vibrate) navigator.vibrate(40); // haptic feedback
+                    setContextMenuConv(conv);
+                  }, 500);
                 }}
                 onTouchEnd={() => clearTimeout(pinHoldTimer.current)}
                 onTouchMove={() => clearTimeout(pinHoldTimer.current)}
@@ -391,7 +395,20 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                       {conv.displayName[0].toUpperCase()}
                     </div>
                   ) : (
-                    <img src={conv.displayPic} alt={conv.displayName} className="w-[52px] h-[52px] rounded-2xl object-cover border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border)' }} referrerPolicy="no-referrer" />
+                    <img
+                      src={conv.displayPic}
+                      alt={conv.displayName}
+                      className="w-[52px] h-[52px] rounded-2xl object-cover border cursor-pointer hover:brightness-110 transition-all"
+                      style={{ background: 'var(--bg-input)', borderColor: 'var(--border)' }}
+                      referrerPolicy="no-referrer"
+                      onClick={(e) => {
+                        e.stopPropagation(); // don't open chat
+                        if (conv.displayPic && conv.displayPic !== "/avatar.png") {
+                          setViewingDp({ src: conv.displayPic, name: conv.displayName });
+                        }
+                      }}
+                      title="View photo"
+                    />
                   )}
                   {isSelected ? (
                     <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#00a884] text-white flex items-center justify-center z-20 shadow-md">
@@ -688,6 +705,15 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── AVATAR VIEWER (View DP) ── */}
+      {viewingDp && (
+        <AvatarViewer
+          src={viewingDp.src}
+          name={viewingDp.name}
+          onClose={() => setViewingDp(null)}
+        />
+      )}
     </div>
   );
 }

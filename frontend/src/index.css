@@ -12,8 +12,8 @@
 html, body, #root {
   font-family: 'Inter', sans-serif;
   font-size: 15px;
-  background-color: #050505;
-  color: #ededed;
+  background-color: #000000;
+  color: #f0f0f0;
   margin: 0; padding: 0;
   height: 100%;
   width: 100%;
@@ -27,44 +27,47 @@ h1, h2, h3, h4, h5, h6, .brand-font {
   font-family: 'Outfit', sans-serif;
 }
 
-/* ── CSS Variables – Obsidian Glass (Ultra Premium) ─────────────────── */
+/* ── CSS Variables – OLED True Black (App Default) ──────────────────── */
 :root {
-  --bg-primary:    #050505;
+  /* OLED True Black — absolute blacks for OLED/AMOLED displays */
+  --bg-primary:    #000000;
   --bg-secondary:  #0a0a0a;
-  --bg-panel:      #0d0d0d;
-  --bg-header:     #080808;
-  --bg-input:      #121212;
-  --bg-hover:      #171717;
-  --bg-active:     #1f1f1f;
-  
-  /* Cyber Violet / Blue mix */
-  --accent:        #8b5cf6;   
-  --accent-dim:    #2a1e45;
-  --accent-hover:  #a78bfa;
-  --accent-secondary: #6366f1;
-  
-  --bubble-mine:   #2e1065;
-  --bubble-theirs: #141414;
-  
-  --text-primary:  #f8fafc;
-  --text-secondary:#94a3b8;
-  --text-muted:    #475569;
-  
-  --border:        rgba(255, 255, 255, 0.08);
-  --border-focus:  rgba(139, 92, 246, 0.5);
-  
+  --bg-panel:      #111111;
+  --bg-header:     #0d0d0d;
+  --bg-input:      #141414;
+  --bg-hover:      rgba(255,255,255,0.06);
+  --bg-active:     rgba(0,168,132,0.12);
+
+  /* WhatsApp-style Green Accent */
+  --accent:        #00a884;
+  --accent-dim:    rgba(0,168,132,0.18);
+  --accent-hover:  #00cf9f;
+  --accent-secondary: #128c7e;
+
+  /* Liquid Glass Bubbles (default bubble style) */
+  --bubble-mine:   rgba(0,90,70,0.55);
+  --bubble-theirs: rgba(255,255,255,0.06);
+  --bubble-radius: 24px;  /* liquid glass = 24px */
+
+  --text-primary:  #f0f0f0;
+  --text-secondary:#8a9199;
+  --text-muted:    #555f68;
+
+  --border:        rgba(255,255,255,0.07);
+  --border-focus:  rgba(0,168,132,0.5);
+
   --online:        #10b981;
-  
+
   --radius-sm:     8px;
   --radius-md:     12px;
   --radius-xl:     16px;
   --radius-2xl:    24px;
-  
+
   /* Realistic Shadows */
-  --shadow-sm:     0 2px 8px rgba(0,0,0,0.4);
-  --shadow-md:     0 8px 24px rgba(0,0,0,0.6);
-  --shadow-lg:     0 16px 40px rgba(0,0,0,0.8);
-  --shadow-realistic: 0 10px 30px -10px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05);
+  --shadow-sm:     0 2px 8px rgba(0,0,0,0.6);
+  --shadow-md:     0 8px 24px rgba(0,0,0,0.8);
+  --shadow-lg:     0 16px 40px rgba(0,0,0,0.9);
+  --shadow-realistic: 0 10px 30px -10px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.04);
 }
 
 /* ── Scrollbar ──────────────────────────────────────────────────────── */

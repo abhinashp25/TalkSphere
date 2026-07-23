@@ -50,7 +50,9 @@ export default function CreateGroupModal({ onClose }) {
     if (selected.length < 1) { toast.error("Add at least 1 member"); return; }
     setLoading(true);
     try {
-      await createGroup({ name: name.trim(), description, memberIds: selected, groupPic });
+      const payload = { name: name.trim(), description, memberIds: selected };
+      if (groupPic) payload.groupPic = groupPic; // only include when truthy — null fails Zod z.string()
+      await createGroup(payload);
       onClose();
     } finally {
       setLoading(false);
