@@ -52,6 +52,16 @@ io.on("connection", (socket) => {
     socket.to(`group:${groupId}`).emit("groupUserStoppedTyping", { groupId, from: userId });
   });
 
+  // --- E2EE Public Key Exchange --- //
+  // When user A opens a chat with user B, A sends their public key.
+  // B receives it and sends back their own, enabling both to derive a shared AES-GCM key.
+  socket.on("pubkeyExchange", ({ to, publicKey }) => {
+    const receiverSocketId = userSocketMap[to];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("pubkeyExchange", { from: userId, publicKey });
+    }
+  });
+
   // --- WebRTC Signaling Events --- //
   socket.on("callUser", ({ userToCall, signalData, from, name, isVideo, profilePic }) => {
     const receiverSocketId = userSocketMap[userToCall];

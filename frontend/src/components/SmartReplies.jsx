@@ -30,7 +30,6 @@ export default function SmartReplies({ lastMessage }) {
         exit={{ opacity: 0, y: 6 }}
         transition={{ duration: 0.15 }}
         className="flex items-center gap-2 px-3 pb-1.5 pt-1 overflow-x-auto no-scrollbar"
-        style={{ background: "var(--bg-secondary)" }}
       >
         {/* Tiny AI spark indicator */}
         <span className="text-[13px] flex-shrink-0 opacity-50">✨</span>

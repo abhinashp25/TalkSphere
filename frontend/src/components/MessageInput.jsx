@@ -16,6 +16,19 @@ const STOP_DELAY = 1500;
 // How long the user must hold the mic button before recording starts (ms)
 const MIC_HOLD_THRESHOLD = 400;
 
+function getBestMimeType() {
+  const types = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/ogg;codecs=opus",
+    "audio/ogg",
+    "audio/mp4",
+  ];
+  return types.find((t) => {
+    try { return MediaRecorder.isTypeSupported(t); } catch { return false; }
+  }) || "";
+}
+
 // Tone dot colors
 const TONE_COLORS = {
   warm:       "#10b981",
@@ -237,15 +250,18 @@ export default function MessageInput({ onTextChange }) {
     holdTimer.current = null;
   };
 
+  const holdStreamRef    = useRef(null);   // Audio stream reference for hold-recording
+
   // ── Hold-to-record (mic button, no text in input) ─────────────────────
   const startHoldRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mr = new MediaRecorder(stream);
+      holdStreamRef.current = stream;
+      const mimeType = getBestMimeType();
+      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       holdChunksRef.current = [];
-      mr.ondataavailable = (e) => holdChunksRef.current.push(e.data);
-      mr.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop());
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0) holdChunksRef.current.push(e.data);
       };
       mr.start();
       holdMediaRef.current = mr;
@@ -263,7 +279,11 @@ export default function MessageInput({ onTextChange }) {
   const cancelHoldRecording = () => {
     clearTimeout(holdRecordTimer.current);
     clearInterval(holdClockRef.current);
-    holdMediaRef.current?.stop();
+    if (holdStreamRef.current) {
+      try { holdStreamRef.current.getTracks().forEach((t) => t.stop()); } catch {}
+      holdStreamRef.current = null;
+    }
+    try { holdMediaRef.current?.stop(); } catch {}
     holdMediaRef.current = null;
     holdStartedRef.current = false;
     setIsHoldRecording(false);
@@ -274,19 +294,26 @@ export default function MessageInput({ onTextChange }) {
 
   const sendHoldRecording = () => {
     clearInterval(holdClockRef.current);
-    if (!holdMediaRef.current || !holdStartedRef.current) {
+    const mr = holdMediaRef.current;
+    if (!mr || !holdStartedRef.current) {
       cancelHoldRecording();
       return;
     }
-    holdMediaRef.current.onstop = () => {
-      const blob = new Blob(holdChunksRef.current, { type: "audio/webm" });
+    const mimeType = getBestMimeType();
+    mr.onstop = () => {
+      if (holdStreamRef.current) {
+        try { holdStreamRef.current.getTracks().forEach((t) => t.stop()); } catch {}
+        holdStreamRef.current = null;
+      }
+      const actualMime = mr.mimeType || mimeType || "audio/webm";
+      const blob = new Blob(holdChunksRef.current, { type: actualMime });
       const reader = new FileReader();
       reader.onloadend = () => {
         sendMessage({ audio: reader.result, isWhisper: false });
       };
       reader.readAsDataURL(blob);
     };
-    holdMediaRef.current.stop();
+    mr.stop();
     holdMediaRef.current = null;
     holdStartedRef.current = false;
     setIsHoldRecording(false);
@@ -295,7 +322,11 @@ export default function MessageInput({ onTextChange }) {
     useChatStore.getState().emitStopTyping();
   };
 
-  const onMicPointerDown = () => {
+  const onMicPointerDown = (e) => {
+    if (e?.pointerType === "touch" && e?.cancelable) {
+      // Prevent default touch gestures (e.g. text selection, context menus) on mobile
+      e.preventDefault();
+    }
     if (canSend) return; // mic only activates when there is no text to send
     holdStartedRef.current = false;
     holdRecordTimer.current = setTimeout(() => {
@@ -312,6 +343,11 @@ export default function MessageInput({ onTextChange }) {
     }
     // Released before threshold — treat as tap, open full VoiceRecorder
     else if (!holdStartedRef.current) {
+      if (recognitionRef.current) {
+        setIsRecording(false);
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
       setVoiceMode(true);
     }
   };
@@ -321,6 +357,15 @@ export default function MessageInput({ onTextChange }) {
     if (holdStartedRef.current && !holdRecordLocked) {
       // Finger slid up — lock the recording so user can speak freely
       setHoldRecordLocked(true);
+    }
+  };
+
+  const onMicPointerCancel = () => {
+    clearTimeout(holdRecordTimer.current);
+    if (holdStartedRef.current && !holdRecordLocked) {
+      setHoldRecordLocked(true);
+    } else if (!holdStartedRef.current) {
+      cancelHoldRecording();
     }
   };
 
@@ -569,15 +614,25 @@ export default function MessageInput({ onTextChange }) {
                   <Film size={17} />
                 </button>
 
-                {/* Voice typing */}
+                {/* Voice typing — iOS glass style */}
                 <button
                   type="button"
                   onClick={toggleVoiceTyping}
-                  className="w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0 transition-all hover:bg-white/5 active:scale-90"
-                  style={{ color: isRecording ? "#ef4444" : "#737373" }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0 transition-all active:scale-90"
+                  style={{
+                    background: isRecording
+                      ? "rgba(239,68,68,0.15)"
+                      : "rgba(255,255,255,0.05)",
+                    border: isRecording
+                      ? "1px solid rgba(239,68,68,0.4)"
+                      : "1px solid rgba(255,255,255,0.08)",
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)",
+                    boxShadow: isRecording ? "0 0 12px rgba(239,68,68,0.25)" : "none",
+                  }}
                   title={isRecording ? "Stop voice typing" : "Voice type"}
                 >
-                  <Mic size={17} className={isRecording ? "animate-pulse" : ""} />
+                  <Mic size={15} style={{ color: isRecording ? "#ef4444" : "#737373" }} className={isRecording ? "animate-pulse" : ""} />
                 </button>
 
                 {/* Tone dot — non-neutral only */}
@@ -607,61 +662,94 @@ export default function MessageInput({ onTextChange }) {
             {/* Hidden file input */}
             <input type="file" ref={fileRef} onChange={handleFile} className="hidden" />
 
-            {/* ── Send / Mic Floating Action Button ──────────────── */}
-            {/*
-              BUG FIX: Previously, onPointerUp fired handleSend() which cleared
-              the text (making canSend false), then the browser's onClick fired
-              and triggered setVoiceMode(true). We now use didSendRef to block
-              the onClick when a send has already happened in this pointer cycle.
-            */}
+            {/* ── Send / Mic Floating Action Button (iOS liquid glass) ── */}
             <motion.button
               type="button"
-              whileTap={{ scale: 0.9 }}
-              // Send button handlers (only when there is content to send)
+              whileTap={{ scale: 0.88 }}
               onPointerDown={canSend ? onSendPointerDown : onMicPointerDown}
               onPointerUp={canSend ? onSendPointerUp : onMicPointerUp}
               onPointerLeave={canSend ? onSendPointerLeave : onMicPointerLeave}
+              onPointerCancel={canSend ? undefined : onMicPointerCancel}
               onClick={() => {
-                // If a send already happened via pointer events, swallow this click.
                 if (didSendRef.current) { didSendRef.current = false; return; }
               }}
               title={canSend ? "Send (hold to schedule)" : "Hold to record voice"}
-              style={{ touchAction: "none" }}
-              className="w-[44px] h-[44px] rounded-full flex-shrink-0 flex items-center justify-center shadow-lg transition-colors duration-200 select-none mb-0.5"
-              animate={{
+              style={{
+                touchAction: "none",
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                overflow: "hidden",
+                marginBottom: 2,
                 background: isHoldRecording
-                  ? "#ef4444"
+                  ? "rgba(239,68,68,0.9)"
                   : canSend
-                  ? "var(--accent)"
-                  : "var(--bg-input)",
-                scale: 1,
+                  ? "linear-gradient(135deg, #8b5cf6, #6366f1)"
+                  : "rgba(255,255,255,0.07)",
+                border: isHoldRecording
+                  ? "1.5px solid rgba(239,68,68,0.6)"
+                  : canSend
+                  ? "1.5px solid rgba(139,92,246,0.5)"
+                  : "1.5px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                boxShadow: canSend
+                  ? "0 4px 20px rgba(139,92,246,0.4), 0 0 0 0 rgba(139,92,246,0)"
+                  : isHoldRecording
+                  ? "0 4px 20px rgba(239,68,68,0.4)"
+                  : "none",
+                transition: "background 0.2s, border 0.2s, box-shadow 0.2s",
               }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
             >
+              {/* Animated waveform rings during hold-recording */}
+              {isHoldRecording && (
+                <>
+                  <motion.span
+                    className="absolute rounded-full border border-red-400/30"
+                    style={{ inset: -4 }}
+                    animate={{ scale: [1, 1.6], opacity: [0.5, 0] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
+                  />
+                  <motion.span
+                    className="absolute rounded-full border border-red-400/20"
+                    style={{ inset: -4 }}
+                    animate={{ scale: [1, 1.6], opacity: [0.5, 0] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut", delay: 0.4 }}
+                  />
+                </>
+              )}
+
               <AnimatePresence mode="wait" initial={false}>
                 {canSend ? (
                   <motion.span
                     key="send"
-                    initial={{ rotate: -30, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 30, opacity: 0 }}
+                    initial={{ rotate: -30, opacity: 0, scale: 0.7 }}
+                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                    exit={{ rotate: 30, opacity: 0, scale: 0.7 }}
                     transition={{ duration: 0.15 }}
                     className="flex items-center justify-center"
-                    style={{ color: "var(--bg-primary)" }}
                   >
-                    <Send size={18} className="ml-0.5" />
+                    <Send size={17} className="ml-0.5" style={{ color: "white" }} />
                   </motion.span>
                 ) : (
                   <motion.span
                     key="mic"
-                    initial={{ rotate: 30, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -30, opacity: 0 }}
+                    initial={{ rotate: 30, opacity: 0, scale: 0.7 }}
+                    animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                    exit={{ rotate: -30, opacity: 0, scale: 0.7 }}
                     transition={{ duration: 0.15 }}
                     className="flex items-center justify-center"
-                    style={{ color: isHoldRecording ? "#fff" : "var(--text-secondary)" }}
                   >
-                    <Mic size={20} className={isHoldRecording ? "animate-pulse" : ""} />
+                    <Mic
+                      size={18}
+                      style={{ color: isHoldRecording ? "white" : "rgba(255,255,255,0.55)" }}
+                      className={isHoldRecording ? "animate-pulse" : ""}
+                    />
                   </motion.span>
                 )}
               </AnimatePresence>

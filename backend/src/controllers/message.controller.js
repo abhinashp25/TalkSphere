@@ -184,7 +184,13 @@ export const sendMessage = async (req, res) => {
       if (!validation.isValid) {
         return res.status(400).json({ message: `Audio upload failed: ${validation.message}` });
       }
-      const r = await cloudinary.uploader.upload(audio, { resource_type: "auto" }); 
+      // Clean mime type string (remove parameters like ;codecs=opus) for Cloudinary compatibility
+      const parts = audio.split(",");
+      const base64Data = parts[1];
+      const cleanMimeType = (validation.mimeType || "audio/webm").split(";")[0].trim();
+      const cleanAudioUri = `data:${cleanMimeType};base64,${base64Data}`;
+
+      const r = await cloudinary.uploader.upload(cleanAudioUri, { resource_type: "video" }); 
       audioUrl = r.secure_url; 
     }
     if (req.body.document) {

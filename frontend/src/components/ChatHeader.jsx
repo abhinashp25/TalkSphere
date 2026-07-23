@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeftIcon, PhoneIcon, VideoIcon, MoreVerticalIcon,
   SearchIcon, XIcon, ArchiveIcon, UserIcon, MessageSquareXIcon,
-  StarIcon, TimerIcon, ClockIcon, Sparkles,
+  StarIcon, TimerIcon, ClockIcon, Sparkles, Lock,
 } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
@@ -19,7 +19,7 @@ export default function ChatHeader({ onAISummary }) {
     selectedUser, setSelectedUser, setSearchQuery, searchQuery,
     typingUsers, lastSeenMap, clearChat,
     markChatArchived, disappearSeconds, setDisappearSeconds,
-    isSidebarCollapsed, toggleSidebar,
+    isSidebarCollapsed, toggleSidebar, sharedKeys,
   } = useChatStore();
   const { onlineUsers, authUser } = useAuthStore();
   const { startCall } = useCallStore();
@@ -147,6 +147,15 @@ export default function ChatHeader({ onAISummary }) {
                 style={{ color: "var(--text-primary)" }}>
                 {selectedUser.fullName}
               </p>
+              {/* E2EE lock badge */}
+              {sharedKeys?.[selectedUser._id] && (
+                <span
+                  className="flex items-center gap-0.5 flex-shrink-0"
+                  title="End-to-end encrypted"
+                >
+                  <Lock size={11} style={{ color: "#10b981" }} />
+                </span>
+              )}
               {/* Disappear timer badge */}
               {disappearLabel && (
                 <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 bg-white/10 text-white">
@@ -176,6 +185,11 @@ export default function ChatHeader({ onAISummary }) {
                   ))}</span>
                 )}
               </div>
+            ) : sharedKeys?.[selectedUser._id] ? (
+              <p className="text-[11.5px] font-medium flex items-center gap-1" style={{ color: "#10b981" }}>
+                <Lock size={10} />
+                End-to-end encrypted
+              </p>
             ) : (
               <p className="text-[12px] font-medium" style={{ color: selectedUser?._id === authUser?._id ? "var(--text-secondary)" : (isOnline ? "var(--online, #10b981)" : "var(--text-secondary)") }}>
                 {selectedUser?._id === authUser?._id ? "Message yourself" : (isOnline ? "Online" : lastSeenLabel(lastSeen))}

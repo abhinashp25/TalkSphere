@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "./useAuthStore";
+import {
+  generateKeyPair, exportPublicKey, importPublicKey,
+  deriveSharedKey, encryptMessage, decryptMessage, isE2EESupported,
+} from "../lib/cryptoUtils";
 
 export const useChatStore = create((set, get) => ({
   allContacts:       [],
@@ -32,6 +36,10 @@ export const useChatStore = create((set, get) => ({
   isSidebarCollapsed: false,
   isStatusViewerOpen: false,
 
+  // E2EE — in-memory only, never persisted to localStorage
+  e2eeKeyPair:  null,   // ECDH P-256 key pair for THIS session
+  sharedKeys:   {},     // { [userId]: AES-GCM CryptoKey }
+
   toggleSound: () => {
     localStorage.setItem("isSoundEnabled", !get().isSoundEnabled);
     set({ isSoundEnabled: !get().isSoundEnabled });
@@ -41,10 +49,18 @@ export const useChatStore = create((set, get) => ({
   setSelectedUser:  (user) => {
     set({ selectedUser: user, replyingTo: null, pinnedMessage: null, disappearSeconds: 0 });
     if (user) {
-      set({ 
+      set({
         messages: get().messagesCache?.[user._id] || [],
         unreadCounts: { ...get().unreadCounts, [user._id]: 0 }
       });
+      // Initiate E2EE key exchange when opening a chat
+      const { e2eeKeyPair } = get();
+      const socket = useAuthStore.getState().socket;
+      if (e2eeKeyPair && socket) {
+        exportPublicKey(e2eeKeyPair).then((pubKeyStr) => {
+          socket.emit("pubkeyExchange", { to: user._id, publicKey: pubKeyStr });
+        }).catch(() => {});
+      }
     }
   },
   setSearchQuery:   (q) => set({ searchQuery: q }),
@@ -223,16 +239,29 @@ export const useChatStore = create((set, get) => ({
   },
 
   sendMessage: async (messageData) => {
-    const { selectedUser, replyingTo } = get();
+    const { selectedUser, replyingTo, sharedKeys } = get();
     const { authUser } = useAuthStore.getState();
     const tempId = `temp-${Date.now()}`;
-    const payload = { ...messageData, replyTo: replyingTo || undefined };
+
+    // E2EE: encrypt text if we have a shared key with this user
+    let processedData = { ...messageData };
+    const sharedKey = sharedKeys[selectedUser._id];
+    if (sharedKey && processedData.text && typeof processedData.text === "string") {
+      try {
+        const envelope = await encryptMessage(sharedKey, processedData.text);
+        processedData.text = JSON.stringify({ __e2ee__: true, ...envelope });
+      } catch {
+        // Encryption failed — send as plaintext (graceful degradation)
+      }
+    }
+
+    const payload = { ...processedData, replyTo: replyingTo || undefined };
 
     const optimistic = {
       _id: tempId,
       senderId: authUser._id,
       receiverId: selectedUser._id,
-      text: messageData.text,
+      text: messageData.text,  // optimistic always shows plaintext
       image: messageData.image,
       audio: messageData.audio,
       replyTo: replyingTo || undefined,
@@ -477,13 +506,51 @@ export const useChatStore = create((set, get) => ({
   },
 
   subscribeToMessages: () => {
+    // Generate ECDH key pair for this session (once)
+    if (!get().e2eeKeyPair && isE2EESupported()) {
+      generateKeyPair().then((kp) => set({ e2eeKeyPair: kp })).catch(() => {});
+    }
+
     const { isSoundEnabled } = get();
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
 
-    socket.on("newMessage", (msg) => {
+    // Handle incoming E2EE public keys from chat partners
+    socket.on("pubkeyExchange", async ({ from, publicKey }) => {
+      try {
+        const { e2eeKeyPair, sharedKeys } = get();
+        if (!e2eeKeyPair) return;
+
+        const theirPublicKey = await importPublicKey(publicKey);
+        const sharedKey = await deriveSharedKey(e2eeKeyPair.privateKey, theirPublicKey);
+        set({ sharedKeys: { ...sharedKeys, [from]: sharedKey } });
+
+        // Reply with our own public key so the other side can also derive the shared key
+        const myPubKeyStr = await exportPublicKey(e2eeKeyPair);
+        const { selectedUser } = get();
+        if (selectedUser && String(selectedUser._id) === String(from)) {
+          socket.emit("pubkeyExchange", { to: from, publicKey: myPubKeyStr });
+        }
+      } catch { /* ignore key exchange errors */ }
+    });
+
+    socket.on("newMessage", async (msg) => {
       const myId = useAuthStore.getState().authUser?._id;
       if (!myId) return;
+
+      // E2EE: decrypt text if it came encrypted
+      if (msg.text && typeof msg.text === "string" && msg.text.startsWith('{"__e2ee__":true')) {
+        try {
+          const envelope = JSON.parse(msg.text);
+          const partnerId = String(msg.senderId) === String(myId) ? String(msg.receiverId) : String(msg.senderId);
+          const sharedKey = get().sharedKeys[partnerId];
+          if (sharedKey) {
+            const plain = await decryptMessage(sharedKey, { iv: envelope.iv, data: envelope.data });
+            if (plain !== null) msg = { ...msg, text: plain };
+          }
+        } catch { /* leave as-is if decryption fails */ }
+      }
+
       const partnerId = String(msg.senderId) === String(myId) ? String(msg.receiverId) : String(msg.senderId);
 
       const cachedMsgs = get().messagesCache[partnerId] || [];
@@ -682,7 +749,7 @@ export const useChatStore = create((set, get) => ({
     [
       "newMessage", "messageLinkPreview", "scheduledMessageSent", "messageEdited",
       "disappearTimerChanged", "messagesRead", "messageReaction", "messageDeleted",
-      "messagePinned", "userLastSeen", "userTyping", "userStoppedTyping",
+      "messagePinned", "userLastSeen", "userTyping", "userStoppedTyping", "pubkeyExchange",
     ].forEach(ev => socket?.off(ev));
   },
 }));

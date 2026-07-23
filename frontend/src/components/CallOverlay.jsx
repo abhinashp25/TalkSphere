@@ -122,16 +122,25 @@ export default function CallOverlay() {
 
   const localVideoRef  = useRef(null);
   const remoteVideoRef = useRef(null);
+  const remoteAudioRef = useRef(null); // ← hidden audio element for audio-only calls
 
+  // Attach local stream to local video preview
   useEffect(() => {
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream;
     }
   }, [localStream]);
 
+  // Attach remote stream — video element for video calls, audio element for voice calls
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
+    if (remoteStream) {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = remoteStream;
+      }
+      // Always attach to audio element so voice-only calls have audio output
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = remoteStream;
+      }
     }
   }, [remoteStream]);
 
@@ -211,7 +220,9 @@ export default function CallOverlay() {
           background: "linear-gradient(160deg, #0d1b2a 0%, #1b2838 55%, #0f2744 100%)",
         }}
       >
-        {/* ── Remote video (full-screen background) ─────────────── */}
+        {/* Hidden audio element — REQUIRED for browser to play remote audio tracks */}
+        <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: "none" }} />
+
         {remoteStream && !isVideoOff && (
           <video
             ref={remoteVideoRef}

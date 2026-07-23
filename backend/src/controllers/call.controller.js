@@ -1,5 +1,28 @@
 import Call from "../models/Call.js";
 
+const METERED_API_KEY = "MvuvyIskyECloIuYKpPiik55mUZWbIVtnkTKWRiQxLS4TerM";
+const METERED_DOMAIN  = "talksphere.metered.live";
+
+/**
+ * Fetch fresh time-limited TURN credentials from Metered.ca.
+ * The API key stays on the server — never exposed to the browser.
+ */
+export const getIceServers = async (_req, res) => {
+  try {
+    const url = `https://${METERED_DOMAIN}/api/v1/turn/credentials?apiKey=${METERED_API_KEY}`;
+    const resp = await fetch(url);
+    const iceServers = await resp.json();
+    res.json(iceServers);
+  } catch (error) {
+    console.error("Failed to fetch Metered ICE servers:", error.message);
+    // Fallback: Google STUN only
+    res.json([
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" },
+    ]);
+  }
+};
+
 export const saveCallLog = async (req, res) => {
   try {
     const { callerId, receiverId, type, isVideo, duration, timestamp } = req.body;

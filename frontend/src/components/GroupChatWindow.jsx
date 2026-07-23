@@ -445,6 +445,7 @@ function AudioPlayer({ src, isMine }) {
   const [playing,  setPlaying]  = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [speed,    setSpeed]    = useState(1);
   const audioRef = useRef(null);
 
   const toggle = () => {
@@ -453,12 +454,21 @@ function AudioPlayer({ src, isMine }) {
     else { audioRef.current.play().then(() => setPlaying(true)).catch(() => {}); }
   };
 
+  const cycleSpeed = () => {
+    const nextSpeed = speed === 1 ? 1.5 : speed === 1.5 ? 2 : 1;
+    setSpeed(nextSpeed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = nextSpeed;
+    }
+  };
+
   const fmtTime = (s) => {
     if (!s || isNaN(s)) return "0:00";
     return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, "0")}`;
   };
 
-  const pct  = duration > 0 ? (progress / duration) * 100 : 0;
+  const validDuration = (duration && isFinite(duration) && !isNaN(duration)) ? duration : 0;
+  const pct = validDuration > 0 ? (progress / validDuration) * 100 : 0;
   const BARS = [3,5,8,6,9,4,7,10,6,8,5,4,9,7,6,8,5,3,7,9,4,6,8,5,7,9,6,4,8,6];
 
   return (
@@ -474,7 +484,7 @@ function AudioPlayer({ src, isMine }) {
       <div className="flex-1">
         <div className="flex items-center gap-1.5">
           <button onClick={toggle}
-            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all active:scale-90"
+            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all active:scale-90 shadow-sm"
             style={{ background: isMine ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.15)" }}>
             {playing ? (
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" style={{ color: "white" }}>
@@ -488,34 +498,59 @@ function AudioPlayer({ src, isMine }) {
           </button>
           <div className="flex items-center gap-[2px] flex-1 cursor-pointer h-8"
             onClick={(e) => {
-              if (!audioRef.current || !duration) return;
+              if (!audioRef.current || !validDuration) return;
               const rect = e.currentTarget.getBoundingClientRect();
-              const p = (e.clientX - rect.left) / rect.width;
-              audioRef.current.currentTime = p * duration;
-              setProgress(p * duration);
+              const p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+              audioRef.current.currentTime = p * validDuration;
+              setProgress(p * validDuration);
             }}>
             {BARS.map((h, i) => {
               const barPct = (i / BARS.length) * 100;
               const active = barPct <= pct;
               return (
-                <div key={i} className="rounded-full flex-1 transition-all"
+                <div key={i} className="rounded-full flex-1 transition-all duration-150"
                   style={{
                     height: `${h * 2.5}px`,
                     background: active
-                      ? (isMine ? "rgba(255,255,255,0.9)" : "white")
+                      ? (isMine ? "rgba(255,255,255,0.95)" : "#8b5cf6")
                       : (isMine ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.2)"),
                   }} />
               );
             })}
           </div>
         </div>
-        <p className="text-[10px] mt-0.5 pl-10" style={{ color: isMine ? "rgba(255,255,255,0.5)" : "#a3a3a3" }}>
-          {fmtTime(playing || progress > 0 ? progress : duration)}
-        </p>
+        <div className="flex items-center justify-between mt-0.5 pl-10 pr-1">
+          <p className="text-[10px]" style={{ color: isMine ? "rgba(255,255,255,0.6)" : "#a3a3a3" }}>
+            {fmtTime(playing || progress > 0 ? progress : validDuration)}
+          </p>
+          <button
+            onClick={cycleSpeed}
+            className="text-[9.5px] font-semibold px-1.5 py-0.5 rounded-full transition-all active:scale-95"
+            style={{
+              background: isMine ? "rgba(255,255,255,0.2)" : "rgba(139,92,246,0.25)",
+              color: isMine ? "white" : "#a78bfa",
+              border: isMine ? "1px solid rgba(255,255,255,0.3)" : "1px solid rgba(139,92,246,0.4)"
+            }}
+            title="Playback Speed"
+          >
+            {speed}x
+          </button>
+        </div>
       </div>
       <audio ref={audioRef} src={src} preload="metadata"
-        onLoadedMetadata={() => { if (audioRef.current) setDuration(audioRef.current.duration); }}
-        onTimeUpdate={() => { if (audioRef.current) setProgress(audioRef.current.currentTime); }}
+        onLoadedMetadata={() => {
+          if (audioRef.current) {
+            const d = audioRef.current.duration;
+            if (d && isFinite(d) && !isNaN(d)) setDuration(d);
+          }
+        }}
+        onTimeUpdate={() => {
+          if (audioRef.current) {
+            setProgress(audioRef.current.currentTime);
+            const d = audioRef.current.duration;
+            if (d && isFinite(d) && !isNaN(d) && d > 0) setDuration(d);
+          }
+        }}
         onEnded={() => { setPlaying(false); setProgress(0); }}
         className="hidden" />
     </div>

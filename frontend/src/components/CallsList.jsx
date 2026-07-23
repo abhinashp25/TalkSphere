@@ -134,10 +134,13 @@ export default function CallsList() {
           </div>
         )}
         {filtered.map((call) => (
-          <div
+          <motion.div
             key={call._id}
-            className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 cursor-pointer group transition-colors border-b"
-            style={{ borderColor: "var(--border)" }}>
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-4 py-3 group transition-colors hover:bg-white/[0.04] border-b"
+            style={{ borderColor: "var(--border)" }}
+          >
             {/* Avatar */}
             <div className="relative flex-shrink-0">
               <img
@@ -146,52 +149,64 @@ export default function CallsList() {
                 className="w-12 h-12 rounded-full object-cover"
                 referrerPolicy="no-referrer"
               />
+              {/* Video/Voice badge on avatar */}
+              <span
+                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+                style={{ background: call.isVideo ? "#6366f1" : "#059669", border: "2px solid var(--bg-secondary)" }}
+              >
+                {call.isVideo
+                  ? <Video size={10} className="text-white" />
+                  : <Phone size={10} className="text-white" />}
+              </span>
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className={`text-[14.5px] font-semibold truncate ${call.type === "missed" ? "text-red-400" : "text-white"
-                }`}>
+              <p className={`text-[14.5px] font-semibold truncate ${call.type === "missed" ? "text-red-400" : "text-white"}`}>
                 {call.user.fullName}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <CallTypeIcon type={call.type} />
-                <span className={`text-[12px] ${call.type === "missed" ? "text-red-400/70" : "text-[#a3a3a3]"}`}>
+                <span className={`text-[12px] ${call.type === "missed" ? "text-red-400/80" : "text-[#a3a3a3]"}`}>
                   {call.type === "missed" ? "Missed" : call.type === "incoming" ? "Incoming" : "Outgoing"}
-                  {call.duration ? ` · ${call.duration}` : ""}
-                  {call.isVideo ? " · Video" : " · Voice"}
+                  {call.duration ? ` · ${formatDuration(call.duration)}` : ""}
                 </span>
               </div>
             </div>
 
-            {/* Timestamp + action buttons */}
-            <div className="flex flex-col items-end gap-1 flex-shrink-0">
-              <span className="text-[11px] select-none mb-0.5" style={{ color: "var(--text-muted)" }}>{formatTime(call.timestamp)}</span>
+            {/* Right side: time + actions */}
+            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+              <span className="text-[11px] tabular-nums" style={{ color: "var(--text-muted)" }}>
+                {formatTime(call.timestamp)}
+              </span>
               <div className="flex items-center gap-1.5">
-                {/* Delete button (fades in on hover) */}
+                {/* Delete (hover only on desktop) */}
                 <button
                   onClick={(e) => { e.stopPropagation(); deleteCallLog(call._id); }}
-                  className="p-1.5 rounded-full text-white/30 hover:text-red-400 hover:bg-white/5 transition-all opacity-0 group-hover:opacity-100"
-                  title="Delete call log">
+                  className="p-1.5 rounded-full text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all sm:opacity-0 sm:group-hover:opacity-100 opacity-100"
+                  title="Delete"
+                >
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                   </svg>
                 </button>
-                {/* Call-back button */}
-                <button
+                {/* Call-back button — always visible */}
+                <motion.button
+                  whileTap={{ scale: 0.88 }}
                   onClick={(e) => { e.stopPropagation(); startCall(call.user._id, call.isVideo); }}
-                  className="p-1.5 rounded-full opacity-80 group-hover:opacity-100 transition-all"
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all"
                   style={{
-                    background: "rgba(0,168,132,0.15)",
-                    color: "var(--accent)",
-                    border: "1px solid rgba(0,168,132,0.25)"
+                    background: call.isVideo ? "rgba(99,102,241,0.15)" : "rgba(5,150,105,0.15)",
+                    border: call.isVideo ? "1px solid rgba(99,102,241,0.3)" : "1px solid rgba(5,150,105,0.3)",
+                    color: call.isVideo ? "#818cf8" : "#10b981",
                   }}
-                  title={`${call.isVideo ? "Video" : "Voice"} call`}>
-                  {call.isVideo ? <Video size={14} /> : <Phone size={14} />}
-                </button>
+                  title={`${call.isVideo ? "Video" : "Voice"} call back`}
+                >
+                  {call.isVideo ? <Video size={13} /> : <Phone size={13} />}
+                </motion.button>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
@@ -304,15 +319,24 @@ export default function CallsList() {
   );
 }
 
-// WhatsApp-style directional arrow icons for call types
+// Format call duration from "m:ss" to "m min ss sec" or just "0:ss"
+function formatDuration(dur) {
+  if (!dur) return "";
+  const [m, s] = dur.split(":").map(Number);
+  if (!m && !s) return "";
+  if (m === 0) return `${s}s`;
+  return `${m}m ${String(s).padStart(2, "0")}s`;
+}
+
+// WhatsApp-style directional arrow icons
 function CallTypeIcon({ type }) {
   if (type === "missed") {
     return (
       <span title="Missed call" className="flex-shrink-0">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.8"
-          strokeLinecap="round" strokeLinejoin="round">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+          {/* Arrow pointing bottom-left = missed/declined */}
           <line x1="17" y1="7" x2="7" y2="17" />
-          <polyline points="17 17 7 17 7 7" />
+          <polyline points="7 7 7 17 17 17" />
         </svg>
       </span>
     );
@@ -320,18 +344,18 @@ function CallTypeIcon({ type }) {
   if (type === "incoming") {
     return (
       <span title="Incoming call" className="flex-shrink-0">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.8"
-          strokeLinecap="round" strokeLinejoin="round">
-          <line x1="17" y1="7" x2="7" y2="17" />
-          <polyline points="17 17 7 17 7 7" />
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+          {/* Arrow pointing bottom-right = incoming */}
+          <line x1="7" y1="7" x2="17" y2="17" />
+          <polyline points="17 7 17 17 7 17" />
         </svg>
       </span>
     );
   }
   return (
     <span title="Outgoing call" className="flex-shrink-0">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.8"
-        strokeLinecap="round" strokeLinejoin="round">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+        {/* Arrow pointing top-right = outgoing */}
         <line x1="7" y1="17" x2="17" y2="7" />
         <polyline points="7 7 17 7 17 17" />
       </svg>

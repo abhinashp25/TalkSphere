@@ -11,14 +11,15 @@ export const validateBase64File = (base64Str, allowedMimeTypes, maxSizeInBytes) 
     return { isValid: false, message: "File content is empty." };
   }
 
-  const match = base64Str.match(/^data:([^;]+);base64,/);
+  const match = base64Str.match(/^data:([^,]+);base64,/);
   if (!match) {
     return { isValid: false, message: "Invalid file format. Must be a valid base64 data URI." };
   }
 
   const mimeType = match[1];
-  if (!allowedMimeTypes.includes(mimeType)) {
-    return { isValid: false, message: `Unsupported file type: ${mimeType}` };
+  const baseMimeType = mimeType.split(";")[0].trim();
+  if (!allowedMimeTypes.includes(baseMimeType)) {
+    return { isValid: false, message: `Unsupported file type: ${baseMimeType}` };
   }
 
   // Extract actual base64 content to calculate size
