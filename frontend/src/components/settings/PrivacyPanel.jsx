@@ -57,7 +57,7 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
         <div className="px-4">
           <div className="flex items-center justify-between py-3 gap-4 border-b" style={{ borderColor: "var(--border)" }}>
             <div>
-              <p className="text-white font-medium text-[14px]">Read Receipts</p>
+              <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Read Receipts</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Let others know you've read their messages
               </p>
@@ -70,7 +70,7 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
 
           <div className="flex items-center justify-between py-3 gap-4 border-b" style={{ borderColor: "var(--border)" }}>
             <div>
-              <p className="text-white font-medium text-[14px]">Online Status</p>
+              <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Online Status</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Show when you're active
               </p>
@@ -80,7 +80,7 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
 
           <div className="flex items-center justify-between py-3 gap-4">
             <div>
-              <p className="text-white font-medium text-[14px]">Typing Indicator</p>
+              <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Typing Indicator</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Show "typing…" to others
               </p>
@@ -96,8 +96,8 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
       <select
         value={privacy.lastSeenFor}
         onChange={e => handlePrivacyChange("lastSeenFor", e.target.value)}
-        className="w-full p-3 rounded-xl text-white text-[14px] outline-none border"
-        style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}
+        className="w-full p-3 rounded-xl text-[14px] outline-none border"
+        style={{ background: "var(--bg-input)", borderColor: "var(--border)", color: "var(--text-primary)" }}
       >
         <option value="everyone">Everyone</option>
         <option value="contacts">My Contacts Only</option>
@@ -110,8 +110,8 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
       <select
         value={privacy.profilePhotoFor}
         onChange={e => handlePrivacyChange("profilePhotoFor", e.target.value)}
-        className="w-full p-3 rounded-xl text-white text-[14px] outline-none border"
-        style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}
+        className="w-full p-3 rounded-xl text-[14px] outline-none border"
+        style={{ background: "var(--bg-input)", borderColor: "var(--border)", color: "var(--text-primary)" }}
       >
         <option value="everyone">Everyone</option>
         <option value="contacts">My Contacts Only</option>
@@ -128,7 +128,7 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2.5">
             <Smartphone size={17} style={{ color: "var(--accent)" }} />
-            <span className="text-white font-medium text-[14px]">Active Sessions</span>
+            <span className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Active Sessions</span>
           </div>
           <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold"
             style={{ background: "rgba(0,168,132,0.15)", color: "var(--accent)" }}>
@@ -146,7 +146,7 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2.5">
             <Lock size={17} style={{ color: "var(--text-secondary)" }} />
-            <span className="text-white font-medium text-[14px]">Two-Factor Auth</span>
+            <span className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Two-Factor Auth</span>
           </div>
           <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
             authUser?.twoFA?.enabled
@@ -165,8 +165,8 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
         {!showTwoFAForm ? (
           <button
             onClick={() => setShowTwoFAForm(true)}
-            className="w-full py-2.5 rounded-xl border text-[13px] font-medium text-white hover:bg-white/5 transition-colors"
-            style={{ borderColor: "var(--border)" }}
+            className="w-full py-2.5 rounded-xl border text-[13px] font-medium hover:bg-[var(--bg-hover)] transition-colors"
+            style={{ borderColor: "var(--border)", color: "var(--text-primary)" }}
           >
             {authUser?.twoFA?.enabled ? "Disable 2FA" : "Enable 2FA"}
           </button>
@@ -181,8 +181,8 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
                 value={twoFAPassword}
                 onChange={e => setTwoFAPassword(e.target.value)}
                 placeholder="Current password"
-                className="w-full p-3 pr-11 rounded-xl text-white text-[13px] outline-none border"
-                style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}
+                className="w-full p-3 pr-11 rounded-xl text-[13px] outline-none border"
+                style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               />
               <button type="button"
                 onClick={() => setShowPwd(v => !v)}
@@ -194,7 +194,7 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
             <div className="flex gap-2">
               <button
                 onClick={() => { setShowTwoFAForm(false); setTwoFAPassword(""); }}
-                className="flex-1 py-2.5 rounded-xl border text-[13px] hover:bg-white/5 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border text-[13px] hover:bg-[var(--bg-hover)] transition-colors"
                 style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
                 Cancel
               </button>
@@ -218,7 +218,7 @@ export default function PrivacyPanel({ authUser, updatePrivacy, toggle2FA }) {
       >
         <div className="flex items-center gap-2.5">
           <Users size={17} style={{ color: "var(--text-secondary)" }} />
-          <span className="text-white text-[14px] font-medium">Blocked Contacts</span>
+          <span className="text-[14px] font-medium" style={{ color: "var(--text-primary)" }}>Blocked Contacts</span>
         </div>
         <ChevronRight size={17} style={{ color: "var(--text-muted)" }} />
       </button>

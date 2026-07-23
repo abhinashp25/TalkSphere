@@ -93,8 +93,8 @@ function TextModal({ title, content, onClose }) {
       >
         <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0"
           style={{ borderBottomColor: "var(--border)" }}>
-          <h3 className="font-bold text-white text-[16px]">{title}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+          <h3 className="font-bold text-[16px]" style={{ color: "var(--text-primary)" }}>{title}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
             style={{ color: "var(--text-muted)" }}>
             <X size={18} />
           </button>
@@ -129,13 +129,13 @@ export default function HelpPanel() {
           style={{ background: "linear-gradient(135deg, var(--accent) 0%, var(--bg-secondary) 100%)", border: "1px solid var(--border)" }}>
           <Zap size={30} className="text-white" />
         </div>
-        <h3 className="text-[18px] font-bold text-white mb-0.5">TalkSphere</h3>
+        <h3 className="text-[18px] font-bold mb-0.5" style={{ color: "var(--text-primary)" }}>TalkSphere</h3>
         <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>Version 3.0.0 · Build 2026.07</p>
       </div>
 
       <div className="rounded-xl p-4 mb-4 text-center border"
         style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
-        <p className="text-white font-medium text-[14px] mb-3">Enjoying TalkSphere?</p>
+        <p className="font-medium text-[14px] mb-3" style={{ color: "var(--text-primary)" }}>Enjoying TalkSphere?</p>
         <div className="flex justify-center gap-2">
           {[1, 2, 3, 4, 5].map(n => (
             <button
@@ -166,7 +166,7 @@ export default function HelpPanel() {
               onClick={() => setOpenFaq(openFaq === i ? null : i)}
               className="w-full flex items-center justify-between px-4 py-3.5 text-left gap-3"
             >
-              <span className="text-[13.5px] font-medium text-white">{item.q}</span>
+              <span className="text-[13.5px] font-medium" style={{ color: "var(--text-primary)" }}>{item.q}</span>
               <ChevronDown
                 size={16}
                 className="flex-shrink-0 transition-transform duration-200"
@@ -207,7 +207,7 @@ export default function HelpPanel() {
         >
           <MessageSquare size={18} style={{ color: "var(--accent)" }} />
           <div>
-            <p className="text-white text-[14px] font-medium">Contact Support</p>
+            <p className="text-[14px] font-medium" style={{ color: "var(--text-primary)" }}>Contact Support</p>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>support@talksphere.app</p>
           </div>
           <ChevronRight size={16} className="ml-auto" style={{ color: "var(--text-muted)" }} />
@@ -220,7 +220,7 @@ export default function HelpPanel() {
         >
           <Globe size={18} style={{ color: "var(--text-secondary)" }} />
           <div className="text-left">
-            <p className="text-white text-[14px] font-medium">Privacy Policy</p>
+            <p className="text-[14px] font-medium" style={{ color: "var(--text-primary)" }}>Privacy Policy</p>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>How we handle your data</p>
           </div>
           <ChevronRight size={16} className="ml-auto" style={{ color: "var(--text-muted)" }} />
@@ -233,7 +233,7 @@ export default function HelpPanel() {
         >
           <FileText size={18} style={{ color: "var(--text-secondary)" }} />
           <div className="text-left">
-            <p className="text-white text-[14px] font-medium">Terms of Service</p>
+            <p className="text-[14px] font-medium" style={{ color: "var(--text-primary)" }}>Terms of Service</p>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>Rules and usage agreement</p>
           </div>
           <ChevronRight size={16} className="ml-auto" style={{ color: "var(--text-muted)" }} />

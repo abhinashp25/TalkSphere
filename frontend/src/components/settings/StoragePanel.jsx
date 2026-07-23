@@ -56,7 +56,7 @@ export default function StoragePanel({ isOpen }) {
           <div key={item.label} className="mb-3">
             <div className="flex justify-between text-[12px] mb-1.5">
               <span style={{ color: "var(--text-secondary)" }}>{item.label}</span>
-              <span className="font-medium text-white">{item.val} MB</span>
+              <span className="font-medium" style={{ color: "var(--text-primary)" }}>{item.val} MB</span>
             </div>
             <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-input)" }}>
               <div className="h-full rounded-full animate-none"
@@ -80,7 +80,7 @@ export default function StoragePanel({ isOpen }) {
           <div className="px-4">
             <div className="flex items-center justify-between py-3 gap-4">
               <div>
-                <p className="text-white font-medium text-[14px]">Auto-Download Media</p>
+                <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Auto-Download Media</p>
                 <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                   Automatically download photos and videos
                 </p>

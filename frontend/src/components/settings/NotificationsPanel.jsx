@@ -111,11 +111,12 @@ export default function NotificationsPanel() {
           
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-white font-medium text-[14px]">Show notification banner</span>
+              <span className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Show notification banner</span>
               <select
                 value={notifBanner}
                 onChange={e => setNotifBanner(e.target.value)}
-                className="p-1.5 rounded-lg text-white text-[12.5px] outline-none bg-[var(--bg-secondary)] border border-[var(--border)]"
+                className="p-1.5 rounded-lg text-[12.5px] outline-none border"
+                style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               >
                 <option value="always">Always</option>
                 <option value="never">Never</option>
@@ -129,11 +130,12 @@ export default function NotificationsPanel() {
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-white font-medium text-[14px]">Show taskbar notification badge</span>
+              <span className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Show taskbar notification badge</span>
               <select
                 value={taskbarBadge}
                 onChange={e => setTaskbarBadge(e.target.value)}
-                className="p-1.5 rounded-lg text-white text-[12.5px] outline-none bg-[var(--bg-secondary)] border border-[var(--border)]"
+                className="p-1.5 rounded-lg text-[12.5px] outline-none border"
+                style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
               >
                 <option value="always">Always</option>
                 <option value="never">Never</option>
@@ -146,7 +148,7 @@ export default function NotificationsPanel() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium text-[14px]">System Sounds</p>
+              <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>System Sounds</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Enable incoming alerts globally
               </p>
@@ -169,14 +171,15 @@ export default function NotificationsPanel() {
             <div className="flex items-center gap-3">
               <MessageSquare size={17} className="text-emerald-400" />
               <div className="flex-1 min-w-0">
-                <span className="text-white font-medium text-[14px] block">Messages</span>
-                <span className="text-[11px] block mt-0.5 text-white/50">Incoming message sound</span>
+                <span className="font-medium text-[14px] block" style={{ color: "var(--text-primary)" }}>Messages</span>
+                <span className="text-[11px] block mt-0.5" style={{ color: "var(--text-muted)" }}>Incoming message sound</span>
               </div>
             </div>
             <select
               value={msgTone}
               onChange={e => { setMsgTone(e.target.value); playTonePreview(`/Notifications/${e.target.value}`); }}
-              className="w-full p-2 bg-[var(--bg-secondary)] border border-[var(--border)] text-white text-[13px] rounded-xl outline-none"
+              className="w-full p-2 border text-[13px] rounded-xl outline-none"
+              style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               {MSG_TONE_OPTIONS.map(opt => (
                 <option key={opt.file} value={opt.file}>{opt.label}</option>
@@ -191,14 +194,15 @@ export default function NotificationsPanel() {
             <div className="flex items-center gap-3">
               <Users size={17} className="text-[#6366f1]" />
               <div className="flex-1 min-w-0">
-                <span className="text-white font-medium text-[14px] block">Groups</span>
-                <span className="text-[11px] block mt-0.5 text-white/50">Incoming group message sound</span>
+                <span className="font-medium text-[14px] block" style={{ color: "var(--text-primary)" }}>Groups</span>
+                <span className="text-[11px] block mt-0.5" style={{ color: "var(--text-muted)" }}>Incoming group message sound</span>
               </div>
             </div>
             <select
               value={groupTone}
               onChange={e => { setGroupTone(e.target.value); playTonePreview(`/Notifications/${e.target.value}`); }}
-              className="w-full p-2 bg-[var(--bg-secondary)] border border-[var(--border)] text-white text-[13px] rounded-xl outline-none"
+              className="w-full p-2 border text-[13px] rounded-xl outline-none"
+              style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               {MSG_TONE_OPTIONS.map(opt => (
                 <option key={opt.file} value={opt.file}>{opt.label}</option>
@@ -213,8 +217,8 @@ export default function NotificationsPanel() {
             <div className="flex items-center gap-3">
               <CircleDot size={17} className="text-orange-400" />
               <div>
-                <span className="text-white font-medium text-[14px] block">Status updates</span>
-                <span className="text-[11px] mt-0.5 block text-white/50">Status notify indicators</span>
+                <span className="font-medium text-[14px] block" style={{ color: "var(--text-primary)" }}>Status updates</span>
+                <span className="text-[11px] mt-0.5 block" style={{ color: "var(--text-muted)" }}>Status notify indicators</span>
               </div>
             </div>
             <Toggle checked={true} onChange={() => {}} />
@@ -227,14 +231,15 @@ export default function NotificationsPanel() {
             <div className="flex items-center gap-3">
               <Phone size={17} className="text-[#8b5cf6]" />
               <div className="flex-1 min-w-0">
-                <span className="text-white font-medium text-[14px] block">Calls Ringtone</span>
-                <span className="text-[11px] block mt-0.5 text-white/50">Incoming WebRTC ringtone</span>
+                <span className="font-medium text-[14px] block" style={{ color: "var(--text-primary)" }}>Calls Ringtone</span>
+                <span className="text-[11px] block mt-0.5" style={{ color: "var(--text-muted)" }}>Incoming WebRTC ringtone</span>
               </div>
             </div>
             <select
               value={callRingtone}
               onChange={e => { setCallRingtone(e.target.value); playTonePreview(`/Call_ringtones/${e.target.value}`); }}
-              className="w-full p-2 bg-[var(--bg-secondary)] border border-[var(--border)] text-white text-[13px] rounded-xl outline-none"
+              className="w-full p-2 border text-[13px] rounded-xl outline-none"
+              style={{ background: "var(--bg-secondary)", borderColor: "var(--border)", color: "var(--text-primary)" }}
             >
               {CALL_RINGTONE_OPTIONS.map(opt => (
                 <option key={opt.file} value={opt.file}>{opt.label}</option>
@@ -254,7 +259,7 @@ export default function NotificationsPanel() {
           
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium text-[14px]">Show previews</p>
+              <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Show previews</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Preview message text inside message notifications
               </p>
@@ -266,7 +271,7 @@ export default function NotificationsPanel() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium text-[14px]">Play sound for outgoing messages</p>
+              <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Play sound for outgoing messages</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Send message tone (button-tap-sound.mp3)
               </p>
@@ -278,7 +283,7 @@ export default function NotificationsPanel() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium text-[14px]">Vibration alert</p>
+              <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Vibration alert</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Play vibrations on incoming items
               </p>

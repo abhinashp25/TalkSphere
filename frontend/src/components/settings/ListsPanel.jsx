@@ -29,7 +29,8 @@ export default function ListsPanel() {
             value={newListVal}
             onChange={e => setNewListVal(e.target.value)}
             placeholder="e.g. Work colleagues"
-            className="flex-1 p-2.5 bg-[var(--bg-input)] border border-[var(--border)] rounded-xl text-white text-[13px] outline-none"
+            className="flex-1 p-2.5 bg-[var(--bg-input)] border border-[var(--border)] text-[13px] outline-none rounded-xl"
+            style={{ color: "var(--text-primary)" }}
           />
           <button onClick={handleAddList}
             className="px-4 bg-[#00a884] text-white rounded-xl flex items-center justify-center hover:bg-[#009675] transition-colors">
@@ -48,7 +49,7 @@ export default function ListsPanel() {
               style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
               <div className="flex items-center gap-2.5">
                 <span className="text-xs">📂</span>
-                <span className="text-[13.5px] font-medium text-white">{l}</span>
+                <span className="text-[13.5px] font-medium" style={{ color: "var(--text-primary)" }}>{l}</span>
               </div>
               <button onClick={() => handleRemoveList(i)}
                 className="p-1 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors">

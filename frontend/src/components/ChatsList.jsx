@@ -108,12 +108,12 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
       <div className="hidden sm:flex flex-col flex-shrink-0">
         {/* Header */}
         <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-          <h1 className="text-[20px] font-bold brand-font tracking-wide text-white">Chats</h1>
+          <h1 className="text-[20px] font-bold brand-font tracking-wide" style={{ color: "var(--text-primary)" }}>Chats</h1>
           <div className="flex items-center gap-1">
-            <button onClick={() => setActiveTab("contacts")} className="p-2 rounded-full text-[#a3a3a3] hover:text-white hover:bg-white/5 transition-colors" title="New Chat">
+            <button onClick={() => setActiveTab("contacts")} className="p-2 rounded-full hover:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-secondary)" }} title="New Chat">
               <MessageSquarePlus size={20} />
             </button>
-            <button onClick={onOpenDrawer} className="p-2 rounded-full text-[#a3a3a3] hover:text-white hover:bg-white/5 transition-colors" title="Menu">
+            <button onClick={onOpenDrawer} className="p-2 rounded-full hover:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-secondary)" }} title="Menu">
               <Menu size={20} />
             </button>
           </div>
@@ -157,15 +157,15 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
       {/* ── MOBILE DOUBLE-TIER HEADER, SEARCH PILL & FILTERS (Hidden on Desktop) ── */}
       <div className="sm:hidden flex flex-col flex-shrink-0">
         {/* Tier 1: Brand Title & Mobile Actions */}
-        <div className="flex items-center justify-between px-4 h-[56px] flex-shrink-0" style={{ background: "var(--bg-secondary)" }}>
-          <h1 className="text-[22px] font-bold brand-font tracking-wide text-white flex items-center gap-0.5">
+        <div className="flex items-center justify-between px-4 h-[56px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+          <h1 className="text-[22px] font-bold brand-font tracking-wide flex items-center gap-0.5" style={{ color: "var(--text-primary)" }}>
             TalkSphere<span style={{ color: "var(--accent)" }}>.</span>
           </h1>
           <div className="flex items-center gap-1.5">
-            <button onClick={() => setIsShareModalOpen(true)} className="p-2 rounded-full text-white/70 active:bg-white/10 transition-colors" title="Camera/QR">
+            <button onClick={() => setIsShareModalOpen(true)} className="p-2 rounded-full active:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-secondary)" }} title="Camera/QR">
               <Camera size={20} />
             </button>
-            <button onClick={onOpenDrawer} className="w-8 h-8 rounded-full overflow-hidden ml-1 border border-white/10 active:scale-95 transition-transform" title="Profile/Settings">
+            <button onClick={onOpenDrawer} className="w-8 h-8 rounded-full overflow-hidden ml-1 border active:scale-95 transition-transform" style={{ borderColor: "var(--border)" }} title="Profile/Settings">
               <img src={authUser?.profilePic || "/avatar.png"} alt="profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </button>
           </div>
@@ -231,7 +231,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
               {/* Info */}
               <div className="flex-1 min-w-0 flex flex-col justify-center">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[15.5px] text-white truncate brand-font tracking-wide font-semibold flex items-center gap-1.5">
+                  <p className="text-[15.5px] truncate brand-font tracking-wide font-semibold flex items-center gap-1.5" style={{ color: "var(--text-primary)" }}>
                     TalkSphere AI
                     <span className="w-[18px] h-[18px] rounded-full bg-violet-500/20 text-[#8b5cf6] flex items-center justify-center border border-[#8b5cf6]/30 flex-shrink-0">
                       <Sparkles size={9} className="text-violet-400 fill-violet-400/30" />
@@ -243,7 +243,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                 </div>
                 
                 <div className="flex items-center justify-between gap-2 mt-0.5">
-                  <div className="text-[14px] truncate flex-1 font-normal text-[#a3a3a3] flex items-center gap-1">
+                  <div className="text-[14px] truncate flex-1 font-normal flex items-center gap-1" style={{ color: "var(--text-secondary)" }}>
                     <span className="text-violet-400">✨</span> Ask me anything...
                   </div>
 
@@ -260,13 +260,13 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-indigo-400/50 mb-2">
                 <MessageSquarePlus size={28} />
               </div>
-              <p className="font-medium text-[#a1a1aa]">Your inbox is empty</p>
-              <p className="text-sm text-[#71717a]">Start a conversation to get going.</p>
+              <p className="font-medium" style={{ color: "var(--text-primary)" }}>Your inbox is empty</p>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>Start a conversation to get going.</p>
             </motion.div>
           )}
           {allConversations.length > 0 && !visible.length && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16 gap-3">
-              <p className="text-sm text-[#71717a]">
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                 {sidebarSearch ? `No results for "${sidebarSearch}"` : `No ${activeFilter} conversations`}
               </p>
             </motion.div>
@@ -287,13 +287,11 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                 className={`chat-row group ${isActive ? "active" : ""} ${isFav ? "favorite-pinned" : ""}`}
                 onClick={() => handleConversationClick(conv)}
                 onDoubleClick={(e) => {
-                  // Desktop: double-click to pin/unpin
                   e.preventDefault();
                   e.stopPropagation();
                   toggleFavourite && toggleFavourite(conv._id);
                 }}
                 onTouchStart={() => {
-                  // Mobile: long press 600ms to pin/unpin
                   pinHoldTimer.current = setTimeout(() => {
                     toggleFavourite && toggleFavourite(conv._id);
                   }, 600);
@@ -305,7 +303,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                 <div className="relative flex-shrink-0">
                   {conv.isGroup ? (
                     <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-xl font-bold brand-font border"
-                      style={{ background: 'var(--bg-panel)', borderColor: 'var(--border)', color: 'white' }}>
+                      style={{ background: 'var(--bg-panel)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}>
                       {conv.displayName[0].toUpperCase()}
                     </div>
                   ) : (
@@ -319,13 +317,13 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                 {/* Content / Info */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[15.5px] text-white truncate brand-font tracking-wide" style={{ fontWeight: unread > 0 ? "600" : "500" }}>
+                    <p className="text-[15.5px] truncate brand-font tracking-wide" style={{ color: "var(--text-primary)", fontWeight: unread > 0 ? "600" : "500" }}>
                       {sidebarSearch ? highlight(conv.displayName, sidebarSearch) : conv.displayName}
                     </p>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       {isFav && <Pin size={11} className="text-violet-400 transform rotate-[45deg] flex-shrink-0" />}
                       {conv.sortTime > 0 && (
-                        <span className="text-[11px] font-medium" style={{ color: unread > 0 ? 'var(--accent)' : '#71717a' }}>
+                        <span className="text-[11px] font-medium" style={{ color: unread > 0 ? 'var(--accent)' : 'var(--text-muted)' }}>
                           {timeAgo(conv.sortTime)}
                         </span>
                       )}
@@ -333,7 +331,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                   </div>
                   
                   <div className="flex items-center justify-between gap-2 mt-0.5">
-                    <div className="text-[14px] truncate flex-1 font-normal text-[#a3a3a3]">
+                    <div className="text-[14px] truncate flex-1 font-normal" style={{ color: "var(--text-secondary)" }}>
                       {isTyping ? (
                         <div className="flex items-center gap-1.5 text-[#4fd1c5]">
                           <span className="italic font-medium">
@@ -346,16 +344,16 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                               <span className="w-1 h-1 rounded-full bg-[#4fd1c5] animate-pulse" style={{ animationDelay: "300ms" }} />
                             </span>
                           ) : (
-                            <div className="flex gap-0.5 pt-1 text-white">
-                              <span className="w-1 h-1 bg-white rounded-full typing-dot"></span>
-                              <span className="w-1 h-1 bg-white rounded-full typing-dot"></span>
-                              <span className="w-1 h-1 bg-white rounded-full typing-dot"></span>
+                            <div className="flex gap-0.5 pt-1" style={{ color: "var(--text-primary)" }}>
+                              <span className="w-1 h-1 rounded-full typing-dot" style={{ background: "var(--text-primary)" }}></span>
+                              <span className="w-1 h-1 rounded-full typing-dot" style={{ background: "var(--text-primary)" }}></span>
+                              <span className="w-1 h-1 rounded-full typing-dot" style={{ background: "var(--text-primary)" }}></span>
                             </div>
                           )}
                         </div>
                       ) : conv.lastMsgObj ? (
                         <>
-                          {conv.lastMsgObj.isMine && !conv.lastMsgObj.isDeleted && (<span className="text-[#e5e5e5]">You: </span>)}
+                          {conv.lastMsgObj.isMine && !conv.lastMsgObj.isDeleted && (<span style={{ color: "var(--text-muted)" }}>You: </span>)}
                           {conv.isGroup && typeof conv.lastMsgObj === 'string' ? (
                             conv.lastMsgObj
                           ) : conv.lastMsgObj.text ? (

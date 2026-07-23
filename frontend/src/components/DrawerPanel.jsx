@@ -88,15 +88,16 @@ export default function DrawerPanel({ isOpen, onClose }) {
               style={{ borderBottomColor: "var(--border)" }}>
               {view !== "main" && (
                 <button onClick={() => setView("main")}
-                  className="p-2 mr-2 rounded-full hover:bg-white/10 transition-colors">
-                  <ArrowLeft size={20} className="text-white" />
+                  className="p-2 mr-2 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+                  style={{ color: "var(--text-primary)" }}>
+                  <ArrowLeft size={20} />
                 </button>
               )}
-              <h2 className="text-[17px] font-bold brand-font flex-1 text-white">
+              <h2 className="text-[17px] font-bold brand-font flex-1" style={{ color: "var(--text-primary)" }}>
                 {view === "main" ? "Settings" : currentSection?.label}
               </h2>
               <button onClick={onClose}
-                className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+                className="p-2 rounded-xl hover:bg-[var(--bg-hover)] transition-colors"
                 style={{ color: "var(--text-muted)" }}>
                 <X size={20} />
               </button>
@@ -127,15 +128,15 @@ export default function DrawerPanel({ isOpen, onClose }) {
                             style={{ border: "2px solid var(--accent)" }}
                             referrerPolicy="no-referrer"
                           />
-                          <span className="absolute -bottom-0.5 -right-0.5 w-4.5 h-4.5 rounded-full border-2 border-[var(--bg-panel)] flex items-center justify-center bg-[#00a884] text-white text-[10px] font-bold">
+                          <span className="absolute -bottom-0.5 -right-0.5 w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center bg-[#00a884] text-white text-[10px] font-bold" style={{ borderColor: "var(--bg-panel)" }}>
                             <Plus size={10} />
                           </span>
                         </div>
                         <div className="min-w-0">
-                          <h3 className="text-[17px] font-bold text-white truncate">{authUser?.fullName}</h3>
-                          <div className="flex items-center gap-1.5 mt-1 bg-white/5 border border-white/10 px-2.5 py-1 rounded-full w-fit">
+                          <h3 className="text-[17px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{authUser?.fullName}</h3>
+                          <div className="flex items-center gap-1.5 mt-1 border px-2.5 py-1 rounded-full w-fit" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
                             <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-                            <span className="text-[11.5px] font-medium text-white/70 truncate max-w-[150px]">
+                            <span className="text-[11.5px] font-medium truncate max-w-[150px]" style={{ color: "var(--text-secondary)" }}>
                               {authUser?.status || "I'm feeling..."}
                             </span>
                           </div>
@@ -144,7 +145,8 @@ export default function DrawerPanel({ isOpen, onClose }) {
                       
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <button onClick={(e) => { e.stopPropagation(); toast.success("My Personal QR Code"); }}
-                          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 transition-colors">
+                          className="p-2 rounded-xl hover:bg-[var(--bg-hover)] transition-colors"
+                          style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}>
                           <Users size={16} />
                         </button>
                         <ChevronRight size={18} style={{ color: "var(--text-muted)" }} />
@@ -163,8 +165,8 @@ export default function DrawerPanel({ isOpen, onClose }) {
                               {section.icon}
                             </div>
                             <div className="text-left min-w-0">
-                              <span className="font-medium text-[14.5px] text-white block">{section.label}</span>
-                              <span className="text-[11.5px] block truncate text-white/50">{section.desc}</span>
+                              <span className="font-medium text-[14.5px] block" style={{ color: "var(--text-primary)" }}>{section.label}</span>
+                              <span className="text-[11.5px] block truncate" style={{ color: "var(--text-muted)" }}>{section.desc}</span>
                             </div>
                           </div>
                           <ChevronRight size={16} className="flex-shrink-0" style={{ color: "var(--text-muted)" }} />
@@ -175,23 +177,23 @@ export default function DrawerPanel({ isOpen, onClose }) {
                       <div className="pt-3 border-t mt-3 space-y-1" style={{ borderColor: "var(--border)" }}>
                         <button onClick={() => toast.success("Invite link copied to clipboard!")}
                           className="w-full flex items-center gap-3.5 p-3 rounded-xl hover:bg-[var(--bg-hover)] text-left">
-                          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 text-white/70">
+                          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}>
                             <UserPlus size={18} />
                           </div>
                           <div>
-                            <span className="font-medium text-[14.5px] text-white block">Invite a friend</span>
-                            <span className="text-[11.5px] text-white/50 block">Share TalkSphere with friends</span>
+                            <span className="font-medium text-[14.5px] block" style={{ color: "var(--text-primary)" }}>Invite a friend</span>
+                            <span className="text-[11.5px] block" style={{ color: "var(--text-muted)" }}>Share TalkSphere with friends</span>
                           </div>
                         </button>
 
                         <button onClick={() => toast.success("TalkSphere is up to date! (v3.0.0)")}
                           className="w-full flex items-center gap-3.5 p-3 rounded-xl hover:bg-[var(--bg-hover)] text-left">
-                          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 text-white/70">
+                          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}>
                             <CheckCircle size={18} />
                           </div>
                           <div>
-                            <span className="font-medium text-[14.5px] text-white block">App updates</span>
-                            <span className="text-[11.5px] text-white/50 block">Check current application build</span>
+                            <span className="font-medium text-[14.5px] block" style={{ color: "var(--text-primary)" }}>App updates</span>
+                            <span className="text-[11.5px] block" style={{ color: "var(--text-muted)" }}>Check current application build</span>
                           </div>
                         </button>
                       </div>

@@ -70,13 +70,13 @@ export default function PaymentsPanel({ contacts }) {
                   {tx.type === "received" ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                 </div>
                 <div>
-                  <p className="text-white font-medium text-[13.5px]">
+                  <p className="font-medium text-[13.5px]" style={{ color: "var(--text-primary)" }}>
                     {tx.type === "received" ? `Received from ${tx.name}` : `Paid to ${tx.name}`}
                   </p>
                   <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>{tx.time}</p>
                 </div>
               </div>
-              <span className={`text-[14px] font-bold ${tx.type === "received" ? "text-emerald-400" : "text-white"}`}>
+              <span className="text-[14px] font-bold" style={{ color: tx.type === "received" ? "#34d399" : "var(--text-primary)" }}>
                 {tx.type === "received" ? "+" : "-"}${tx.amount.toFixed(2)}
               </span>
             </div>
@@ -100,8 +100,8 @@ export default function PaymentsPanel({ contacts }) {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-white text-[16px]">Send Money</h3>
-                <button onClick={() => setShowPayModal(false)} className="p-1 rounded-lg hover:bg-white/10 text-white/50">
+                <h3 className="font-bold text-[16px]" style={{ color: "var(--text-primary)" }}>Send Money</h3>
+                <button onClick={() => setShowPayModal(false)} className="p-1 rounded-lg hover:bg-[var(--bg-hover)]" style={{ color: "var(--text-muted)" }}>
                   <X size={18} />
                 </button>
               </div>

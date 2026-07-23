@@ -34,7 +34,7 @@ export default function SubscriptionsPanel() {
           <div key={perk.title} className="flex gap-3 text-left">
             <CheckCircle size={18} className="text-[#00a884] flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-white text-[13.5px] font-medium">{perk.title}</p>
+              <p className="text-[13.5px] font-medium" style={{ color: "var(--text-primary)" }}>{perk.title}</p>
               <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{perk.desc}</p>
             </div>
           </div>

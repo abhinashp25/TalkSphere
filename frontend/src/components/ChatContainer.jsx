@@ -58,8 +58,8 @@ function AISummaryOverlay({ messages, user, onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 flex items-center justify-center"
-      style={{ backdropFilter: "blur(20px)", background: "rgba(0,0,0,0.85)" }}
+      className="absolute inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backdropFilter: "blur(20px)", background: "rgba(0,0,0,0.65)" }}
       onClick={onClose}
     >
       <motion.div
@@ -67,25 +67,25 @@ function AISummaryOverlay({ messages, user, onClose }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="w-full max-w-sm mx-4 rounded-2xl overflow-hidden shadow-2xl"
-        style={{ background: "#111111", border: "1px solid #262626" }}
+        className="w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl"
+        style={{ background: "var(--bg-panel)", border: "1px solid var(--border)" }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4"
-          style={{ background: "#0a0a0a", borderBottom: "1px solid #262626" }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b"
+          style={{ background: "var(--bg-secondary)", borderColor: "var(--border)" }}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: "rgba(255,255,255,0.15)" }}>
-              <Sparkles size={16} className="text-white" />
+              style={{ background: "rgba(0,168,132,0.15)", color: "var(--accent)" }}>
+              <Sparkles size={16} />
             </div>
             <div>
-              <p className="text-white text-[13px] font-semibold leading-none">AI Conversation Intel</p>
-              <p className="text-white/60 text-[11px] mt-0.5">with {user?.fullName}</p>
+              <p className="text-[14px] font-bold leading-none" style={{ color: "var(--text-primary)" }}>AI Conversation Intel</p>
+              <p className="text-[11.5px] mt-1" style={{ color: "var(--text-muted)" }}>with {user?.fullName}</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
-            <X size={14} className="text-white" />
+          <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-muted)" }}>
+            <X size={16} />
           </button>
         </div>
 
@@ -96,23 +96,23 @@ function AISummaryOverlay({ messages, user, onClose }) {
             { label: "Sent", value: myMsgs },
             { label: "Received", value: totalMsgs - myMsgs }
           ].map(s => (
-            <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: "#1a1a1a" }}>
-              <p className="text-[20px] font-bold text-white">{s.value}</p>
-              <p className="text-[11px] text-[#a3a3a3] mt-0.5">{s.label}</p>
+            <div key={s.label} className="rounded-xl p-3 text-center border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
+              <p className="text-[20px] font-bold" style={{ color: "var(--text-primary)" }}>{s.value}</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* Sentiment + Status */}
         <div className="px-4 pb-3">
-          <div className="rounded-xl p-3.5 flex items-center gap-3" style={{ background: "#1a1a1a" }}>
+          <div className="rounded-xl p-3.5 flex items-center gap-3 border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
             <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: "rgba(255,255,255,0.1)" }}>
+              style={{ background: "var(--bg-secondary)" }}>
               <span className="text-xl">{sentiment === "Active" ? "🔥" : sentiment === "Engaged" ? "💬" : "✨"}</span>
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-[#e9edef]">Conversation Status</p>
-              <p className="text-[12px] text-white">{sentiment} · {totalMsgs} total messages</p>
+              <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>Conversation Status</p>
+              <p className="text-[12px]" style={{ color: "var(--text-secondary)" }}>{sentiment} · {totalMsgs} total messages</p>
             </div>
           </div>
         </div>
@@ -120,11 +120,11 @@ function AISummaryOverlay({ messages, user, onClose }) {
         {/* Keywords */}
         {keywords.length > 0 && (
           <div className="px-4 pb-4">
-            <p className="text-[11px] font-semibold text-[#a3a3a3] uppercase tracking-wider mb-2">Key Topics</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Key Topics</p>
             <div className="flex flex-wrap gap-2">
               {keywords.map(k => (
-                <span key={k} className="px-2.5 py-1 rounded-full text-[12px] font-medium capitalize"
-                  style={{ background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)" }}>
+                <span key={k} className="px-2.5 py-1 rounded-full text-[12px] font-semibold capitalize border"
+                  style={{ background: "var(--bg-secondary)", color: "var(--text-primary)", borderColor: "var(--border)" }}>
                   {k}
                 </span>
               ))}
@@ -135,15 +135,15 @@ function AISummaryOverlay({ messages, user, onClose }) {
         {/* Last message preview */}
         {lastSender?.text && (
           <div className="px-4 pb-4">
-            <p className="text-[11px] font-semibold text-[#a3a3a3] uppercase tracking-wider mb-2">Latest Message</p>
-            <div className="rounded-xl p-3" style={{ background: "#1a1a1a" }}>
-              <p className="text-[13px] text-[#d1d7db] line-clamp-2">{lastSender.text}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Latest Message</p>
+            <div className="rounded-xl p-3 border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
+              <p className="text-[13px] line-clamp-2" style={{ color: "var(--text-secondary)" }}>{lastSender.text}</p>
             </div>
           </div>
         )}
 
         <div className="px-4 pb-4">
-          <p className="text-[11px] text-center text-[#667781]">AI-powered conversation insights</p>
+          <p className="text-[11px] text-center" style={{ color: "var(--text-muted)" }}>AI-powered conversation insights</p>
         </div>
       </motion.div>
     </motion.div>

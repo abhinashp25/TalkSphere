@@ -171,15 +171,21 @@ h1, h2, h3, h4, h5, h6, .brand-font {
 }
 .bubble-mine {
   background: var(--bubble-mine);
-  border-radius: 8px 8px 2px 8px;
-  color: #e9edef;
-  border: 1px solid rgba(255, 255, 255, 0.02);
+  border-radius: var(--bubble-radius, 18px);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .bubble-theirs {
   background: var(--bubble-theirs);
-  border-radius: 8px 8px 8px 2px;
-  color: #e9edef;
-  border: 1px solid rgba(255, 255, 255, 0.02);
+  border-radius: var(--bubble-radius, 18px);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 /* Whisper Blur Effect */
@@ -317,11 +323,12 @@ h1, h2, h3, h4, h5, h6, .brand-font {
 /* ── Dropdown Menu ──────────────────────────────────────────────────────── */
 .dropdown-menu {
   position: absolute;
-  background: rgba(15, 15, 15, 0.9);
+  background: var(--bg-panel);
   backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
   z-index: 999;
   min-width: 200px;
   padding: 6px;
@@ -342,7 +349,7 @@ h1, h2, h3, h4, h5, h6, .brand-font {
   color: var(--text-primary);
   text-align: left;
 }
-.dropdown-item:hover { background: rgba(255,255,255,0.05); }
+.dropdown-item:hover { background: var(--bg-hover); }
 .dropdown-divider {
   height: 1px;
   background: var(--border);
@@ -882,7 +889,7 @@ h1, h2, h3, h4, h5, h6, .brand-font {
   .panel-glass { background: rgba(10, 10, 10, 0.98) !important; }
   .pinned-glass { background: rgba(10, 10, 10, 0.98) !important; }
   .typing-bubble { background: rgba(255, 255, 255, 0.08) !important; }
-  .dropdown-menu { background: rgb(15, 15, 15) !important; }
+  .dropdown-menu { background: var(--bg-panel) !important; }
   .drawer-glass { background: rgb(8, 8, 8) !important; }
   .floating-bubble-bg { background: rgba(25, 25, 25, 0.95) !important; }
 }

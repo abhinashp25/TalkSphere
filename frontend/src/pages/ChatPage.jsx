@@ -325,7 +325,7 @@ function GroupsList({ groups, selected, onSelect }) {
       <div className="flex flex-col h-full" style={{ background: "var(--bg-secondary)" }}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-          <h1 className="text-[22px] font-bold brand-font text-white">Communities</h1>
+          <h1 className="text-[22px] font-bold brand-font" style={{ color: "var(--text-primary)" }}>Communities</h1>
         </div>
 
         {/* Empty state */}
@@ -339,7 +339,7 @@ function GroupsList({ groups, selected, onSelect }) {
             </svg>
           </div>
           <div className="text-center space-y-2">
-            <h2 className="text-white font-bold text-[18px]">No communities yet</h2>
+            <h2 className="font-bold text-[18px]" style={{ color: "var(--text-primary)" }}>No communities yet</h2>
             <p className="text-[13px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
               Communities bring groups together under one topic. Create a group first, then it will appear here.
             </p>
@@ -353,7 +353,7 @@ function GroupsList({ groups, selected, onSelect }) {
                 </svg>
               </div>
               <div className="min-w-0">
-                <p className="text-white font-semibold text-[13.5px]">Create a Group</p>
+                <p className="font-semibold text-[13.5px]" style={{ color: "var(--text-primary)" }}>Create a Group</p>
                 <p className="text-[11.5px]" style={{ color: "var(--text-muted)" }}>Chat with multiple people at once</p>
               </div>
             </div>
@@ -364,7 +364,7 @@ function GroupsList({ groups, selected, onSelect }) {
                 </svg>
               </div>
               <div className="min-w-0">
-                <p className="text-white font-semibold text-[13.5px]">Invite Members</p>
+                <p className="font-semibold text-[13.5px]" style={{ color: "var(--text-primary)" }}>Invite Members</p>
                 <p className="text-[11.5px]" style={{ color: "var(--text-muted)" }}>Add friends to your communities</p>
               </div>
             </div>
@@ -375,7 +375,7 @@ function GroupsList({ groups, selected, onSelect }) {
                 </svg>
               </div>
               <div className="min-w-0">
-                <p className="text-white font-semibold text-[13.5px]">Organised by Topic</p>
+                <p className="font-semibold text-[13.5px]" style={{ color: "var(--text-primary)" }}>Organised by Topic</p>
                 <p className="text-[11.5px]" style={{ color: "var(--text-muted)" }}>Keep conversations focused and clear</p>
               </div>
             </div>

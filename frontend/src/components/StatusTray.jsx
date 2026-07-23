@@ -109,7 +109,7 @@ export default function StatusTray() {
     <div className="flex flex-col h-full bg-[var(--bg-primary)]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-        <h1 className="text-[20px] font-bold brand-font tracking-wide text-white">Status</h1>
+        <h1 className="text-[20px] font-bold brand-font tracking-wide" style={{ color: "var(--text-primary)" }}>Status</h1>
       </div>
 
       {/* Main Container */}
@@ -125,7 +125,7 @@ export default function StatusTray() {
               </div>
             </div>
             <div>
-              <p className="text-[15px] font-semibold text-white">My Status</p>
+              <p className="text-[15px] font-semibold" style={{ color: "var(--text-primary)" }}>My Status</p>
               <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Update your daily updates</p>
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function StatusTray() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="text-[14.5px] font-semibold text-white truncate">{user.fullName}</p>
+                        <p className="text-[14.5px] font-semibold truncate" style={{ color: "var(--text-primary)" }}>{user.fullName}</p>
                         {!isFullyViewed && (
                           <span className="w-2.5 h-2.5 rounded-full bg-[#00a884]" />
                         )}

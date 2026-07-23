@@ -169,17 +169,103 @@ export const THEMES = {
       "--border":        "rgba(255,255,255,0.06)",
     },
   },
+  oled: {
+    name: "OLED True Black",
+    emoji: "🖤",
+    vars: {
+      "--bg-primary":    "#000000",
+      "--bg-secondary":  "#050505",
+      "--bg-panel":      "#0a0a0a",
+      "--bg-header":     "#0f0f0f",
+      "--bg-input":      "#121212",
+      "--bg-hover":      "rgba(255,255,255,0.05)",
+      "--bg-active":     "rgba(0,230,153,0.12)",
+      "--accent":        "#00e699",
+      "--accent-dim":    "rgba(0,230,153,0.15)",
+      "--bubble-mine":   "#004d33",
+      "--bubble-theirs": "#171717",
+      "--text-primary":  "#ffffff",
+      "--text-secondary":"#a0a0a0",
+      "--text-muted":    "#666666",
+      "--border":        "rgba(255,255,255,0.10)",
+    },
+  },
+  light: {
+    name: "Pro Light",
+    emoji: "☀️",
+    vars: {
+      "--bg-primary":    "#f8fafc",
+      "--bg-secondary":  "#ffffff",
+      "--bg-panel":      "#f1f5f9",
+      "--bg-header":     "#ffffff",
+      "--bg-input":      "#e2e8f0",
+      "--bg-hover":      "rgba(37,99,235,0.06)",
+      "--bg-active":     "rgba(37,99,235,0.12)",
+      "--accent":        "#2563eb",
+      "--accent-dim":    "rgba(37,99,235,0.15)",
+      "--bubble-mine":   "#2563eb",
+      "--bubble-theirs": "#e2e8f0",
+      "--text-primary":  "#0f172a",
+      "--text-secondary":"#475569",
+      "--text-muted":    "#94a3b8",
+      "--border":        "rgba(0,0,0,0.08)",
+    },
+  },
+  cyberpunk: {
+    name: "Cyberpunk Neon",
+    emoji: "⚡",
+    vars: {
+      "--bg-primary":    "#060713",
+      "--bg-secondary":  "#0b0d21",
+      "--bg-panel":      "#101330",
+      "--bg-header":     "#161a42",
+      "--bg-input":      "#1e2359",
+      "--bg-hover":      "rgba(0,243,255,0.08)",
+      "--bg-active":     "rgba(0,243,255,0.16)",
+      "--accent":        "#00f3ff",
+      "--accent-dim":    "rgba(0,243,255,0.20)",
+      "--bubble-mine":   "#240046",
+      "--bubble-theirs": "#101330",
+      "--text-primary":  "#f0fbff",
+      "--text-secondary":"#70bbfd",
+      "--text-muted":    "#38669e",
+      "--border":        "rgba(0,243,255,0.15)",
+    },
+  },
+  emerald: {
+    name: "Emerald Luxury",
+    emoji: "💎",
+    vars: {
+      "--bg-primary":    "#04120e",
+      "--bg-secondary":  "#091c16",
+      "--bg-panel":      "#0e261f",
+      "--bg-header":     "#13332a",
+      "--bg-input":      "#1a4237",
+      "--bg-hover":      "rgba(16,185,129,0.08)",
+      "--bg-active":     "rgba(16,185,129,0.16)",
+      "--accent":        "#10b981",
+      "--accent-dim":    "rgba(16,185,129,0.20)",
+      "--bubble-mine":   "#065f46",
+      "--bubble-theirs": "#0e261f",
+      "--text-primary":  "#ecfdf5",
+      "--text-secondary":"#6ee7b7",
+      "--text-muted":    "#34d399",
+      "--border":        "rgba(16,185,129,0.12)",
+    },
+  },
 };
 
 export const useSettingsStore = create((set, get) => ({
   activeTheme: localStorage.getItem("talksphere-theme") || localStorage.getItem("chatify-theme") || "default",
   fontSize:    localStorage.getItem("talksphere-fontsize") || localStorage.getItem("chatify-fontsize") || "medium",
+  bubbleStyle: localStorage.getItem("talksphere-bubblestyle") || "liquid",
+  chatTextColor: localStorage.getItem("talksphere-chat-textcolor") || "default",
+  appLanguage: localStorage.getItem("talksphere-lang") || "english",
   enterToSend: JSON.parse(localStorage.getItem("talksphere-enter") ?? localStorage.getItem("chatify-enter") ?? "true"),
 
   setTheme: (themeKey) => {
     const theme = THEMES[themeKey];
     if (!theme) return;
-    // Apply CSS variables to :root
     const root = document.documentElement;
     Object.entries(theme.vars).forEach(([key, val]) => root.style.setProperty(key, val));
     localStorage.setItem("talksphere-theme", themeKey);
@@ -193,6 +279,43 @@ export const useSettingsStore = create((set, get) => ({
     set({ fontSize: size });
   },
 
+  setBubbleStyle: (styleKey) => {
+    const radiusMap = {
+      liquid: "24px",
+      rounded: "18px",
+      sharp: "6px",
+      minimal: "12px",
+    };
+    document.documentElement.style.setProperty("--bubble-radius", radiusMap[styleKey] || "18px");
+    localStorage.setItem("talksphere-bubblestyle", styleKey);
+    set({ bubbleStyle: styleKey });
+  },
+
+  setChatTextColor: (colorKey) => {
+    const colorMap = {
+      default: "",
+      cyan: "#00f3ff",
+      emerald: "#10b981",
+      amber: "#f59e0b",
+      rose: "#f43f5e",
+      purple: "#c084fc",
+    };
+    const root = document.documentElement;
+    if (colorMap[colorKey]) {
+      root.style.setProperty("--chat-font-color", colorMap[colorKey]);
+    } else {
+      root.style.removeProperty("--chat-font-color");
+    }
+    localStorage.setItem("talksphere-chat-textcolor", colorKey);
+    set({ chatTextColor: colorKey });
+  },
+
+  setAppLanguage: (langKey) => {
+    localStorage.setItem("talksphere-lang", langKey);
+    localStorage.setItem("chatify-lang", langKey);
+    set({ appLanguage: langKey });
+  },
+
   setEnterToSend: (v) => {
     localStorage.setItem("talksphere-enter", v);
     set({ enterToSend: v });
@@ -203,5 +326,11 @@ export const useSettingsStore = create((set, get) => ({
     get().setTheme(key);
     const size = localStorage.getItem("talksphere-fontsize") || localStorage.getItem("chatify-fontsize") || "medium";
     get().setFontSize(size);
+    const bStyle = localStorage.getItem("talksphere-bubblestyle") || "liquid";
+    get().setBubbleStyle(bStyle);
+    const chatCol = localStorage.getItem("talksphere-chat-textcolor") || "default";
+    get().setChatTextColor(chatCol);
+    const lang = localStorage.getItem("talksphere-lang") || "english";
+    get().setAppLanguage(lang);
   },
 }));

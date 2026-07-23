@@ -188,8 +188,17 @@ export default function SignupPage() {
       </div>
 
       {/* Left Hemisphere: Branding & Features (Hidden on mobile) */}
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-center p-12 overflow-hidden animated-gradient-bg z-20 shadow-[20px_0_40px_rgba(0,0,0,0.5)]">
-        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.2] mix-blend-overlay pointer-events-none" />
+      <div 
+        className="hidden lg:flex w-1/2 relative flex-col justify-center p-12 overflow-hidden border-r z-20"
+        style={{
+          background: "linear-gradient(135deg, #070914 0%, #0c102b 50%, #160d33 100%)",
+          borderColor: "rgba(255, 255, 255, 0.1)",
+          boxShadow: "20px 0 60px rgba(0,0,0,0.8)"
+        }}
+      >
+        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.15] mix-blend-overlay pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-cyan-600/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-emerald-600/20 blur-3xl pointer-events-none" />
         
         <div className="relative z-10 max-w-md mx-auto xl:ml-auto">
           <motion.h1 

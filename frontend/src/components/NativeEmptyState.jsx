@@ -168,7 +168,8 @@ export default function NativeEmptyState({ onActivateMetaAI }) {
           initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="text-3xl sm:text-4xl font-bold text-white tracking-tight brand-font mb-3"
+          className="text-3xl sm:text-4xl font-bold tracking-tight brand-font mb-3"
+          style={{ color: "var(--text-primary)" }}
         >
           TalkSphere OS
         </motion.h1>
@@ -282,7 +283,7 @@ export default function NativeEmptyState({ onActivateMetaAI }) {
                   <p className="text-[13px] font-semibold uppercase tracking-widest" style={{ color: "var(--accent)" }}>
                     Quick Start Guide
                   </p>
-                  <h2 className="text-xl font-bold text-white brand-font mt-1">
+                  <h2 className="text-xl font-bold brand-font mt-1" style={{ color: "var(--text-primary)" }}>
                     {currentTab.title}
                   </h2>
                   <p className="text-[12.5px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
@@ -353,7 +354,7 @@ export default function NativeEmptyState({ onActivateMetaAI }) {
                         {currentTab.steps[activeStep].icon}
                       </div>
                       <div className="flex-1 min-w-0 text-left">
-                        <p className="text-[15px] font-semibold text-white mb-1.5">
+                        <p className="text-[15px] font-semibold mb-1.5" style={{ color: "var(--text-primary)" }}>
                           {currentTab.steps[activeStep].heading}
                         </p>
                         <p className="text-[13px] leading-[1.6]" style={{ color: "var(--text-secondary)" }}>

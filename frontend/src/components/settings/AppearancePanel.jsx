@@ -3,9 +3,19 @@ import { Check } from "lucide-react";
 import { useSettingsStore, THEMES } from "../../store/useSettingsStore";
 
 export default function AppearancePanel() {
-  const { activeTheme, setTheme } = useSettingsStore();
-  const [fontSize, setFontSize] = useState("medium");
-  const [bubbleStyle, setBubbleStyle] = useState("rounded");
+  const {
+    activeTheme, setTheme, fontSize, setFontSize,
+    bubbleStyle, setBubbleStyle, chatTextColor, setChatTextColor
+  } = useSettingsStore();
+
+  const colorOptions = [
+    { id: "default", label: "Default", color: "var(--text-primary)" },
+    { id: "cyan",    label: "Cyber Cyan", color: "#00f3ff" },
+    { id: "emerald", label: "Emerald", color: "#10b981" },
+    { id: "amber",   label: "Amber", color: "#f59e0b" },
+    { id: "rose",    label: "Rose Pink", color: "#f43f5e" },
+    { id: "purple",  label: "Violet", color: "#c084fc" },
+  ];
 
   return (
     <div className="space-y-6 text-left">
@@ -53,7 +63,7 @@ export default function AppearancePanel() {
                 color: "var(--text-primary)",
               }}
             >
-              {size === "small" ? "Aa" : size === "medium" ? "Aa" : "Aa"}
+              <span className="block text-[14px] font-bold">Aa</span>
               <span className="block text-[10px] mt-0.5 capitalize"
                 style={{ color: "var(--text-muted)", fontSize: size === "small" ? 10 : size === "large" ? 14 : 12 }}>
                 {size}
@@ -67,26 +77,50 @@ export default function AppearancePanel() {
         <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
           Bubble Style
         </p>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           {[
-            { id: "rounded", label: "Rounded", preview: "rounded-2xl" },
-            { id: "sharp", label: "Sharp", preview: "rounded-md" },
-            { id: "minimal", label: "Minimal", preview: "rounded-lg" },
+            { id: "liquid", label: "Liquid Glass", preview: "rounded-[24px] backdrop-blur-md shadow-lg border border-white/20" },
+            { id: "rounded", label: "Rounded Capsule", preview: "rounded-2xl" },
+            { id: "sharp", label: "Sharp Modern", preview: "rounded-md" },
+            { id: "minimal", label: "Minimalist", preview: "rounded-lg" },
           ].map(style => (
             <button
               key={style.id}
               onClick={() => setBubbleStyle(style.id)}
-              className="flex-1 py-3 flex flex-col items-center gap-2 transition-all"
+              className="py-3 px-2 flex flex-col items-center gap-2 transition-all border"
               style={{
                 background: bubbleStyle === style.id ? "var(--bg-active)" : "var(--bg-input)",
-                border: `1px solid ${bubbleStyle === style.id ? "var(--accent)" : "var(--border)"}`,
+                borderColor: bubbleStyle === style.id ? "var(--accent)" : "var(--border)",
                 borderRadius: 12,
                 color: "var(--text-primary)",
               }}
             >
-              <div className={`w-10 h-5 ${style.preview}`}
-                style={{ background: "var(--accent)", opacity: 0.7 }} />
-              <span className="text-[11px]">{style.label}</span>
+              <div className={`w-12 h-6 ${style.preview}`}
+                style={{ background: "var(--accent)", opacity: 0.85 }} />
+              <span className="text-[11.5px] font-medium">{style.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
+          Chat Text Color
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {colorOptions.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => setChatTextColor(opt.id)}
+              className="p-2.5 rounded-xl border flex items-center gap-2 text-[12px] font-medium transition-all"
+              style={{
+                background: chatTextColor === opt.id ? "var(--bg-active)" : "var(--bg-input)",
+                borderColor: chatTextColor === opt.id ? "var(--accent)" : "var(--border)",
+                color: "var(--text-primary)",
+              }}
+            >
+              <span className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-white/20" style={{ background: opt.color }} />
+              <span className="truncate">{opt.label}</span>
             </button>
           ))}
         </div>

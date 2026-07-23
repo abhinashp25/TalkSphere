@@ -437,7 +437,8 @@ export default function MessageInput({ onTextChange }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="px-3 pt-2 absolute bottom-20 left-0 right-0 bg-[#0d0d0d] rounded-t-2xl shadow-2xl z-40 border border-white/5"
+            className="p-2 absolute bottom-16 left-4 z-40 rounded-2xl shadow-2xl border"
+            style={{ background: "var(--bg-panel)", borderColor: "var(--border)" }}
           >
             <EmojiPicker onSelect={insertEmoji} onClose={() => setEmojiOpen(false)} />
           </motion.div>
@@ -689,21 +690,22 @@ export default function MessageInput({ onTextChange }) {
                 background: isHoldRecording
                   ? "rgba(239,68,68,0.9)"
                   : canSend
-                  ? "linear-gradient(135deg, #8b5cf6, #6366f1)"
-                  : "rgba(255,255,255,0.07)",
+                  ? "linear-gradient(135deg, var(--accent), var(--accent-secondary, #6366f1))"
+                  : "var(--bg-input)",
                 border: isHoldRecording
                   ? "1.5px solid rgba(239,68,68,0.6)"
                   : canSend
-                  ? "1.5px solid rgba(139,92,246,0.5)"
-                  : "1.5px solid rgba(255,255,255,0.1)",
+                  ? "1.5px solid var(--accent)"
+                  : "1.5px solid var(--border)",
+                color: canSend || isHoldRecording ? "#ffffff" : "var(--text-secondary)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
                 boxShadow: canSend
-                  ? "0 4px 20px rgba(139,92,246,0.4), 0 0 0 0 rgba(139,92,246,0)"
+                  ? "0 4px 20px var(--accent-dim), 0 0 0 0 transparent"
                   : isHoldRecording
                   ? "0 4px 20px rgba(239,68,68,0.4)"
                   : "none",
-                transition: "background 0.2s, border 0.2s, box-shadow 0.2s",
+                transition: "background 0.2s, border 0.2s, box-shadow 0.2s, color 0.2s",
               }}
             >
               {/* Animated waveform rings during hold-recording */}

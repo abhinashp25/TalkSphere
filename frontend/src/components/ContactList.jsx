@@ -56,17 +56,18 @@ export default function ContactList() {
       <div className="p-3 bg-[var(--bg-secondary)] border-b border-[var(--border)]">
         <div className="relative flex items-center h-[38px] w-full rounded-full border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
           <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
-            <Search size={16} className="text-[#a3a3a3]" />
+            <Search size={16} style={{ color: "var(--text-muted)" }} />
           </div>
           <input
             type="text"
             placeholder="Search or start new chat..."
             value={searchVal}
             onChange={(e) => setSearchVal(e.target.value)}
-            className="flex-1 bg-transparent text-[14px] focus:outline-none text-[#e5e5e5] placeholder:text-[#737373] h-full"
+            className="flex-1 bg-transparent text-[14px] focus:outline-none h-full placeholder:text-[var(--text-muted)]"
+            style={{ color: "var(--text-primary)" }}
           />
           {searchVal && (
-            <button onClick={() => setSearchVal("")} className="w-10 h-full flex items-center justify-center text-[#a3a3a3] hover:text-white transition-colors">
+            <button onClick={() => setSearchVal("")} className="w-10 h-full flex items-center justify-center transition-colors" style={{ color: "var(--text-muted)" }}>
               <X size={16} />
             </button>
           )}
@@ -78,7 +79,7 @@ export default function ContactList() {
           <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
             style={{ color: 'var(--text-muted)' }}>
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <path d="M23 21v-2a4 4 0 0 1 0 7.75"/>
           </svg>
         </div>
         <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>No contacts found</p>
@@ -103,17 +104,18 @@ export default function ContactList() {
       <div className="p-3 bg-[var(--bg-secondary)] border-b border-[var(--border)]">
         <div className="relative flex items-center h-[38px] w-full rounded-full border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
           <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
-            <Search size={16} className="text-[#a3a3a3]" />
+            <Search size={16} style={{ color: "var(--text-muted)" }} />
           </div>
           <input
             type="text"
             placeholder="Search or start new chat..."
             value={searchVal}
             onChange={(e) => setSearchVal(e.target.value)}
-            className="flex-1 bg-transparent text-[14px] focus:outline-none text-[#e5e5e5] placeholder:text-[#737373] h-full"
+            className="flex-1 bg-transparent text-[14px] focus:outline-none h-full placeholder:text-[var(--text-muted)]"
+            style={{ color: "var(--text-primary)" }}
           />
           {searchVal && (
-            <button onClick={() => setSearchVal("")} className="w-10 h-full flex items-center justify-center text-[#a3a3a3] hover:text-white transition-colors">
+            <button onClick={() => setSearchVal("")} className="w-10 h-full flex items-center justify-center transition-colors" style={{ color: "var(--text-muted)" }}>
               <X size={16} />
             </button>
           )}
@@ -170,8 +172,11 @@ function ContactRow({ contact, isOnline, selected, lastSeenMap, sidebarSearch, o
 
   return (
     <div onClick={onChat}
-      className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors group ${selected ? "active" : ""}`}
-      style={{ background: selected ? 'var(--bg-active)' : 'transparent' }}
+      className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors group border-b ${selected ? "active" : ""}`}
+      style={{
+        background: selected ? 'var(--bg-active)' : 'transparent',
+        borderColor: 'var(--border)'
+      }}
       onMouseEnter={(e) => { if (!selected) e.currentTarget.style.background = 'var(--bg-hover)'; }}
       onMouseLeave={(e) => { if (!selected) e.currentTarget.style.background = 'transparent'; }}>
 
@@ -179,7 +184,7 @@ function ContactRow({ contact, isOnline, selected, lastSeenMap, sidebarSearch, o
       <div className="relative flex-shrink-0">
         <img src={contact.profilePic || "/avatar.png"} alt={contact.fullName}
           className="w-12 h-12 rounded-full object-cover"
-          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }} />
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
         {isOnline && (
           <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2"
             style={{ background: '#48bb78', borderColor: 'var(--bg-secondary)' }} />
@@ -197,18 +202,13 @@ function ContactRow({ contact, isOnline, selected, lastSeenMap, sidebarSearch, o
         </p>
       </div>
 
-      {/* Chat button */}
-      <button
-        onClick={(e) => { e.stopPropagation(); onChat(); }}
-        className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
-        style={{ background: 'var(--bg-active)' }}
-        onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--accent)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-active)'; }}>
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-          style={{ color: 'var(--accent)' }}>
+      {/* Action icon */}
+      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all group-hover:scale-105"
+        style={{ background: 'var(--bg-input)', color: 'var(--accent)' }}>
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-      </button>
+      </div>
     </div>
   );
 }

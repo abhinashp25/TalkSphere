@@ -26,7 +26,7 @@ export default function ChatsPanel() {
           style={{ borderColor: "var(--border)", background: "var(--bg-input)" }}>
           <div className="flex items-center justify-between py-3 gap-4 border-b" style={{ borderColor: "var(--border)" }}>
             <div className="min-w-0">
-              <p className="text-white font-medium text-[14px]">Enter is Send</p>
+              <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Enter is Send</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Enter key sends message on keyboard
               </p>
@@ -36,7 +36,7 @@ export default function ChatsPanel() {
 
           <div className="flex items-center justify-between py-3 gap-4">
             <div className="min-w-0">
-              <p className="text-white font-medium text-[14px]">Media visibility</p>
+              <p className="font-medium text-[14px]" style={{ color: "var(--text-primary)" }}>Media visibility</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
                 Show newly downloaded media in device gallery
               </p>
@@ -49,7 +49,7 @@ export default function ChatsPanel() {
       <button onClick={() => toast.success("Select a wallpaper style from Chats interface")}
         className="w-full flex items-center justify-between p-4 rounded-xl border hover:bg-[var(--bg-hover)] transition-colors text-left"
         style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
-        <span className="text-white text-[14px] font-medium">Chat Wallpaper</span>
+        <span className="text-[14px] font-medium" style={{ color: "var(--text-primary)" }}>Chat Wallpaper</span>
         <ChevronRight size={16} style={{ color: "var(--text-muted)" }} />
       </button>
     </div>

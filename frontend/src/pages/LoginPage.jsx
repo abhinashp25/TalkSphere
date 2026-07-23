@@ -128,43 +128,52 @@ export default function LoginPage() {
       </div>
 
       {/* Right Hemisphere: Branding & Promo (Hidden on mobile) */}
-      <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-12 overflow-hidden animated-gradient-bg border-l border-[rgba(255,255,255,0.05)] shadow-[-20px_0_40px_rgba(0,0,0,0.5)] z-20">
-        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.2] mix-blend-overlay pointer-events-none" />
+      <div 
+        className="hidden lg:flex w-1/2 relative flex-col justify-between p-12 overflow-hidden border-l z-20"
+        style={{
+          background: "linear-gradient(135deg, #070914 0%, #0c102b 50%, #160d33 100%)",
+          borderColor: "rgba(255, 255, 255, 0.1)",
+          boxShadow: "-20px 0 60px rgba(0,0,0,0.8)"
+        }}
+      >
+        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-[0.15] mix-blend-overlay pointer-events-none" />
         
-        {/* Decorative Wave vectors could go here, for now relying on the animated background gradient */}
+        {/* Ambient glowing glass orbs */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-md mx-auto xl:mr-auto flex flex-col justify-center h-full">
           <motion.h1 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-[48px] leading-[1.1] font-semibold tracking-tight mb-8 brand-font drop-shadow-md"
+            className="text-[48px] leading-[1.1] font-semibold tracking-tight mb-8 brand-font drop-shadow-md text-white"
           >
             Connect with the world,<br/>
-            <span className="text-white font-bold">beautifully.</span>
+            <span className="text-[#a78bfa] font-bold">beautifully.</span>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-white/80 text-lg leading-relaxed font-light backdrop-blur-sm"
+            className="text-slate-300 text-lg leading-relaxed font-light backdrop-blur-sm"
           >
             Experience secure, ultra-fast real-time messaging designed for the modern era. Join the world's most elegant communication platform.
           </motion.p>
           
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-14 inline-flex items-center bg-black/20 backdrop-blur-md border border-white/10 rounded-full p-2 pr-6"
+            className="mt-14 inline-flex items-center bg-white/5 backdrop-blur-xl border border-white/15 rounded-full p-2.5 pr-7 shadow-2xl"
           >
             {/* Mock avatars */}
             <div className="flex">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="w-10 h-10 rounded-full border-[3px] border-[rgba(255,255,255,0.2)] overflow-hidden relative z-[4-i]" style={{ marginLeft: i !== 0 ? '-14px' : 0 }}>
+                <div key={i} className="w-10 h-10 rounded-full border-[3px] border-slate-900 overflow-hidden relative z-[4-i]" style={{ marginLeft: i !== 0 ? '-14px' : 0 }}>
                   <img src={`https://i.pravatar.cc/100?img=${i+20}`} alt="User" className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
             {/* Live Counter animation */}
             <div className="ml-4 flex flex-col justify-center">
-              <span className="text-sm text-white/70 uppercase tracking-widest font-semibold" style={{ fontSize: '10px' }}>Active Users</span>
+              <span className="text-slate-400 uppercase tracking-widest font-semibold" style={{ fontSize: '10px' }}>Active Users</span>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span className="text-white font-bold brand-font text-lg">2,045,982</span>
               </div>
             </div>

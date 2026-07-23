@@ -320,14 +320,14 @@ export default function VoiceRecorder({ onSend, onCancel }) {
                   className="rounded-full flex-1 transition-colors duration-150"
                   style={{
                     height: `${Math.max(4, h)}px`,
-                    background: active ? "#8b5cf6" : "rgba(255,255,255,0.2)",
+                    background: active ? "var(--accent)" : "var(--border)",
                   }}
                 />
               );
             })}
           </div>
 
-          <span className="text-[11.5px] font-mono text-white/80 flex-shrink-0 tabular-nums min-w-[76px] text-right">
+          <span className="text-[11.5px] font-mono flex-shrink-0 tabular-nums min-w-[76px] text-right" style={{ color: "var(--text-secondary)" }}>
             {fmt(Math.floor(progress))} / {fmt(Math.floor(effectiveDuration))}
           </span>
         </div>
@@ -337,7 +337,7 @@ export default function VoiceRecorder({ onSend, onCancel }) {
           whileTap={{ scale: 0.88 }}
           onClick={handleSend}
           className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg"
-          style={{ background: "linear-gradient(135deg, #8b5cf6, #6366f1)" }}
+          style={{ background: "var(--accent)" }}
           title="Send voice message"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -354,19 +354,19 @@ export default function VoiceRecorder({ onSend, onCancel }) {
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.97 }}
-      className="flex items-center gap-3 flex-1 px-3 rounded-2xl relative overflow-hidden"
+      className="flex items-center gap-3 flex-1 px-3 rounded-2xl relative overflow-hidden shadow-sm"
       style={{
-        background: "rgba(255,255,255,0.03)",
+        background: "var(--bg-input)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid rgba(139,92,246,0.25)",
+        border: "1px solid var(--border)",
         minHeight: 48,
       }}
     >
       {/* Animated glow */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at left, rgba(139,92,246,0.08) 0%, transparent 65%)" }}
+        style={{ background: "radial-gradient(ellipse at left, rgba(0,168,132,0.08) 0%, transparent 65%)" }}
       />
 
       {/* Pulsing mic dot & Timer */}
@@ -376,7 +376,7 @@ export default function VoiceRecorder({ onSend, onCancel }) {
           transition={{ duration: 1, repeat: Infinity }}
           className="w-2.5 h-2.5 rounded-full bg-[#ef4444]"
         />
-        <span className="text-[13px] font-mono text-white/90 w-10 tabular-nums font-medium">
+        <span className="text-[13px] font-mono w-10 tabular-nums font-semibold" style={{ color: "var(--text-primary)" }}>
           {fmt(seconds)}
         </span>
       </div>
@@ -389,7 +389,8 @@ export default function VoiceRecorder({ onSend, onCancel }) {
               key="transcript"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-[11.5px] text-[#a78bfa] truncate italic"
+              className="text-[11.5px] truncate italic"
+              style={{ color: "var(--accent)" }}
             >
               "{transcript}"
             </motion.p>
@@ -401,7 +402,7 @@ export default function VoiceRecorder({ onSend, onCancel }) {
                   animate={{ height: isPaused ? 4 : h }}
                   transition={{ duration: 0.1 }}
                   className="w-[2px] rounded-full"
-                  style={{ background: "linear-gradient(180deg, #8b5cf6, #6366f1)", minHeight: 3 }}
+                  style={{ background: "var(--accent)", minHeight: 3 }}
                 />
               ))}
             </motion.div>
@@ -416,15 +417,15 @@ export default function VoiceRecorder({ onSend, onCancel }) {
           whileTap={{ scale: 0.88 }}
           onClick={isPaused ? resumeRecording : pauseRecording}
           className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-          style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+          style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
           title={isPaused ? "Resume recording" : "Pause recording"}
         >
           {isPaused ? (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="white" className="ml-0.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="ml-0.5">
               <polygon points="5 3 19 12 5 21"/>
             </svg>
           ) : (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
               <rect x="5" y="4" width="4" height="16" rx="1"/>
               <rect x="15" y="4" width="4" height="16" rx="1"/>
             </svg>
@@ -436,10 +437,10 @@ export default function VoiceRecorder({ onSend, onCancel }) {
           whileTap={{ scale: 0.88 }}
           onClick={stopRecording}
           className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-          style={{ background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.4)" }}
+          style={{ background: "rgba(0,168,132,0.15)", border: "1px solid rgba(0,168,132,0.3)", color: "var(--accent)" }}
           title="Stop & preview recording"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="#a78bfa">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
             <rect x="4" y="4" width="16" height="16" rx="2"/>
           </svg>
         </motion.button>
@@ -448,11 +449,11 @@ export default function VoiceRecorder({ onSend, onCancel }) {
         <motion.button
           whileTap={{ scale: 0.88 }}
           onClick={handleDelete}
-          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-          style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)" }}
-          title="Delete recording"
+          className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-rose-500/10 text-rose-500"
+          style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}
+          title="Discard recording"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </motion.button>

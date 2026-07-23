@@ -55,8 +55,8 @@ export default function CallsList() {
   return (
     <div className="flex flex-col h-full" style={{ background: "var(--bg-secondary)" }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <h1 className="text-[22px] font-bold brand-font text-white">Calls</h1>
+      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
+        <h1 className="text-[22px] font-bold brand-font" style={{ color: "var(--text-primary)" }}>Calls</h1>
         <div className="flex items-center gap-1">
           {callHistory.length > 0 && (
             <button
@@ -78,7 +78,7 @@ export default function CallsList() {
                   </div>
                 ), { duration: 8000 });
               }}
-              className="hover:bg-white/10 p-2 rounded-full transition-colors text-red-400/80 hover:text-red-400"
+              className="hover:bg-[var(--bg-hover)] p-2 rounded-full transition-colors text-red-400/80 hover:text-red-400"
               title="Clear call history"
             >
               <Trash2 size={18} />
@@ -86,7 +86,7 @@ export default function CallsList() {
           )}
           <button
             onClick={() => setShowNewCallModal(true)}
-            className="hover:bg-white/10 p-2 rounded-full transition-colors"
+            className="hover:bg-[var(--bg-hover)] p-2 rounded-full transition-colors"
             style={{ color: "var(--accent)" }}
             title="New call">
             <PlusCircle size={22} />
@@ -95,25 +95,23 @@ export default function CallsList() {
       </div>
 
       {/* Filter pills */}
-      <div className="flex gap-2 px-4 pb-3 flex-shrink-0">
+      <div className="flex gap-2 px-4 pb-3 flex-shrink-0 pt-2">
         <button
           onClick={() => setActiveCallFilter("all")}
-          className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${activeCallFilter === "all"
-            ? "text-white"
-            : "text-[#a3a3a3]"
-            }`}
+          className="px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors"
           style={{
             background: activeCallFilter === "all" ? "var(--accent)" : "var(--bg-input)",
+            color: activeCallFilter === "all" ? "#ffffff" : "var(--text-secondary)",
             border: "1px solid var(--border)"
           }}>
           All
         </button>
         <button
           onClick={() => setActiveCallFilter("missed")}
-          className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${activeCallFilter === "missed" ? "text-red-400" : "text-[#a3a3a3]"
-            }`}
+          className="px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors"
           style={{
             background: activeCallFilter === "missed" ? "rgba(239,68,68,0.15)" : "var(--bg-input)",
+            color: activeCallFilter === "missed" ? "#ef4444" : "var(--text-secondary)",
             border: `1px solid ${activeCallFilter === "missed" ? "rgba(239,68,68,0.3)" : "var(--border)"}`
           }}>
           Missed
@@ -128,7 +126,7 @@ export default function CallsList() {
               <Phone size={28} style={{ color: "var(--text-muted)" }} />
             </div>
             <div className="text-center">
-              <p className="font-semibold text-white/80 text-[15px]">No calls yet</p>
+              <p className="font-semibold text-[15px]" style={{ color: "var(--text-primary)" }}>No calls yet</p>
               <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Tap the + button to start a call</p>
             </div>
           </div>
@@ -138,7 +136,7 @@ export default function CallsList() {
             key={call._id}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 px-4 py-3 group transition-colors hover:bg-white/[0.04] border-b"
+            className="flex items-center gap-3 px-4 py-3 group transition-colors hover:bg-[var(--bg-hover)] border-b"
             style={{ borderColor: "var(--border)" }}
           >
             {/* Avatar */}
@@ -162,12 +160,12 @@ export default function CallsList() {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className={`text-[14.5px] font-semibold truncate ${call.type === "missed" ? "text-red-400" : "text-white"}`}>
+              <p className="text-[14.5px] font-semibold truncate" style={{ color: call.type === "missed" ? "#ef4444" : "var(--text-primary)" }}>
                 {call.user.fullName}
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <CallTypeIcon type={call.type} />
-                <span className={`text-[12px] ${call.type === "missed" ? "text-red-400/80" : "text-[#a3a3a3]"}`}>
+                <span className="text-[12px]" style={{ color: call.type === "missed" ? "#ef4444" : "var(--text-muted)" }}>
                   {call.type === "missed" ? "Missed" : call.type === "incoming" ? "Incoming" : "Outgoing"}
                   {call.duration ? ` · ${formatDuration(call.duration)}` : ""}
                 </span>
@@ -180,17 +178,18 @@ export default function CallsList() {
                 {formatTime(call.timestamp)}
               </span>
               <div className="flex items-center gap-1.5">
-                {/* Delete (hover only on desktop) */}
+                {/* Delete */}
                 <button
                   onClick={(e) => { e.stopPropagation(); deleteCallLog(call._id); }}
-                  className="p-1.5 rounded-full text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all sm:opacity-0 sm:group-hover:opacity-100 opacity-100"
+                  className="p-1.5 rounded-full hover:text-red-400 hover:bg-red-400/10 transition-all sm:opacity-0 sm:group-hover:opacity-100 opacity-100"
+                  style={{ color: "var(--text-muted)" }}
                   title="Delete"
                 >
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                   </svg>
                 </button>
-                {/* Call-back button — always visible */}
+                {/* Call-back button */}
                 <motion.button
                   whileTap={{ scale: 0.88 }}
                   onClick={(e) => { e.stopPropagation(); startCall(call.user._id, call.isVideo); }}
@@ -210,7 +209,7 @@ export default function CallsList() {
         ))}
       </div>
 
-      {/* ── New Call Modal (Portal to body to escape translateX transform on container) ── */}
+      {/* ── New Call Modal ── */}
       {createPortal(
         <AnimatePresence>
           {showNewCallModal && (
@@ -228,28 +227,28 @@ export default function CallsList() {
                 transition={{ type: "spring", stiffness: 320, damping: 26 }}
                 className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col"
                 style={{
-                  background: "rgba(18,22,26,0.92)",
+                  background: "var(--bg-panel)",
                   backdropFilter: "blur(28px) saturate(180%)",
                   WebkitBackdropFilter: "blur(28px) saturate(180%)",
-                  border: "1px solid rgba(255,255,255,0.10)",
+                  border: "1px solid var(--border)",
                   boxShadow: "0 -8px 48px rgba(0,0,0,0.5)",
                   maxHeight: "75vh"
                 }}
                 onClick={e => e.stopPropagation()}>
                 {/* Handle + Header */}
                 <div className="flex-shrink-0 px-5 py-4">
-                  <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
+                  <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "var(--border)" }} />
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-[17px] font-bold text-white">New Call</h2>
+                    <h2 className="text-[17px] font-bold" style={{ color: "var(--text-primary)" }}>New Call</h2>
                     <button
                       onClick={() => { setShowNewCallModal(false); setNewCallSearch(""); }}
-                      className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-white/10"
+                      className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-[var(--bg-hover)]"
                       style={{ color: "var(--text-muted)" }}>
                       <X size={17} />
                     </button>
                   </div>
                   {/* Search */}
-                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
                     <Search size={15} style={{ color: "var(--text-muted)" }} />
                     <input
                       autoFocus
@@ -257,7 +256,8 @@ export default function CallsList() {
                       placeholder="Search contacts..."
                       value={newCallSearch}
                       onChange={e => setNewCallSearch(e.target.value)}
-                      className="flex-1 bg-transparent text-white text-[14px] outline-none placeholder:text-white/30"
+                      className="flex-1 bg-transparent text-[14px] outline-none placeholder:text-[var(--text-muted)]"
+                      style={{ color: "var(--text-primary)" }}
                     />
                   </div>
                 </div>
@@ -266,13 +266,13 @@ export default function CallsList() {
                 <div className="flex-1 overflow-y-auto no-scrollbar pb-4">
                   {filteredContacts.length === 0 && (
                     <div className="flex flex-col items-center py-10 gap-3">
-                      <p className="text-white/40 text-[13px]">No contacts found</p>
+                      <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>No contacts found</p>
                     </div>
                   )}
                   {filteredContacts.map(contact => (
                     <div
                       key={contact._id}
-                      className="flex items-center justify-between px-5 py-3 hover:bg-white/5 transition-colors">
+                      className="flex items-center justify-between px-5 py-3 hover:bg-[var(--bg-hover)] transition-colors">
                       <div className="flex items-center gap-3 min-w-0">
                         <img
                           src={contact.profilePic || "/avatar.png"}
@@ -281,7 +281,7 @@ export default function CallsList() {
                           referrerPolicy="no-referrer"
                         />
                         <div className="min-w-0">
-                          <p className="text-white font-semibold text-[14px] truncate">{contact.fullName}</p>
+                          <p className="font-semibold text-[14px] truncate" style={{ color: "var(--text-primary)" }}>{contact.fullName}</p>
                           <p className="text-[11.5px] truncate" style={{ color: "var(--text-muted)" }}>
                             {contact.bio || "TalkSphere user"}
                           </p>
