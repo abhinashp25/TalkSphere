@@ -22,6 +22,7 @@ import CallsList          from "../components/CallsList";
 import DrawerPanel        from "../components/DrawerPanel";
 import ProfileSection     from "../components/ProfileSection";
 import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
+import CommunitiesPage    from "../components/CommunitiesPage";
 
 function ChatPage() {
   const { 
@@ -268,8 +269,11 @@ function ChatPage() {
         {activeTab === "contacts"    && <div className="flex-1 overflow-y-auto pb-24 sm:pb-0"><ContactList /></div>}
         {activeTab === "profile"     && <ProfileSection onClose={() => setActiveTab("chats")} />}
         {activeTab === "communities" && (
-          <div className="flex flex-col flex-1 min-h-0 pb-24 sm:pb-0" style={{ background: "var(--bg-secondary)" }}>
-            <GroupsList groups={groups} selected={selectedGroup} onSelect={openGroup} />
+          <div className="flex flex-col flex-1 min-h-0 pb-24 sm:pb-0">
+            <CommunitiesPage
+              onSelectGroup={openGroup}
+              onCreateGroup={() => setShowNewGroup(true)}
+            />
           </div>
         )}
         {activeTab === "calls"    && <CallsList />}
@@ -303,160 +307,6 @@ function ChatPage() {
       <AnimatePresence>
         {isTextModalOpen && <WriteStatusModal />}
       </AnimatePresence>
-    </div>
-  );
-}
-
-
-function GroupsList({ groups, selected, onSelect }) {
-  const [search, setSearch] = useState("");
-
-  const COMMUNITY_COLORS = [
-    "linear-gradient(135deg,#6366f1,#8b5cf6)",
-    "linear-gradient(135deg,#0ea5e9,#06b6d4)",
-    "linear-gradient(135deg,#10b981,#059669)",
-    "linear-gradient(135deg,#f59e0b,#ef4444)",
-    "linear-gradient(135deg,#ec4899,#8b5cf6)",
-    "linear-gradient(135deg,#f97316,#f59e0b)",
-  ];
-
-  if (!groups.length) {
-    return (
-      <div className="flex flex-col h-full" style={{ background: "var(--bg-secondary)" }}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-          <h1 className="text-[22px] font-bold brand-font" style={{ color: "var(--text-primary)" }}>Communities</h1>
-        </div>
-
-        {/* Empty state */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 gap-5 pb-20">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-xl"
-            style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)" }}>
-            <svg className="w-9 h-9 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div className="text-center space-y-2">
-            <h2 className="font-bold text-[18px]" style={{ color: "var(--text-primary)" }}>No communities yet</h2>
-            <p className="text-[13px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
-              Communities bring groups together under one topic. Create a group first, then it will appear here.
-            </p>
-          </div>
-          <div className="w-full space-y-3 mt-2">
-            <div className="flex items-center gap-3 p-4 rounded-2xl border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(99,102,241,0.2)" }}>
-                <svg className="w-5 h-5" style={{ color: "#818cf8" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                  <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-[13.5px]" style={{ color: "var(--text-primary)" }}>Create a Group</p>
-                <p className="text-[11.5px]" style={{ color: "var(--text-muted)" }}>Chat with multiple people at once</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 rounded-2xl border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(16,185,129,0.2)" }}>
-                <svg className="w-5 h-5" style={{ color: "#34d399" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-[13.5px]" style={{ color: "var(--text-primary)" }}>Invite Members</p>
-                <p className="text-[11.5px]" style={{ color: "var(--text-muted)" }}>Add friends to your communities</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-4 rounded-2xl border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "rgba(245,158,11,0.2)" }}>
-                <svg className="w-5 h-5" style={{ color: "#fbbf24" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-[13.5px]" style={{ color: "var(--text-primary)" }}>Organised by Topic</p>
-                <p className="text-[11.5px]" style={{ color: "var(--text-muted)" }}>Keep conversations focused and clear</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col h-full" style={{ background: "var(--bg-secondary)" }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <h1 className="text-[22px] font-bold brand-font text-white">Communities</h1>
-        <span className="text-[12px] px-2.5 py-1 rounded-full font-semibold"
-          style={{ background: "rgba(0,168,132,0.15)", color: "var(--accent)" }}>
-          {groups.length} {groups.length === 1 ? "group" : "groups"}
-        </span>
-      </div>
-
-      {/* Search */}
-      <div className="px-4 pb-3 flex-shrink-0">
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl"
-          style={{ background: "var(--bg-input)", border: "1px solid var(--border)" }}>
-          <svg className="w-4 h-4" style={{ color: "var(--text-muted)" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input
-            type="text"
-            placeholder="Search communities..."
-            value={search}
-            onChange={e => {/* handled below */}}
-            className="flex-1 bg-transparent text-white text-[13.5px] outline-none placeholder:text-white/30"
-          />
-        </div>
-      </div>
-
-      {/* Group list */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-24 sm:pb-0 px-4 space-y-2">
-        {groups.map((g, idx) => {
-          const gradBg = COMMUNITY_COLORS[idx % COMMUNITY_COLORS.length];
-          const isActive = String(selected?._id) === String(g._id);
-          return (
-            <div
-              key={String(g._id)}
-              onClick={() => onSelect(g)}
-              className="flex items-center gap-3.5 p-3.5 rounded-2xl cursor-pointer transition-all"
-              style={{
-                background: isActive ? "var(--bg-active)" : "var(--bg-input)",
-                border: `1px solid ${isActive ? "var(--accent)" : "var(--border)"}`,
-              }}>
-              {/* Avatar */}
-              <div
-                className="w-[50px] h-[50px] rounded-xl flex items-center justify-center flex-shrink-0 text-[20px] font-bold text-white shadow-md"
-                style={{ background: gradBg }}>
-                {g.name[0].toUpperCase()}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-[14.5px] font-semibold truncate text-white">{g.name}</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <svg className="w-3 h-3 flex-shrink-0" style={{ color: "var(--text-muted)" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                  <p className="text-[12px] truncate" style={{ color: "var(--text-muted)" }}>
-                    {g.members?.length || 0} member{g.members?.length !== 1 ? "s" : ""}
-                    {g.lastMessage ? ` · ${g.lastMessage}` : ""}
-                  </p>
-                </div>
-              </div>
-
-              {/* Chevron */}
-              <svg className="w-4 h-4 flex-shrink-0" style={{ color: "var(--text-muted)" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Plus, Camera, Type, X, ChevronRight } from "lucide-react";
+import { Plus, Camera, Type, X, ChevronRight, Search, ArrowLeft } from "lucide-react";
 import { useStatusStore } from "../store/useStatusStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
@@ -73,6 +73,8 @@ export default function StatusTray() {
   const { authUser } = useAuthStore();
   
   const fileInputRef = useRef(null);
+  const [search, setSearch] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     fetchStatuses();
@@ -105,11 +107,51 @@ export default function StatusTray() {
     return { total, viewedCount };
   };
 
+  const filteredGroupedStatuses = Object.values(groupedStatuses).filter(
+    ({ user }) => user.fullName?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col h-full bg-[var(--bg-primary)]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
         <h1 className="text-[20px] font-bold brand-font tracking-wide" style={{ color: "var(--text-primary)" }}>Status</h1>
+      </div>
+
+      {/* Search bar — liquid glass */}
+      <div className="px-4 py-3 flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+        <div
+          className="flex items-center gap-3 px-4 py-2.5 rounded-full border"
+          style={{
+            background: "var(--bg-input)",
+            borderColor: "var(--border)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+          }}
+        >
+          {searchFocused ? (
+            <button onClick={() => { setSearch(""); setSearchFocused(false); }}>
+              <ArrowLeft size={16} style={{ color: "var(--text-muted)" }} />
+            </button>
+          ) : (
+            <Search size={16} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+          )}
+          <input
+            type="text"
+            placeholder="Search status updates..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => { if (!search) setSearchFocused(false); }}
+            className="flex-1 bg-transparent text-[13.5px] focus:outline-none placeholder:opacity-40"
+            style={{ color: "var(--text-primary)" }}
+          />
+          {search && (
+            <button onClick={() => setSearch("")}>
+              <X size={14} style={{ color: "var(--text-muted)" }} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Main Container */}
@@ -161,15 +203,17 @@ export default function StatusTray() {
         <div>
           <p className="text-[12px] font-bold uppercase tracking-wider mb-3 pl-1" style={{ color: "var(--text-secondary)" }}>Recent updates</p>
           
-          {Object.keys(groupedStatuses).length === 0 ? (
+          {filteredGroupedStatuses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-              <span className="text-3xl opacity-40">✨</span>
-              <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>No status updates yet</p>
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Be the first to share one!</p>
+              <span className="text-3xl opacity-40">{search ? "🔍" : "✨"}</span>
+              <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+                {search ? `No status for "${search}"` : "No status updates yet"}
+              </p>
+              {!search && <p className="text-xs" style={{ color: "var(--text-muted)" }}>Be the first to share one!</p>}
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {Object.values(groupedStatuses).map(({ user, items }) => {
+              {filteredGroupedStatuses.map(({ user, items }) => {
                 const { total, viewedCount } = getSegmentStats(items);
                 const isFullyViewed = viewedCount === total;
                 return (

@@ -698,10 +698,8 @@ h1, h2, h3, h4, h5, h6, .brand-font {
     background: var(--bg-panel) !important;
   }
 
-  /* Custom styling for active pinned favorites with clean accent edge */
   .chat-row.favorite-pinned {
-    border-left: 3px dashed var(--accent) !important;
-    background: rgba(255,255,255,0.01);
+    background: var(--bg-hover);
   }
 }
 

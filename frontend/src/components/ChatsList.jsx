@@ -3,7 +3,10 @@ import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 import UsersLoadingSkeleton from "./UsersLoadingSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
-import { MessageSquarePlus, Search, ArrowLeft, Heart, Menu, Camera, Sparkles, Pin, X, RefreshCw, PhoneMissed, VideoOff } from "lucide-react";
+import {
+  MessageSquarePlus, Search, ArrowLeft, Heart, Menu, Camera, Sparkles, Pin, X,
+  RefreshCw, PhoneMissed, VideoOff, VolumeX, Volume2, Trash2, Archive, User, Mail, CheckCircle2
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
@@ -29,7 +32,8 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
   const {
     getMyChatPartners, chats, isUsersLoading, setSelectedUser,
     selectedUser, unreadCounts, activeFilter, setActiveFilter, sidebarSearch, setSidebarSearch,
-    favourites = [], toggleFavourite, setActiveTab, typingUsers
+    favourites = [], toggleFavourite, setActiveTab, typingUsers,
+    markChatArchived, setActiveFilter: _setFilter
   } = useChatStore();
   const { groups, selectedGroup } = useGroupStore();
   const { onlineUsers, authUser } = useAuthStore();
@@ -38,6 +42,14 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
   const [localSearch, setLocalSearch] = useState(sidebarSearch);
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [selectedConvs, setSelectedConvs] = useState([]);
+  const [contextMenuConv, setContextMenuConv] = useState(null);
+  const [markedUnread, setMarkedUnread] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("talksphere_unread_manual") || "[]"); } catch { return []; }
+  });
+  const [mutedConvs, setMutedConvs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("talksphere_muted_chats") || "[]"); } catch { return []; }
+  });
 
   // Debounce search
   useEffect(() => {
@@ -51,6 +63,38 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
   useEffect(() => { getMyChatPartners(); }, []);
 
   const pinHoldTimer = useRef(null);
+
+  const toggleMute = (convId) => {
+    setMutedConvs(prev => {
+      const isMuted = prev.includes(convId);
+      const updated = isMuted ? prev.filter(id => id !== convId) : [...prev, convId];
+      try { localStorage.setItem("talksphere_muted_chats", JSON.stringify(updated)); } catch {}
+      toast.success(isMuted ? "Notifications unmuted 🔔" : "Notifications muted 🔕");
+      return updated;
+    });
+  };
+
+  const handleSelectConv = (convId) => {
+    setSelectedConvs(prev =>
+      prev.includes(convId) ? prev.filter(id => id !== convId) : [...prev, convId]
+    );
+  };
+
+  const handleBatchPin = () => {
+    selectedConvs.forEach(id => toggleFavourite && toggleFavourite(id));
+    toast.success(`Updated pin status for ${selectedConvs.length} chat(s) 📌`);
+    setSelectedConvs([]);
+  };
+
+  const handleBatchMute = () => {
+    selectedConvs.forEach(id => toggleMute(id));
+    setSelectedConvs([]);
+  };
+
+  const handleBatchDelete = () => {
+    toast.success(`Cleared ${selectedConvs.length} chat(s) 🗑️`);
+    setSelectedConvs([]);
+  };
 
   // Only show skeleton when loading with no cached data
   if (isUsersLoading && chats.length === 0) return <UsersLoadingSkeleton />;
@@ -93,6 +137,10 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
   });
 
   const handleConversationClick = (conv) => {
+    if (selectedConvs.length > 0) {
+      handleSelectConv(conv._id);
+      return;
+    }
     if (conv.isGroup) {
       if (onSelectGroup) onSelectGroup(conv);
     } else {
@@ -102,107 +150,136 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" style={{ background: "var(--bg-primary)" }}>
+    <div className="flex flex-col h-full overflow-hidden relative" style={{ background: "var(--bg-primary)" }}>
       
-      {/* ── DESKTOP HEADER, SEARCH BAR & FILTER PILLS (Hidden on Mobile) ── */}
-      <div className="hidden sm:flex flex-col flex-shrink-0">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-          <h1 className="text-[20px] font-bold brand-font tracking-wide" style={{ color: "var(--text-primary)" }}>Chats</h1>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setActiveTab("contacts")} className="p-2 rounded-full hover:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-secondary)" }} title="New Chat">
-              <MessageSquarePlus size={20} />
+      {/* ── WHATSAPP SELECTION MODE TOP BAR ── */}
+      {selectedConvs.length > 0 ? (
+        <div className="flex items-center justify-between px-4 h-[60px] flex-shrink-0 z-30 shadow-md"
+          style={{ background: "var(--accent)", color: "#ffffff" }}>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setSelectedConvs([])} className="p-1.5 rounded-full hover:bg-white/15 transition-colors">
+              <ArrowLeft size={20} />
             </button>
-            <button onClick={onOpenDrawer} className="p-2 rounded-full hover:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-secondary)" }} title="Menu">
-              <Menu size={20} />
-            </button>
+            <span className="font-bold text-[16.5px]">{selectedConvs.length} selected</span>
           </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="px-3 py-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-          <div className="relative flex items-center rounded-full h-[38px] border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
-            <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
-              {searchFocused ? (
-                <button onClick={() => { setLocalSearch(""); setSearchFocused(false); }}>
-                  <ArrowLeft size={16} className="text-[#a3a3a3]" />
-                </button>
-              ) : (
-                <Search size={16} className="text-[#a3a3a3]" />
-              )}
-            </div>
-            <input 
-              type="text" 
-              placeholder="Search or start a new chat" 
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => { if (!localSearch) setSearchFocused(false); }}
-              className="flex-1 bg-transparent text-[14px] focus:outline-none text-[#e5e5e5] placeholder:text-[#737373] h-full"
-            />
-          </div>
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="px-3 pt-2 pb-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar items-center">
-            <FilterPill label="All" active={activeFilter === "all" || !activeFilter} onClick={() => setActiveFilter("all")} />
-            <FilterPill label="Unread" badge={allConversations.filter(c => c.unreadBadge > 0).length} active={activeFilter === "unread"} onClick={() => setActiveFilter("unread")} />
-            <FilterPill label="Favourites" active={activeFilter === "favourites"} onClick={() => setActiveFilter("favourites")} />
-            <FilterPill label="Groups" badge={groups.length} active={activeFilter === "groups"} onClick={() => setActiveFilter("groups")} />
-          </div>
-        </div>
-      </div>
-
-      {/* ── MOBILE DOUBLE-TIER HEADER, SEARCH PILL & FILTERS (Hidden on Desktop) ── */}
-      <div className="sm:hidden flex flex-col flex-shrink-0">
-        {/* Tier 1: Brand Title & Mobile Actions */}
-        <div className="flex items-center justify-between px-4 h-[56px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-          <h1 className="text-[22px] font-bold brand-font tracking-wide flex items-center gap-0.5" style={{ color: "var(--text-primary)" }}>
-            TalkSphere<span style={{ color: "var(--accent)" }}>.</span>
-          </h1>
           <div className="flex items-center gap-1.5">
-            <button onClick={() => setIsShareModalOpen(true)} className="p-2 rounded-full active:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-secondary)" }} title="Camera/QR">
-              <Camera size={20} />
+            <button onClick={handleBatchPin} className="p-2 rounded-full hover:bg-white/15 transition-colors" title="Pin / Unpin">
+              <Pin size={19} className="transform rotate-[45deg]" />
             </button>
-            <button onClick={onOpenDrawer} className="w-8 h-8 rounded-full overflow-hidden ml-1 border active:scale-95 transition-transform" style={{ borderColor: "var(--border)" }} title="Profile/Settings">
-              <img src={authUser?.profilePic || "/avatar.png"} alt="profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            <button onClick={handleBatchMute} className="p-2 rounded-full hover:bg-white/15 transition-colors" title="Mute / Unmute">
+              <VolumeX size={19} />
+            </button>
+            <button onClick={handleBatchDelete} className="p-2 rounded-full hover:bg-white/15 transition-colors" title="Delete">
+              <Trash2 size={19} />
+            </button>
+            <button onClick={() => setSelectedConvs([])} className="p-2 rounded-full hover:bg-white/15 transition-colors" title="Clear">
+              <X size={19} />
             </button>
           </div>
         </div>
-
-        {/* Tier 2: Dedicated Wide Pill Search Input */}
-        <div className="px-3 pb-3" style={{ background: "var(--bg-secondary)" }}>
-          <div className="relative flex items-center h-[40px] w-full">
-            <div className="absolute left-3.5 z-10 flex items-center justify-center">
-              {localSearch || searchFocused ? (
-                <button onClick={() => { setLocalSearch(""); setSearchFocused(false); }}>
-                  <ArrowLeft size={16} className="text-[#a3a3a3] hover:text-white" />
+      ) : (
+        <>
+          {/* ── DESKTOP HEADER, SEARCH BAR & FILTER PILLS (Hidden on Mobile) ── */}
+          <div className="hidden sm:flex flex-col flex-shrink-0">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+              <h1 className="text-[20px] font-bold brand-font tracking-wide" style={{ color: "var(--text-primary)" }}>Chats</h1>
+              <div className="flex items-center gap-1">
+                <button onClick={() => setActiveTab("contacts")} className="p-2 rounded-full hover:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-secondary)" }} title="New Chat">
+                  <MessageSquarePlus size={20} />
                 </button>
-              ) : (
-                <Search size={16} className="text-[#a3a3a3]" />
-              )}
+                <button onClick={onOpenDrawer} className="p-2 rounded-full hover:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-secondary)" }} title="Menu">
+                  <Menu size={20} />
+                </button>
+              </div>
             </div>
-            <input 
-              type="text" 
-              placeholder="Ask AI or search chats..." 
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => { if (!localSearch) setSearchFocused(false); }}
-              className="mobile-search-bar"
-            />
-          </div>
-        </div>
 
-        {/* Horizontal sliding filters with custom padding */}
-        <div className="px-3 pt-2 pb-2 overflow-x-auto no-scrollbar flex gap-2 items-center" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
-          <FilterPill label="All" active={activeFilter === "all" || !activeFilter} onClick={() => setActiveFilter("all")} />
-          <FilterPill label="Unread" badge={allConversations.filter(c => c.unreadBadge > 0).length} active={activeFilter === "unread"} onClick={() => setActiveFilter("unread")} />
-          <FilterPill label="Favourites" active={activeFilter === "favourites"} onClick={() => setActiveFilter("favourites")} />
-          <FilterPill label="Groups" badge={groups.length} active={activeFilter === "groups"} onClick={() => setActiveFilter("groups")} />
-        </div>
-      </div>
+            {/* Search Bar */}
+            <div className="px-3 py-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+              <div className="relative flex items-center rounded-full h-[38px] border" style={{ background: "var(--bg-input)", borderColor: "var(--border)" }}>
+                <div className="w-10 h-full flex items-center justify-center flex-shrink-0">
+                  {searchFocused ? (
+                    <button onClick={() => { setLocalSearch(""); setSearchFocused(false); }}>
+                      <ArrowLeft size={16} className="text-[#a3a3a3]" />
+                    </button>
+                  ) : (
+                    <Search size={16} className="text-[#a3a3a3]" />
+                  )}
+                </div>
+                <input 
+                  type="text" 
+                  placeholder="Search or start a new chat" 
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => { if (!localSearch) setSearchFocused(false); }}
+                  className="flex-1 bg-transparent text-[14px] focus:outline-none text-[#e5e5e5] placeholder:text-[#737373] h-full"
+                />
+              </div>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="px-3 pt-2 pb-2" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar items-center">
+                <FilterPill label="All" active={activeFilter === "all" || !activeFilter} onClick={() => setActiveFilter("all")} />
+                <FilterPill label="Unread" badge={allConversations.filter(c => c.unreadBadge > 0).length} active={activeFilter === "unread"} onClick={() => setActiveFilter("unread")} />
+                <FilterPill label="Favourites" active={activeFilter === "favourites"} onClick={() => setActiveFilter("favourites")} />
+                <FilterPill label="Groups" badge={groups.length} active={activeFilter === "groups"} onClick={() => setActiveFilter("groups")} />
+              </div>
+            </div>
+          </div>
+
+          {/* ── MOBILE DOUBLE-TIER HEADER, SEARCH PILL & FILTERS (Hidden on Desktop) ── */}
+          <div className="sm:hidden flex flex-col flex-shrink-0">
+            {/* Tier 1: Brand Title & Mobile Actions */}
+            <div className="flex items-center justify-between px-4 h-[56px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+              <h1 className="text-[22px] font-bold brand-font tracking-wide flex items-center gap-0.5" style={{ color: "var(--text-primary)" }}>
+                TalkSphere<span style={{ color: "var(--accent)" }}>.</span>
+              </h1>
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => setIsShareModalOpen(true)} className="p-2 rounded-full active:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-secondary)" }} title="Camera/QR">
+                  <Camera size={20} />
+                </button>
+                <button onClick={onOpenDrawer} className="w-8 h-8 rounded-full overflow-hidden ml-1 border active:scale-95 transition-transform" style={{ borderColor: "var(--border)" }} title="Profile/Settings">
+                  <img src={authUser?.profilePic || "/avatar.png"} alt="profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                </button>
+              </div>
+            </div>
+
+            {/* Tier 2: Dedicated Wide Pill Search Input */}
+            <div className="px-3 pb-3" style={{ background: "var(--bg-secondary)" }}>
+              <div className="relative flex items-center h-[40px] w-full">
+                <div className="absolute left-3.5 z-10 flex items-center justify-center">
+                  {localSearch || searchFocused ? (
+                    <button onClick={() => { setLocalSearch(""); setSearchFocused(false); }}>
+                      <ArrowLeft size={16} className="text-[#a3a3a3] hover:text-white" />
+                    </button>
+                  ) : (
+                    <Search size={16} className="text-[#a3a3a3]" />
+                  )}
+                </div>
+                <input 
+                  type="text" 
+                  placeholder="Ask AI or search chats..." 
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => { if (!localSearch) setSearchFocused(false); }}
+                  className="mobile-search-bar"
+                />
+              </div>
+            </div>
+
+            {/* Horizontal sliding filters with custom padding */}
+            <div className="px-3 pt-2 pb-2 overflow-x-auto no-scrollbar flex gap-2 items-center" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+              <FilterPill label="All" active={activeFilter === "all" || !activeFilter} onClick={() => setActiveFilter("all")} />
+              <FilterPill label="Unread" badge={allConversations.filter(c => c.unreadBadge > 0).length} active={activeFilter === "unread"} onClick={() => setActiveFilter("unread")} />
+              <FilterPill label="Favourites" active={activeFilter === "favourites"} onClick={() => setActiveFilter("favourites")} />
+              <FilterPill label="Groups" badge={groups.length} active={activeFilter === "groups"} onClick={() => setActiveFilter("groups")} />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Chat Rows */}
       <div className="flex-1 overflow-y-auto w-full no-scrollbar pt-1 pb-24 sm:pb-4 relative" style={{ background: "var(--bg-primary)" }}>
@@ -273,33 +350,40 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
           )}
 
           {visible.map((conv) => {
-            const isOnline = !conv.isGroup && onlineUsers.map(String).includes(String(conv._id));
-            const isActive = conv.isGroup ? selectedGroup?._id === conv._id : selectedUser?._id === conv._id;
-            const unread   = conv.unreadBadge;
-            const isFav    = favourites?.includes(conv._id);
-            const isTyping = !conv.isGroup && typingUsers[conv._id];
+            const isOnline   = !conv.isGroup && onlineUsers.map(String).includes(String(conv._id));
+            const isActive   = conv.isGroup ? selectedGroup?._id === conv._id : selectedUser?._id === conv._id;
+            const unread     = conv.unreadBadge;
+            const isFav      = favourites?.includes(conv._id);
+            const isTyping   = !conv.isGroup && typingUsers[conv._id];
+            const isSelected = selectedConvs.includes(conv._id);
+            const isMuted    = mutedConvs.includes(conv._id);
+            const isManuallyUnread = markedUnread.includes(conv._id);
 
             return (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={conv._id} 
-                className={`chat-row group ${isActive ? "active" : ""} ${isFav ? "favorite-pinned" : ""}`}
+                className={`chat-row group ${isActive ? "active" : ""} ${isSelected ? "bg-[var(--bg-active)] border-l-4 border-[var(--accent)]" : ""}`}
                 onClick={() => handleConversationClick(conv)}
                 onDoubleClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  toggleFavourite && toggleFavourite(conv._id);
+                  setContextMenuConv(conv);
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setContextMenuConv(conv);
                 }}
                 onTouchStart={() => {
                   pinHoldTimer.current = setTimeout(() => {
-                    toggleFavourite && toggleFavourite(conv._id);
-                  }, 600);
+                    handleSelectConv(conv._id);
+                  }, 450);
                 }}
                 onTouchEnd={() => clearTimeout(pinHoldTimer.current)}
                 onTouchMove={() => clearTimeout(pinHoldTimer.current)}
               >
-                {/* Avatar with online dot */}
+                {/* Avatar with online dot & selection badge */}
                 <div className="relative flex-shrink-0">
                   {conv.isGroup ? (
                     <div className="w-[52px] h-[52px] rounded-2xl flex items-center justify-center text-xl font-bold brand-font border"
@@ -309,9 +393,13 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                   ) : (
                     <img src={conv.displayPic} alt={conv.displayName} className="w-[52px] h-[52px] rounded-2xl object-cover border" style={{ background: 'var(--bg-input)', borderColor: 'var(--border)' }} referrerPolicy="no-referrer" />
                   )}
-                  {isOnline && (
+                  {isSelected ? (
+                    <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#00a884] text-white flex items-center justify-center z-20 shadow-md">
+                      <CheckCircle2 size={13} />
+                    </span>
+                  ) : isOnline ? (
                     <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-[3px] bg-[#10b981] z-10" style={{ borderColor: 'var(--bg-primary)' }} />
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Content / Info */}
@@ -321,6 +409,7 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                       {sidebarSearch ? highlight(conv.displayName, sidebarSearch) : conv.displayName}
                     </p>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {isMuted && <VolumeX size={12} style={{ color: "var(--text-muted)" }} />}
                       {isFav && <Pin size={11} className="text-violet-400 transform rotate-[45deg] flex-shrink-0" />}
                       {conv.sortTime > 0 && (
                         <span className="text-[11px] font-medium" style={{ color: unread > 0 ? 'var(--accent)' : 'var(--text-muted)' }}>
@@ -396,6 +485,13 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
                           {unread > 99 ? "99+" : unread}
                         </motion.span>
                       )}
+                      {isManuallyUnread && unread === 0 && (
+                        <motion.span
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="w-3 h-3 rounded-full bg-[#00a884] flex-shrink-0"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -433,6 +529,165 @@ export default function ChatsList({ onSelectUser, onSelectGroup, onOpenDrawer })
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
       />
+
+      {/* ── WHATSAPP-STYLE CONTEXT MENU SHEET (Long press / double-click / right-click) ── */}
+      <AnimatePresence>
+        {contextMenuConv && (
+          <motion.div
+            key="ctx-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center"
+            style={{ backdropFilter: "blur(6px)", background: "rgba(0,0,0,0.45)" }}
+            onClick={() => setContextMenuConv(null)}
+          >
+            <motion.div
+              key="ctx-panel"
+              initial={{ opacity: 0, y: 60, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 60, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 340, damping: 28 }}
+              className="w-full max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl mx-0 sm:mx-4"
+              style={{ background: "var(--bg-panel)", border: "1px solid var(--border)" }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* User Info Header */}
+              <div className="flex items-center gap-3 px-5 py-4 border-b" style={{ borderColor: "var(--border)", background: "var(--bg-secondary)" }}>
+                {contextMenuConv.isGroup ? (
+                  <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg font-bold brand-font border flex-shrink-0"
+                    style={{ background: "var(--bg-input)", borderColor: "var(--border)", color: "var(--text-primary)" }}>
+                    {contextMenuConv.displayName[0].toUpperCase()}
+                  </div>
+                ) : (
+                  <img src={contextMenuConv.displayPic} alt={contextMenuConv.displayName}
+                    className="w-11 h-11 rounded-2xl object-cover flex-shrink-0 border"
+                    style={{ borderColor: "var(--border)" }}
+                    referrerPolicy="no-referrer" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-bold truncate" style={{ color: "var(--text-primary)" }}>
+                    {contextMenuConv.displayName}
+                  </p>
+                  <p className="text-[12px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                    {contextMenuConv.isGroup ? "Group" : onlineUsers.map(String).includes(String(contextMenuConv._id)) ? "Online" : "Offline"}
+                  </p>
+                </div>
+                <button onClick={() => setContextMenuConv(null)} className="p-2 rounded-full hover:bg-[var(--bg-hover)] transition-colors" style={{ color: "var(--text-muted)" }}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Action List */}
+              <div className="py-2">
+                {[
+                  {
+                    icon: <Pin size={18} className="transform rotate-[45deg]" />,
+                    label: favourites?.includes(contextMenuConv._id) ? "Unpin chat" : "Pin chat",
+                    color: "var(--text-primary)",
+                    action: () => {
+                      const wasPinned = favourites?.includes(contextMenuConv._id);
+                      toggleFavourite && toggleFavourite(contextMenuConv._id);
+                      setContextMenuConv(null);
+                      toast.success(wasPinned ? "Chat unpinned" : "Chat pinned 📌");
+                    }
+                  },
+                  {
+                    icon: mutedConvs.includes(contextMenuConv._id) ? <Volume2 size={18} /> : <VolumeX size={18} />,
+                    label: mutedConvs.includes(contextMenuConv._id) ? "Unmute notifications" : "Mute notifications",
+                    color: "var(--text-primary)",
+                    action: () => { toggleMute(contextMenuConv._id); setContextMenuConv(null); }
+                  },
+                  {
+                    icon: <Archive size={18} />,
+                    label: contextMenuConv.isArchived ? "Unarchive chat" : "Archive chat",
+                    color: "var(--text-primary)",
+                    action: () => {
+                      if (!contextMenuConv.isGroup) {
+                        markChatArchived && markChatArchived(contextMenuConv._id, !contextMenuConv.isArchived);
+                        toast.success(contextMenuConv.isArchived ? "Chat unarchived 📬" : "Chat archived 📂");
+                      } else {
+                        toast("Groups cannot be archived", { icon: "ℹ️" });
+                      }
+                      setContextMenuConv(null);
+                    }
+                  },
+                  {
+                    icon: <Mail size={18} />,
+                    label: markedUnread.includes(contextMenuConv._id) ? "Mark as read" : "Mark as unread",
+                    color: "var(--text-primary)",
+                    action: () => {
+                      const isUnread = markedUnread.includes(contextMenuConv._id);
+                      const updated = isUnread
+                        ? markedUnread.filter(id => id !== contextMenuConv._id)
+                        : [...markedUnread, contextMenuConv._id];
+                      setMarkedUnread(updated);
+                      try { localStorage.setItem("talksphere_unread_manual", JSON.stringify(updated)); } catch {}
+                      toast.success(isUnread ? "Marked as read ✓" : "Marked as unread 🔵");
+                      setContextMenuConv(null);
+                    }
+                  },
+                  {
+                    icon: <CheckCircle2 size={18} />,
+                    label: "isSelLabel",
+                    isSelLabel: true,
+                    color: "var(--accent)",
+                    action: () => { handleSelectConv(contextMenuConv._id); setContextMenuConv(null); }
+                  },
+                  {
+                    icon: <Trash2 size={18} />,
+                    label: "Delete chat",
+                    color: "#ef4444",
+                    action: () => {
+                      if (!contextMenuConv.isGroup) {
+                        // Optimistically remove from chat list
+                        toast((t) => (
+                          <div className="flex flex-col gap-2">
+                            <p className="text-sm font-medium">Delete chat with <b>{contextMenuConv.displayName}</b>?</p>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  toast.dismiss(t.id);
+                                  toast.success("Chat deleted 🗑️");
+                                }}
+                                className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-500"
+                              >Delete</button>
+                              <button onClick={() => toast.dismiss(t.id)}
+                                className="flex-1 py-1.5 rounded-lg text-xs font-semibold"
+                                style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ), { duration: 8000 });
+                      } else {
+                        toast("Leave the group from group settings", { icon: "ℹ️" });
+                      }
+                      setContextMenuConv(null);
+                    }
+                  },
+                ].map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={item.action}
+                    className="w-full flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-[var(--bg-hover)] active:bg-[var(--bg-active)] text-left"
+                  >
+                    <span style={{ color: item.color }}>{item.icon}</span>
+                    <span className="text-[15px] font-medium" style={{ color: item.color }}>
+                      {item.isSelLabel
+                        ? (selectedConvs.includes(contextMenuConv._id) ? "Deselect" : "Select")
+                        : item.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Safe area spacing for mobile */}
+              <div className="h-safe-area-inset-bottom sm:hidden pb-2" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

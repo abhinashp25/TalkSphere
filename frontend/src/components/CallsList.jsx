@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Phone, Video, PlusCircle, X, Search, PhoneCall, VideoIcon, Trash2 } from "lucide-react";
+import { Phone, Video, PlusCircle, X, Search, PhoneCall, VideoIcon, Trash2, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 import { useChatStore } from "../store/useChatStore";
 import { useCallStore } from "../store/useCallStore";
@@ -12,6 +12,8 @@ export default function CallsList() {
   const [activeCallFilter, setActiveCallFilter] = useState("all");
   const [showNewCallModal, setShowNewCallModal] = useState(false);
   const [newCallSearch, setNewCallSearch] = useState("");
+  const [historySearch, setHistorySearch] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     fetchCallHistory();
@@ -33,9 +35,11 @@ export default function CallsList() {
     };
   });
 
-  const filtered = activeCallFilter === "missed"
-    ? enrichedHistory.filter(c => c.type === "missed")
-    : enrichedHistory;
+  const filtered = enrichedHistory.filter(c => {
+    if (activeCallFilter === "missed" && c.type !== "missed") return false;
+    if (historySearch && !c.user.fullName?.toLowerCase().includes(historySearch.toLowerCase())) return false;
+    return true;
+  });
 
   const filteredContacts = chats.filter(c =>
     c.fullName?.toLowerCase().includes(newCallSearch.toLowerCase())
@@ -53,10 +57,10 @@ export default function CallsList() {
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "var(--bg-secondary)" }}>
+    <div className="flex flex-col h-full" style={{ background: "var(--bg-primary)" }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
-        <h1 className="text-[22px] font-bold brand-font" style={{ color: "var(--text-primary)" }}>Calls</h1>
+      <div className="flex items-center justify-between px-4 h-[64px] flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+        <h1 className="text-[20px] font-bold brand-font" style={{ color: "var(--text-primary)" }}>Calls</h1>
         <div className="flex items-center gap-1">
           {callHistory.length > 0 && (
             <button
@@ -94,8 +98,44 @@ export default function CallsList() {
         </div>
       </div>
 
+      {/* Search bar — liquid glass */}
+      <div className="px-4 py-3 flex-shrink-0" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
+        <div
+          className="flex items-center gap-3 px-4 py-2.5 rounded-full border"
+          style={{
+            background: "var(--bg-input)",
+            borderColor: "var(--border)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+          }}
+        >
+          {searchFocused ? (
+            <button onClick={() => { setHistorySearch(""); setSearchFocused(false); }}>
+              <ArrowLeft size={16} style={{ color: "var(--text-muted)" }} />
+            </button>
+          ) : (
+            <Search size={16} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+          )}
+          <input
+            type="text"
+            placeholder="Search call history..."
+            value={historySearch}
+            onChange={e => setHistorySearch(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => { if (!historySearch) setSearchFocused(false); }}
+            className="flex-1 bg-transparent text-[13.5px] focus:outline-none placeholder:opacity-40"
+            style={{ color: "var(--text-primary)" }}
+          />
+          {historySearch && (
+            <button onClick={() => { setHistorySearch(""); }}>
+              <X size={14} style={{ color: "var(--text-muted)" }} />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Filter pills */}
-      <div className="flex gap-2 px-4 pb-3 flex-shrink-0 pt-2">
+      <div className="flex gap-2 px-4 pb-3 flex-shrink-0 pt-3" style={{ background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" }}>
         <button
           onClick={() => setActiveCallFilter("all")}
           className="px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors"
